@@ -1,7 +1,5 @@
 #include "flash.h"
 
-#define STM32F103_FLASH_BASE      0x08000000U
-#define STM32F103_PAGE_SIZE       0x00000800U       /* FLASH Page Size, 2 KBytes */
 
 /**
  * @brief Helper to map flash memory address to STM32F103 Sector number.
@@ -112,7 +110,10 @@ typedef struct {
 static SYN_ParamStore store;
 static MyParams params;
 
-#define FLASH_PARAM_START (STM32F103_FLASH_BASE + 10U * STM32F103_PAGE_SIZE) 
+//#define FLASH_PARAM_START (STM32F103_FLASH_BASE + 10U * STM32F103_PAGE_SIZE) 
+
+
+
 
 void stm32f103_flash_test(void)
 {

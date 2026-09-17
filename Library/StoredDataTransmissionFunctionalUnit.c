@@ -721,7 +721,7 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm (DT
         charon_StoredDataTransmissionFunctionalUnit_CRC16_update();
     }
 
-
+	charon_NvmDriver_flush();
     return uds_responseCode_PositiveResponse;
 }
 
@@ -837,11 +837,10 @@ static uds_responseCode_t NumberOfDTCByStatusMask (const uint8_t * receiveBuffer
     s_buffer[3] = DTC_Format_Identifier;
 
 
-    #if !CHARON_CONFIG_IS_BIG_ENDIAN
-    countOfMatchedDTC = REV16(countOfMatchedDTC);
-    #endif
-    // Fill uint16_t in uint8_t buffer: cast at start address a new int type and fill this type with wanted value. 
-    *(uint16_t*)&s_buffer[4] = countOfMatchedDTC;
+	 /* UDS network byte order: high byte first */
+	 s_buffer[4] = (uint8_t)((countOfMatchedDTC >> 8u) & 0xFFu);
+	 s_buffer[5] = (uint8_t)(countOfMatchedDTC & 0xFFu);
+
 
     charon_sscTxMessage(s_buffer,length);
     //charon info einfügen für debugging!
@@ -1063,14 +1062,21 @@ static uds_responseCode_t DTCSnapshotRecordByDTCNumber (const uint8_t * receiveB
                 length += (uint16_t)matchedDTC->DTCSnapshotLength[i];
             }
         }
-    } else
-    {
-        // When no snapshot was found an echo shall be send back.
-        memcpy(&s_buffer[length], &receiveBuffer[2], lengthOfDTC);
-        length += lengthOfDTC;
-        memcpy(&s_buffer[length], &receiveBuffer[5], 1u);
-        length++;
-    }
+		 else
+		 {
+			 /* ISO 14229-1 Table 281: DTC matched but no snapshots saved */
+			 memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
+			 length += lengthOfDTC;
+			 s_buffer[length++] = matchedDTC->statusOfDTC;
+		 }
+	 }
+	else
+	{
+	 /* When no DTC match was found */
+	 memcpy(&s_buffer[length], &receiveBuffer[2], lengthOfDTC);
+	 length += lengthOfDTC;
+	 s_buffer[length++] = 0x00u;
+	}
 
     charon_sscTxMessage(s_buffer,length);
     //charon info einfügen für debugging!
@@ -1328,12 +1334,10 @@ static uds_responseCode_t NumberOfDTCBySeverityMaskRecord (const uint8_t * recei
     s_buffer[2] = charon_getDTCStatusAvailabilityMask();
     s_buffer[3] = DTC_Format_Identifier;
 
-    #if !CHARON_CONFIG_IS_BIG_ENDIAN
-    countOfMatchedDTC = REV16(countOfMatchedDTC);
-    #endif
-    // Fill uint16_t in uint8_t buffer: cast at start address a new int type and fill this type with wanted value. 
-    *(uint16_t*)&s_buffer[4] = countOfMatchedDTC;
-    s_buffer[4] = countOfMatchedDTC;
+	/* UDS network byte order: high byte first */
+	s_buffer[4] = (uint8_t)((countOfMatchedDTC >> 8u) & 0xFFu);
+	s_buffer[5] = (uint8_t)(countOfMatchedDTC & 0xFFu);
+
     
     charon_sscTxMessage(s_buffer,length);
     //charon info einfügen für debugging!

@@ -9,6 +9,17 @@
 #include <string.h>
 #include "syntropic.h"
 
+#define STM32F103_FLASH_BASE      0x08000000U
+#define STM32F103_PAGE_SIZE       0x00000800U       /* FLASH Page Size, 2 KBytes */
+
+/* Safe parameter region at top of flash */
+#if defined(STM32F103xE)
+#define FLASH_PARAM_START (STM32F103_FLASH_BASE + (256U - 4U) * STM32F103_PAGE_SIZE) /* 0x0807E000 */
+#elif defined(STM32F103xB)
+#define FLASH_PARAM_START (STM32F103_FLASH_BASE + (128U - 4U) * STM32F103_PAGE_SIZE) /* 0x0801F000 */
+#else
+#define FLASH_PARAM_START (STM32F103_FLASH_BASE + (64U - 4U) * STM32F103_PAGE_SIZE)  /* 0x0800F000 */
+#endif 
 
 uint32_t GetPage(uint32_t Addr);
 

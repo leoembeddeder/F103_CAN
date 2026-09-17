@@ -1,78 +1,182 @@
 #include "NvmEmulator.h"
 #include "StoredDataTransmissionFunctionalUnit.h"
+#include "DTC_LookupTable.h"
+#include "uds_config.h"
+#include "syn_param.h"
+#include "flash.h"
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "uds_config.h"
+
 
 
 /* Imports *******************************************************************/
+#define ALIGN4(x) (((uint32_t)(x) + 3u) & ~3u)
 
 /* Constants *****************************************************************/
-
-/* Macros ********************************************************************/
-
-/** @brief Save area for header in the NVM. */
+/** @brief Size of the DTC header area. */
 #define STORAGE_HEADER ((uint8_t) sizeof(DTC_header_t)) 
 
-/** @brief NVm config, may be changed depending on targets memory. Start of Memory block. Chains the DTC memory but can also be saved independet. (still in a block!) */
-#define START_OF_RESERVED_SPACE_FOR_DTC             ((uint8_t)  0u)        /** @todo change start here in merge */
-/** @brief Memory size in NVM for DTC depending on AMOUNT_OF_DTC. Indicates the end. */
-#define END_OF_RESERVED_SPACE_FOR_DTC               ((uint32_t)(sizeof(DTC_t)*AMOUNT_OF_DTC) + STORAGE_HEADER)
+/* Macros ********************************************************************/
+/** @brief Start and End boundaries for memory areas */
+#define START_OF_RESERVED_SPACE_FOR_DTC             (0u)
+#define END_OF_RESERVED_SPACE_FOR_DTC               (STORAGE_HEADER + ((uint32_t)sizeof(DTC_t) * (uint32_t)AMOUNT_OF_DTC))
+#define START_OF_RESERVED_SPACE_FOR_SNAPSHOT        ALIGN4(END_OF_RESERVED_SPACE_FOR_DTC)
+#define END_OF_RESERVED_SPACE_FOR_SNAPSHOT          (START_OF_RESERVED_SPACE_FOR_SNAPSHOT + ((uint32_t)sizeof(DTC_SnapshotData_t) * (uint32_t)AMOUNT_OF_SNAPSHOT))
 
-/** @brief NVm config, may be changed depending on targets memory. Start of Memory block */
-#define START_OF_RESERVED_SPACE_FOR_SNAPSHOT        ((uint32_t)END_OF_RESERVED_SPACE_FOR_DTC + 1u)
-/** @brief Memory size in NVM for snapshot depending on AMOUNT_OF_SNAPSHOT. Indicates the end. */
-#define END_OF_RESERVED_SPACE_FOR_SNAPSHOT          ((uint32_t)START_OF_RESERVED_SPACE_FOR_SNAPSHOT + (sizeof(DTC_SnapshotData_t)*AMOUNT_OF_SNAPSHOT))
+#define START_OF_RESERVED_SPACE_FOR_STOREDDATA      ALIGN4(END_OF_RESERVED_SPACE_FOR_SNAPSHOT)
+#define END_OF_RESERVED_SPACE_FOR_STOREDDATA        (START_OF_RESERVED_SPACE_FOR_STOREDDATA + ((uint32_t)sizeof(DTC_StoredData_t) * (uint32_t)AMOUNT_OF_STOREDDATA))
 
-/** @brief NVm config, may be changed depending on targets memory. Start of Memory block */
-#define START_OF_RESERVED_SPACE_FOR_STOREDDATA      ((uint32_t)END_OF_RESERVED_SPACE_FOR_SNAPSHOT + 1u)
-/** @brief Memory size in NVM for storedData depending on AMOUNT_OF_STOREDDATA. Indicates the end. */
-#define END_OF_RESERVED_SPACE_FOR_STOREDDATA        ((uint32_t)START_OF_RESERVED_SPACE_FOR_STOREDDATA + (sizeof(DTC_StoredData_t)*AMOUNT_OF_STOREDDATA))
+#define START_OF_RESERVED_SPACE_FOR_EXTENDEDDATA    ALIGN4(END_OF_RESERVED_SPACE_FOR_STOREDDATA)
+#define END_OF_RESERVED_SPACE_FOR_EXTENDEDDATA      (START_OF_RESERVED_SPACE_FOR_EXTENDEDDATA + ((uint32_t)sizeof(DTC_ExtendedData_t) * (uint32_t)AMOUNT_OF_EXTENDEDDATA))
 
-/** @brief NVm config, may be changed depending on targets memory. Start of Memory block */
-#define START_OF_RESERVED_SPACE_FOR_EXTENDEDDATA    ((uint32_t)END_OF_RESERVED_SPACE_FOR_STOREDDATA + 1u)
-/** @brief Memory size in NVM for extData depending on AMOUNT_OF_EXTENDEDDATA. Indicates the end. */
-#define END_OF_RESERVED_SPACE_FOR_EXTENDEDDATA      ((uint32_t)START_OF_RESERVED_SPACE_FOR_EXTENDEDDATA + (sizeof(DTC_StoredData_t)*AMOUNT_OF_EXTENDEDDATA))
+#define NVM_STORAGE_TOTAL_SIZE                      ALIGN4(END_OF_RESERVED_SPACE_FOR_EXTENDEDDATA)
 
-
-/* Types *********************************************************************/
 
 
 /* Variables *****************************************************************/
+/** @brief RAM working shadow buffer */
+static uint8_t NvmEmulator_MemorySpace[NVM_STORAGE_TOTAL_SIZE];
 
-/** @brief Stack allocation for emulated nvm. */
-static uint8_t NvmEmulator_MemorySpace[24*1024];
+/** @brief Wear-leveling parameter store handle */
+static SYN_ParamStore s_nvmStore;
+static bool s_nvmInitialized = false;
+
+static void charon_NvmDriver_reanchorPointers(void)
+{
+    DTC_header_t *hdr = (DTC_header_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
+    if (hdr->iniDone != 0xDEADBEEF)
+    {
+        return;
+    }
+
+    /* Re-anchor pointers in RAM for DTCs and snapshots */
+    for (uint16_t i = 0; i < AMOUNT_OF_DTC; i++)
+    {
+        DTC_t *dtc = (DTC_t *)charon_NvmDriver_getNvmAddress_for_DTC(i, false);
+        for (uint8_t s = 0; s < NVM_AMOUNT_OF_SNAPSHOTS; s++)
+        {
+            if (dtc->DTCSnapshotLength[s] > 0)
+            {
+                uint8_t snapRecNum = dtc->DTCSnapshotRecordNumber[s];
+                dtc->DTCSnapshotAddress[s] = (DTC_SnapshotData_t *)charon_NvmDriver_getNvmAddress_for_Snapshot(snapRecNum);
+            }
+            else
+            {
+                dtc->DTCSnapshotAddress[s] = NULL;
+            }
+        }
+        for (uint8_t d = 0; d < NVM_AMOUNT_OF_DATARECORDS; d++)
+        {
+            if (dtc->DTCStoredDataLength[d] > 0)
+            {
+                uint8_t recNum = dtc->DTCStoredDataRecordNumber[d];
+                dtc->DTCStoredDataAddress[d] = (DTC_StoredData_t *)charon_NvmDriver_getNvmAddress_for_StoredData(recNum);
+            }
+            else
+            {
+                dtc->DTCStoredDataAddress[d] = NULL;
+            }
+        }
+        for (uint8_t e = 0; e < NVM_AMOUNT_OF_EXTENDED; e++)
+        {
+            if (dtc->DTCExtendedDataLength[e] > 0)
+            {
+                uint8_t recNum = dtc->DTCExtDataRecordNumber[e];
+                dtc->DTCExtendedDataAddress[e] = (DTC_ExtendedData_t *)charon_NvmDriver_getNvmAddress_for_ExtendedData(recNum);
+            }
+            else
+            {
+                dtc->DTCExtendedDataAddress[e] = NULL;
+            }
+        }
+    }
+}
+
+
+void charon_NvmDriver_init(void)
+{
+    /* Initialize parameter store with 2 flash sectors (4KB total wear-leveling pool) */
+    SYN_Status status = syn_param_init(&s_nvmStore, FLASH_PARAM_START, 2, sizeof(NvmEmulator_MemorySpace));
+
+    if (status == SYN_OK)
+    {
+        /* Load latest persistent record */
+        if (syn_param_load(&s_nvmStore, NvmEmulator_MemorySpace) == SYN_OK)
+        {
+            DTC_header_t *hdr = (DTC_header_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
+            if (hdr->iniDone == 0xDEADBEEF)
+            {
+                charon_NvmDriver_reanchorPointers();
+                s_nvmInitialized = true;
+                return;
+            }
+        }
+    }
+    /* First boot or blank flash: format default tables */
+    memset(NvmEmulator_MemorySpace, 0, sizeof(NvmEmulator_MemorySpace));
+    s_nvmInitialized = true;
+    charon_DTC_LookupTable_header_SET();
+    charon_NvmDriver_flush();
+}
+
+uds_responseCode_t charon_NvmDriver_flush(void)
+{
+    if (!s_nvmInitialized)
+    {
+        charon_NvmDriver_init();
+    }
+    /* Ensure header CRC16 is updated */
+    charon_StoredDataTransmissionFunctionalUnit_CRC16_update();
+    SYN_Status status = syn_param_save(&s_nvmStore, NvmEmulator_MemorySpace);
+    if (status == SYN_OK)
+    {
+        return uds_responseCode_PositiveResponse;
+    }
+    return uds_responseCode_GeneralProgrammingFailure;
+} 
+
+
 
 
 /* Private Function Definitions **********************************************/
 
 /* Interfaces  ***************************************************************/
 
-bool charon_NvmDriver_checkAddressRange (uint32_t address, uint32_t length)
+bool charon_NvmDriver_checkAddressRange(uint32_t address, uint32_t length)
 {
-    return (address + length) < sizeof(NvmEmulator_MemorySpace);
+    return (address + length) <= sizeof(NvmEmulator_MemorySpace);
 }
 
-uds_responseCode_t charon_NvmDriver_write (uint32_t address, const uint8_t* data, uint32_t size)
+uds_responseCode_t charon_NvmDriver_write(uint32_t address, const uint8_t* data, uint32_t size)
 {
-    memcpy(&NvmEmulator_MemorySpace[address], data, size);
-    return uds_responseCode_PositiveResponse;
+	 if (!charon_NvmDriver_checkAddressRange(address, size))
+	 {
+		 return uds_responseCode_RequestOutOfRange;
+	 }
+	 memcpy(&NvmEmulator_MemorySpace[address], data, size);
+	 return charon_NvmDriver_flush();
 }
 
 void charon_NvmDriver_read (uint32_t address, uint8_t* data, uint32_t size)
 {
-    memcpy(data, &NvmEmulator_MemorySpace[address], size);
+	if (charon_NvmDriver_checkAddressRange(address, size))
+	{
+	 memcpy(data, &NvmEmulator_MemorySpace[address], size);
+	}
 }
 
 void charon_NvmDriver_erase (void)
 {
-    memset(NvmEmulator_MemorySpace, 0xFF, sizeof(NvmEmulator_MemorySpace));
+	syn_param_erase_all(&s_nvmStore);
+	memset(NvmEmulator_MemorySpace, 0, sizeof(NvmEmulator_MemorySpace));
+	charon_DTC_LookupTable_header_SET();
+	charon_NvmDriver_flush();
 }
 
 uint32_t charon_NvmDriver_getNvmAddress (void)
 {
-    return (uint32_t) &NvmEmulator_MemorySpace[0];
+    return (uint32_t)&NvmEmulator_MemorySpace[0];
 }
 
 //###########################################################################################################
@@ -81,42 +185,37 @@ uint32_t charon_NvmDriver_getNvmAddress (void)
 
 uint32_t charon_NvmDriver_getMirrorNvmAddress (uint16_t input, bool header)
 {
-    uint8_t header_bytes = sizeof(DTC_header_t);
-    uint32_t pos = sizeof(DTC_t);
-    if (header)
-    {
-        header_bytes = 0;
-    }
-    return (uint32_t) &NvmEmulator_MemorySpace[START_OF_RESERVED_SPACE_FOR_DTC + header_bytes + (pos * input)]; /** @todo USER: change to your Mirror starting address.*/
+	return charon_NvmDriver_getNvmAddress_for_DTC(input, header);
 }
 
 uint32_t charon_NvmDriver_getNvmAddress_for_DTC (uint16_t input, bool header)
 {
-    uint8_t header_bytes = sizeof(DTC_header_t);
-    uint32_t pos = sizeof(DTC_t);
-    if (header)
-    {
-        header_bytes = 0;
-    }
-    return (uint32_t) &NvmEmulator_MemorySpace[START_OF_RESERVED_SPACE_FOR_DTC + header_bytes + (pos * input)];
+	uint32_t offset = START_OF_RESERVED_SPACE_FOR_DTC;
+
+	if (header)
+	{
+	 return (uint32_t)&NvmEmulator_MemorySpace[offset];
+	}
+	 offset += STORAGE_HEADER + ((uint32_t)sizeof(DTC_t) * (uint32_t)input);
+	 return (uint32_t)&NvmEmulator_MemorySpace[offset];
 }
 
 uint32_t charon_NvmDriver_getNvmAddress_for_Snapshot (uint16_t input)
 {
-    uint32_t pos = sizeof(DTC_SnapshotData_t);
-    return (uint32_t) &NvmEmulator_MemorySpace[START_OF_RESERVED_SPACE_FOR_SNAPSHOT + (pos * input)];
+	uint32_t offset = START_OF_RESERVED_SPACE_FOR_SNAPSHOT + ((uint32_t)sizeof(DTC_SnapshotData_t) * (uint32_t)input);
+	return (uint32_t)&NvmEmulator_MemorySpace[offset];
 }
 
 uint32_t charon_NvmDriver_getNvmAddress_for_StoredData (uint16_t input)
 {
-    uint32_t pos = sizeof(DTC_StoredData_t);
-    return (uint32_t) &NvmEmulator_MemorySpace[START_OF_RESERVED_SPACE_FOR_STOREDDATA + (pos * input)];
+	uint32_t offset = START_OF_RESERVED_SPACE_FOR_STOREDDATA + ((uint32_t)sizeof(DTC_StoredData_t) * (uint32_t)input);
+	return (uint32_t)&NvmEmulator_MemorySpace[offset];
 }
 
 uint32_t charon_NvmDriver_getNvmAddress_for_ExtendedData (uint16_t input)
 {
-    uint32_t pos = sizeof(DTC_ExtendedData_t);
-    return (uint32_t) &NvmEmulator_MemorySpace[START_OF_RESERVED_SPACE_FOR_EXTENDEDDATA + (pos * input)];
+	uint32_t offset = START_OF_RESERVED_SPACE_FOR_EXTENDEDDATA + ((uint32_t)sizeof(DTC_ExtendedData_t) * (uint32_t)input);
+	return (uint32_t)&NvmEmulator_MemorySpace[offset];
 }
 
 //###########################################################################################################

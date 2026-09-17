@@ -672,6 +672,7 @@ void charon_DTC_LookupTable_header_SET (void)
 
     DTC_header->iniDone = 0xDEADBEEF;
     charon_StoredDataTransmissionFunctionalUnit_CRC16_update();
+	charon_NvmDriver_flush();
     CHARON_INFO("DTC header is now set.\r\n");
 }
 

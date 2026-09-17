@@ -29,6 +29,7 @@
 #include "uds.h"
 #include "isotp_socket.h"
 #include "showcaseData.h"
+#include "NvmEmulator.h"
 
 
 /* USER CODE END Includes */
@@ -102,6 +103,7 @@ int main(void)
 
   isotp_socket_init();
   charon_init(isotp_socket);
+  charon_NvmDriver_init(); /* Load persistent DTCs from Flash */
   //DTC_dataPackage();
  
 

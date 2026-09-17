@@ -29,25 +29,25 @@ struct __attribute__((packed)) name
 #endif
 
 /** Helper Function to handle the big and little endian stuff*/
-#ifdef __GNUC__
+//#ifdef __GNUC__
 #define REV32(input)        (((input & 0xFF000000) >> 24) | ((input & 0x00FF0000) >> 8) | ((input & 0x0000FF00) << 8) | ((input & 0x000000FF) << 24))                       
-#endif
-#ifdef __ARMCC_VERSION
-#define REV32(input)       ( __rev(input))
-#endif
+//#endif
+//#ifdef __ARMCC_VERSION
+//#define REV32(input)       ( __rev(input))
+//#endif
 
 /** Helper Function to handle the big and little endian stuff*/
-#ifdef __GNUC__
+//#ifdef __GNUC__
 static inline uint16_t REV16 (uint16_t input)
 {
     uint16_t rolled = input;
     rolled = ((rolled & 0xFF00) >> 8) | ((rolled & 0x00FF) << 8);  
     return rolled;
 }
-#endif
-#ifdef __ARMCC_VERSION
-#define REV16(input)       ( __rev16(input))
-#endif
+//#endif
+//#ifdef __ARMCC_VERSION
+//#define REV16(input)       ( __rev16(input))
+//#endif
 /* Types *********************************************************************/
 
 typedef enum

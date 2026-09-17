@@ -14,7 +14,22 @@
 /* Types *********************************************************************/
 
 /* Variables *****************************************************************/
+/**
+ * @brief Initializes the NVM storage engine.
+ * Scans flash for the latest valid wear-leveled slot and loads it into the
+ * RAM shadow buffer. If flash is blank or uninitialized, it formats default
+ * tables and commits them to flash.
+ */
+void charon_NvmDriver_init(void);
 
+/**
+ * @brief Commits the current RAM shadow buffer to Flash with wear leveling.
+ * Calculates CRC16 and writes to the next available flash slot.
+ *
+ * @retval uds_responseCode_PositiveResponse          Flash written successfully
+ * @retval uds_responseCode_GeneralProgrammingFailure Flash write failed
+ */
+uds_responseCode_t charon_NvmDriver_flush(void);
 /* Interfaces  ***************************************************************/
 
 /**
@@ -24,10 +39,10 @@
  * 
  * @param address      The start address of the memory range
  * @param length       The length of the range
- * @retval  true       Memory range is valid
- * @retval  false      Memory range is not valid
+ * @retval true        Memory range is valid
+ * @retval false       Memory range is not valid
  */
-bool charon_NvmDriver_checkAddressRange (uint32_t address, uint32_t length);
+bool charon_NvmDriver_checkAddressRange(uint32_t address, uint32_t length);
 
 /**
  * @brief Writes data to non volatile memory.
@@ -36,11 +51,9 @@ bool charon_NvmDriver_checkAddressRange (uint32_t address, uint32_t length);
  * @param address      The start address of write operation
  * @param data         The data to write
  * @param size         The amount of bytes to write
- * @retval  charon_responseCode_PositiveResponse            Memory is written successfully
- * @retval  charon_responseCode_GeneralProgrammingFailure   Error while programming
- * @retval  charon_responseCode_VoltageTooHigh              Voltage is too high for programming
- * @retval  charon_responseCode_VoltageTooLow               Voltage is too low for programming
- */
+ * @retval uds_responseCode_PositiveResponse          Memory written successfully
+ * @retval uds_responseCode_GeneralProgrammingFailure Error while programming
+*/
 uds_responseCode_t charon_NvmDriver_write (uint32_t address, const uint8_t* data, uint32_t size);
 
 /**
