@@ -1,0 +1,7 @@
+stm32f103/storeddatatransmissionfunctionalunit.o: \
+  ..\Library\StoredDataTransmissionFunctionalUnit.c ..\Library\crc16.h \
+  ..\Library\uds_types.h ..\Library\DTC_LookupTable.h \
+  ..\Library\StoredDataTransmissionFunctionalUnit.h \
+  ..\Library\uds_config.h ..\Library\interface_debug.h ..\Library\uds.h \
+  ..\TP\isotp_socket.h ..\Library\negativeResponse.h \
+  ..\Library\NvmEmulator.h ..\Library\SessionAndServiceControl.h
