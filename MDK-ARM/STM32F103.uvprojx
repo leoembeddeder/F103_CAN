@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;..\SyntropicOS;..\flash;..\Library;..\TP;..\DTC</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;..\SyntropicOS;..\flash;..\Library;..\TP</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -554,16 +554,6 @@
               <FileName>isotp_socket.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\TP\isotp_socket.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>DTC</GroupName>
-          <Files>
-            <File>
-              <FileName>showcaseData.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\DTC\showcaseData.c</FilePath>
             </File>
           </Files>
         </Group>

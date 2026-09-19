@@ -21,6 +21,7 @@
 #define FLASH_PARAM_START (STM32F103_FLASH_BASE + (64U - 4U) * STM32F103_PAGE_SIZE)  /* 0x0800F000 */
 #endif 
 
+
 uint32_t GetPage(uint32_t Addr);
 
 SYN_Status syn_port_flash_write_word(uint32_t addr, const void *buf, size_t len);

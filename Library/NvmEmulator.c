@@ -254,7 +254,7 @@ void charon_NvmDriver_init(void)
     /* Initialize parameter store with 2 flash sectors (4KB total wear-leveling pool) */
     SYN_Status status = syn_param_init(&s_nvmStore, FLASH_PARAM_START, 2, sizeof(NvmEmulator_MemorySpace));
 
-    if (status == SYN_OK)
+    //if (status == SYN_OK)
     {
         /* Load latest persistent record */
         if (syn_param_load(&s_nvmStore, NvmEmulator_MemorySpace) == SYN_OK)

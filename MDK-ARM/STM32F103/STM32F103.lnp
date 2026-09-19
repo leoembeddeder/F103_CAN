@@ -27,7 +27,6 @@
 "stm32f103\isotp.o"
 "stm32f103\isotp_user.o"
 "stm32f103\isotp_socket.o"
-"stm32f103\showcasedata.o"
 "stm32f103\crc16.o"
 "stm32f103\datalookuptable.o"
 "stm32f103\datatransmissionfunctionalunit.o"

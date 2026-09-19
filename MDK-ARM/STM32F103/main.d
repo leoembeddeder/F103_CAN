@@ -25,5 +25,5 @@ stm32f103/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\SyntropicOS\syn_compiler.h ..\SyntropicOS\syn_defs.h \
   ..\SyntropicOS\syn_assert.h ..\SyntropicOS\syn_crc.h \
   ..\SyntropicOS\syn_param.h ..\Library\uds.h ..\TP\isotp_socket.h \
-  ..\Library\uds_config.h ..\DTC\showcaseData.h ..\Library\NvmEmulator.h \
+  ..\Library\uds_config.h ..\Library\NvmEmulator.h \
   ..\Library\uds_types.h
