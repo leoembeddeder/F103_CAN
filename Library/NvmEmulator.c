@@ -45,7 +45,7 @@ static bool s_nvmInitialized = false;
 static void charon_NvmDriver_reanchorPointers(void)
 {
     DTC_header_t *hdr = (DTC_header_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
-    if (hdr->iniDone != 0xDEADBEEF)
+    if (hdr->iniDone != NVM_SCHEMA_MAGIC)
     {
         return;
     }
@@ -403,13 +403,13 @@ void charon_NvmDriver_init(void)
     /* Initialize parameter store with 2 flash sectors (4KB total wear-leveling pool) */
     SYN_Status status = syn_param_init(&s_nvmStore, FLASH_PARAM_START, 2, sizeof(NvmEmulator_MemorySpace));
 
-    //if (status == SYN_OK)
+    if (status == SYN_OK)
     {
         /* Load latest persistent record */
         if (syn_param_load(&s_nvmStore, NvmEmulator_MemorySpace) == SYN_OK)
         {
             DTC_header_t *hdr = (DTC_header_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
-            if (hdr->iniDone == 0xDEADBEEF && hdr->currentDTCCounter > 0)
+            if (hdr->iniDone == NVM_SCHEMA_MAGIC && hdr->currentDTCCounter > 0)
             {
                 charon_NvmDriver_reanchorPointers();
                 s_nvmInitialized = true;

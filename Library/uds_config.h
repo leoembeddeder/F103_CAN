@@ -20,13 +20,13 @@
 
 
 /** @brief For DTC Nvm size, NVm config may be changed depending on targets memory.*/
-#define AMOUNT_OF_DTC                                   ((uint16_t)16u)
+#define AMOUNT_OF_DTC                                   ((uint16_t)12u)
 /** @brief For snapshot Nvm size, NVm config may be changed depending on targets memory. AMOUNT_OF_SNAPSHOT and AMOUNT... are only uint8_t so only 255 can be saved max. */
-#define AMOUNT_OF_SNAPSHOT                              ((uint8_t) 4u)
+#define AMOUNT_OF_SNAPSHOT                              ((uint8_t) 8u)
 /** @brief For storedData Nvm size, NVm config may be changed depending on targets memory. AMOUNT_OF_SNAPSHOT and AMOUNT... are only uint8_t so only 255 can be saved max. */
-#define AMOUNT_OF_STOREDDATA                            ((uint8_t) 4u)
+#define AMOUNT_OF_STOREDDATA                            ((uint8_t) 8u)
 /** @brief For extData Nvm size, NVm config may be changed depending on targets memory. AMOUNT_OF_SNAPSHOT and AMOUNT... are only uint8_t so only 255 can be saved max. */
-#define AMOUNT_OF_EXTENDEDDATA                          ((uint8_t) 4u)
+#define AMOUNT_OF_EXTENDEDDATA                          ((uint8_t) 8u)
 
 
 /** @brief Used to define how many addresses the USER wants to save per DTC and datatype. */

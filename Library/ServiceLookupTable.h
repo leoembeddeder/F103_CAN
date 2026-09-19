@@ -18,6 +18,17 @@
 /** @brief Cast and shift charon_sscType_secured for later usage in serviceLookupTable. */
 #define SESSION_SECURED			((uint32_t) 1u << (uint8_t)charon_sscType_secured)
 
+/** @name Addressing Types */
+#define ADDRESS_PHYSICAL        ((uint32_t) 1u << 0)
+#define ADDRESS_FUNCTIONAL      ((uint32_t) 1u << 1)
+#define ADDRESS_BOTH            (ADDRESS_PHYSICAL | ADDRESS_FUNCTIONAL)
+
+/** @name Security Access Levels */
+#define SECURITY_LOCKED         ((uint32_t) 1u << 0)
+#define SECURITY_LEVEL_1        ((uint32_t) 1u << 1)
+#define SECURITY_LEVEL_2        ((uint32_t) 1u << 2)
+#define SECURITY_ALL            (SECURITY_LOCKED | SECURITY_LEVEL_1 | SECURITY_LEVEL_2)
+
 /* Types *********************************************************************/
 
 /** @brief Service Function Signature */
@@ -30,6 +41,8 @@ typedef struct
     uint32_t                    sessionMask;        /**< Mask for current session. */
     charonUdsFunctionSignature  serviceRunable;     /**< Function called to run Service. */ 
     uint32_t                    emcryptionMask;     /**< Type of used encryption. */
+    uint32_t                    addressMask;        /**< Mask for supported addressing modes. */
+    uint32_t                    securityMask;       /**< Mask for required security levels. */
 } charon_serviceObject_t;
 
 /* Interfaces ****************************************************************/

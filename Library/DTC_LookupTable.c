@@ -628,7 +628,7 @@ void charon_deleteDTC (uint8_t DTCHighByte, uint8_t DTCMiddleByte, uint8_t DTCLo
     if (delAll)
     {
         memset(DTC_header,0x00,sizeof(DTC_header_t));
-        DTC_header->iniDone = 0xDEADBEEF;
+        DTC_header->iniDone = NVM_SCHEMA_MAGIC;
         charon_StoredDataTransmissionFunctionalUnit_CRC16_update();
     }
 }
@@ -646,7 +646,7 @@ void charon_DTC_LookupTable_header_SET (void)
     DTC_header->sizeOfStoredDataLookupTable = sizeof(DTC_header->nvmStoredDataLookupTable);
     DTC_header->sizeOfExtDataLookupTable = sizeof(DTC_header->nvmExtDataLookupTable);
 
-    DTC_header->iniDone = 0xDEADBEEF;
+    DTC_header->iniDone = NVM_SCHEMA_MAGIC;
     charon_StoredDataTransmissionFunctionalUnit_CRC16_update();
 	charon_NvmDriver_flush();
     CHARON_INFO("DTC header is now set.\r\n");

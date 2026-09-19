@@ -52,6 +52,31 @@ typedef enum DTCSubfunction_t_public
     amountOFSubfunctions
 }DTCSubfunction_t;
 
+/* OBD Extended Data Format per Issue #58 & #66 */
+typedef struct {
+    uint8_t fault_occur_counter;
+    uint8_t fault_pending_counter;
+    uint8_t aged_counter;
+    uint8_t ageing_counter;
+} OBD_Extended_Data_Format;
+
+/* Snapshot Time & Date Structure Definition */
+typedef struct {
+    uint8_t second;
+    uint8_t minute;
+    uint8_t hour;
+    uint8_t day;
+    uint8_t month;
+    uint8_t year;
+} OBD_Global_Snapshot_DataTime_Format;
+
+/* DTC Global Snapshot Data Structure Definition */
+typedef struct {
+    uint8_t voltage;           /* Battery supply voltage in 0.1V units (e.g. 120 = 12.0V) */
+    uint8_t global_power_mode; /* Global power mode (e.g. 0x01=OFF, 0x02=ACC, 0x03=ON, 0x04=START) */
+    OBD_Global_Snapshot_DataTime_Format st_global_snapshot_datatime;
+} OBD_Global_Snapshot_Format;
+
 
 /** @brief Used to determine the save location in userDef functions. */
 typedef enum userDefMemoryList       /** @todo USER: For future implementation of DTC 0x17-0x19. Just a dummy atm. */
