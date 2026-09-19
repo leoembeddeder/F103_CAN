@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stddef.h>
 #include <string.h>
 #include "crc16.h"
 #include "uds_types.h"
@@ -240,6 +241,15 @@ static uds_responseCode_t DTCWithPermanentStatus (const uint8_t * receiveBuffer,
 static uds_responseCode_t DTCExtDataRecordByRecordNumber (const uint8_t * receiveBuffer, uint32_t receiveBufferSize);
 
 /**
+ * @brief Read DTC Information (SID 0x19) Subfunction 0x42 reportWWHOBDDTCByMaskRecord.
+ * 
+ * @param receiveBuffer             Payload.
+ * @param receiveBufferSize         Payload size.
+ * @return uds_responseCode_t 
+ */
+static uds_responseCode_t WWHOBDDTCByMaskRecord (const uint8_t * receiveBuffer, uint32_t receiveBufferSize);
+
+/**
  * @brief Searches for the first empty Bit in found Byte cell. Splits the found Byte in low and half parts until found.
  * 
  * @param input                     In table Found Byte.
@@ -442,8 +452,6 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ClearDiagnosticIn
 uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformation (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
 {
     DTC_header_t* DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0,true);
-    uint16_t crc_check = 0x00;
-    uint8_t data[STORAGE_HEADER - 2u];
 
     CHARON_INFO("Read DTC Information Service SID:0x19 Triggered\r\n");
 
@@ -454,15 +462,15 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformatio
     }
 
     // CRC check before any search in Nvm.
-    memcpy(data,DTC_header, (STORAGE_HEADER - 2u));
-
-    crc_check = (uint16_t)charon_crc16_update(0x00,&data,(STORAGE_HEADER - 2u));
-    crc_check = (uint16_t)charon_crc16_finalize(crc_check);
-    if ((crc_check - (uint16_t)DTC_header->CRC16Checksum) != 0)
+	size_t length = offsetof(DTC_header_t, CRC16Checksum);
+	crc16_t crc_check = charon_crc16_init();
+	crc_check = charon_crc16_update(crc_check, DTC_header, length);
+	crc_check = charon_crc16_finalize(crc_check);
+	if ((uint16_t)crc_check != DTC_header->CRC16Checksum)
     {
         // CRC16 failed, something went wrong in the Nvm.
         charon_sendNegativeResponse(uds_responseCode_FailurePreventsExecutionOfRequestedAction, uds_sid_ReadDtcInformation);
-        CHARON_ERROR("NVM CRC16 check failed! Something went wrong and data could be corrupt.\r\n");
+        CHARON_ERROR("NVM CRC16 check failed! Expected 0x%04X, calculated 0x%04X\r\n", DTC_header->CRC16Checksum, (uint16_t)crc_check);
         return uds_responseCode_FailurePreventsExecutionOfRequestedAction;
     }
 
@@ -637,6 +645,11 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformatio
         bool mirror =  false;
         return DTCExtDataRecordByDTCNumber(receiveBuffer, receiveBufferSize, mirror, userDefMemory);
     }
+	case reportWWHOBDDTCByMaskRecord:						 //0x42
+	{
+	 CHARON_INFO("Sub 0x42: reportWWHOBDDTCByMaskRecord start.\r\n");
+	 return WWHOBDDTCByMaskRecord(receiveBuffer, receiveBufferSize);
+	}
 
     default:
         // Subfunction not supported.
@@ -791,15 +804,11 @@ uint8_t charon_StoredDataTransmissionFunctionalUnit_get_total_userDefExtDataReco
 void charon_StoredDataTransmissionFunctionalUnit_CRC16_update (void)
 {
     DTC_header_t* DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0,true);
-    uint16_t length = (sizeof(DTC_header_t)-2u);
-    uint8_t data[length];
-
-    memcpy(data,DTC_header, length);
-    // Resetting the checksum.
-    DTC_header->CRC16Checksum = charon_crc16_init();
-    DTC_header->CRC16Checksum = (uint16_t)charon_crc16_update(0x00,&data,length);
-    // Complete CRC16.
-    DTC_header->CRC16Checksum = (uint16_t)charon_crc16_finalize(DTC_header->CRC16Checksum);
+	
+	size_t length = offsetof(DTC_header_t, CRC16Checksum);
+	crc16_t crc = charon_crc16_init();
+	crc = charon_crc16_update(crc, DTC_header, length);
+	DTC_header->CRC16Checksum = (uint16_t)charon_crc16_finalize(crc);
 }
 
 
@@ -986,7 +995,7 @@ static uds_responseCode_t DTCSnapshotRecordByDTCNumber (const uint8_t * receiveB
     {
         if (NOT_SUPPORTED_DTC[i] == input_nr)
         {
-            charon_sendNegativeResponse(uds_responseCode_RequestOutOfRange, uds_sid_ClearDiagnosticInformation);
+            charon_sendNegativeResponse(uds_responseCode_RequestOutOfRange, uds_sid_ReadDtcInformation);
             CHARON_ERROR("Request not valid, DTC not supported.");
             return uds_responseCode_RequestOutOfRange;
         }
@@ -996,7 +1005,7 @@ static uds_responseCode_t DTCSnapshotRecordByDTCNumber (const uint8_t * receiveB
     {
         if (NOT_SUPPORTED_SNAPSHOT[i] == DTCSnapshotRecordNumber)
         {
-            charon_sendNegativeResponse(uds_responseCode_RequestOutOfRange, uds_sid_ClearDiagnosticInformation);
+            charon_sendNegativeResponse(uds_responseCode_RequestOutOfRange, uds_sid_ReadDtcInformation);
             CHARON_ERROR("Request not valid, SnapShot not supported.");
             return uds_responseCode_RequestOutOfRange;
         }
@@ -1020,62 +1029,52 @@ static uds_responseCode_t DTCSnapshotRecordByDTCNumber (const uint8_t * receiveB
 
     if (matchedDTC != NULL)
     {
-        if (matchedDTC->NumberOfSavedSnapshots > 0)
+		bool snapshotFound = false;
+		for (uint8_t i = 0; i < NVM_AMOUNT_OF_SNAPSHOTS; i++)
         {
-            // If 0xFF was input by user, all Snapshots shall be printed.
-            if (DTCSnapshotRecordNumber == PRINT_ALL)
+            if (matchedDTC->DTCSnapshotLength[i] > 0 && matchedDTC->DTCSnapshotAddress[i] != NULL)
             {
-
-                for (uint8_t i = 0; i < sizeof(matchedDTC->DTCSnapshotRecordNumber); i++)
+				if ((DTCSnapshotRecordNumber == PRINT_ALL) ||
+				    (matchedDTC->DTCSnapshotRecordNumber[i] == DTCSnapshotRecordNumber))
                 {
-                    if (matchedDTC->DTCSnapshotLength[i] != 0x00)
+                    if ((length + lengthOfDTC + 1u + 1u + 1u + (uint16_t)matchedDTC->DTCSnapshotLength[i]) > MAX_TX_BUFFER_SIZE)
                     {
-                        counter++;
-                    }  
+					
+						charon_sendNegativeResponse(uds_responseCode_ResponseTooLong, uds_sid_ReadDtcInformation);
+						CHARON_ERROR("Response is too long! Maximum size is %i.", MAX_TX_BUFFER_SIZE);
+						return uds_responseCode_ResponseTooLong;
+					}
+					snapshotFound = true;
+					memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
+					length += lengthOfDTC;
+					s_buffer[length++] = matchedDTC->statusOfDTC;
+					s_buffer[length++] = matchedDTC->DTCSnapshotRecordNumber[i];
+					s_buffer[length++] = matchedDTC->DTCSnapshotAddress[i]->DTCSnapshotDataRecordNumberOfIdentifiers;
+					memcpy(&s_buffer[length], matchedDTC->DTCSnapshotAddress[i]->DTCSnapshotDataPayload, (uint16_t)matchedDTC->DTCSnapshotLength[i]);
+					length += (uint16_t)matchedDTC->DTCSnapshotLength[i];
+
+					if (DTCSnapshotRecordNumber != PRINT_ALL)
+					{
+					 	break;
+					}
                 }
-            }
-            else
-            {
-                counter = 1;
-            }
-            
-            for (uint8_t i = 0 ; i < counter; i++)
-            {
-                // Check if the new input will fit into the buffer.
-                if((length + lengthOfDTC + 1u + 1u + 1u + (uint16_t)matchedDTC->DTCSnapshotLength[i]) > MAX_TX_BUFFER_SIZE)
-                {
-                    // Too many DTC found, 
-                    charon_sendNegativeResponse(uds_responseCode_ResponseTooLong, uds_sid_ReadDtcInformation);
-                    CHARON_ERROR("Response is too long! Maximum size is %i.", MAX_TX_BUFFER_SIZE);
-                    return uds_responseCode_ResponseTooLong;
-                }
-                // Building response buffer.
-                memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
-                length += lengthOfDTC;
-                memcpy(&s_buffer[length], &matchedDTC->statusOfDTC, 1u);
-                length++;
-                memcpy(&s_buffer[length], &matchedDTC->DTCSnapshotRecordNumber[i], 1u);
-                length++;
-                memcpy(&s_buffer[length], &matchedDTC->DTCSnapshotAddress[i]->DTCSnapshotDataRecordNumberOfIdentifiers, 1u);
-                length++;
-                memcpy(&s_buffer[length], &matchedDTC->DTCSnapshotAddress[i]->DTCSnapshotDataPayload[0], (uint16_t)matchedDTC->DTCSnapshotLength[i]);
-                length += (uint16_t)matchedDTC->DTCSnapshotLength[i];
             }
         }
-		 else
-		 {
-			 /* ISO 14229-1 Table 281: DTC matched but no snapshots saved */
-			 memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
-			 length += lengthOfDTC;
-			 s_buffer[length++] = matchedDTC->statusOfDTC;
-		 }
-	 }
+
+		if (!snapshotFound)
+		{
+		  /* ISO 14229-1 Table 281: DTC matched but no snapshots saved */
+		  memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
+		  length += lengthOfDTC;
+		  s_buffer[length++] = matchedDTC->statusOfDTC;
+		}
+	}
 	else
 	{
-	 /* When no DTC match was found */
-	 memcpy(&s_buffer[length], &receiveBuffer[2], lengthOfDTC);
-	 length += lengthOfDTC;
-	 s_buffer[length++] = 0x00u;
+		/* When no DTC match was found: echo requested DTC with status 0x00 */
+		memcpy(&s_buffer[length], &receiveBuffer[2], lengthOfDTC);
+		length += lengthOfDTC;
+		s_buffer[length++] = 0x00u;
 	}
 
     charon_sscTxMessage(s_buffer,length);
@@ -1224,94 +1223,50 @@ static uds_responseCode_t DTCExtDataRecordByDTCNumber (const uint8_t * receiveBu
 
     if (matchedDTC != NULL)
     {
-        if (matchedDTC->NumberOfSavedExtendedData > 0)
+		bool extFound = false;
+		for (uint8_t i = 0; i < NVM_AMOUNT_OF_EXTENDED; i++)
         {
-#if CHARON_CONFIG_OBD_SUPPORT        
-            // OBD case, if 0xFE was input by user, all OCB shall be printed.
-            if (DTCExtDataRecordNumber == PRINT_ALL_OBD)
+			if (matchedDTC->DTCExtendedDataLength[i] > 0 && matchedDTC->DTCExtendedDataAddress[i] != NULL)
             {
-                for (uint8_t i = 0; i < sizeof(matchedDTC->DTCExtDataRecordNumber); i++)
+				if ((DTCExtDataRecordNumber == PRINT_ALL) ||
+				    (matchedDTC->DTCExtDataRecordNumber[i] == DTCExtDataRecordNumber))
                 {
-                    if ((matchedDTC->DTCExtDataRecordNumber >= 0x90) && (matchedDTC->DTCExtDataRecordNumber <= 0xEF))
+                    if ((length + lengthOfDTC + 1u + 1u + (uint16_t)matchedDTC->DTCExtendedDataLength[i]) > MAX_TX_BUFFER_SIZE)
                     {
-                        // Check if the new input will fit into the buffer.
-                        if((length + lengthOfDTC + 1u + 1u + (uint16_t)matchedDTC->DTCExtendedDataLength[i]) > MAX_TX_BUFFER_SIZE)
-                        {
-                            // Too many DTC found, 
-                            charon_sendNegativeResponse(uds_responseCode_ResponseTooLong, uds_sid_ReadDtcInformation);
-                            CHARON_ERROR("Response is too long! Maximum size is %i.", MAX_TX_BUFFER_SIZE);
-                            return uds_responseCode_ResponseTooLong;
-                        }
-
-                        memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
-                        length += lengthOfDTC;
-                        memcpy(&s_buffer[length], &matchedDTC->statusOfDTC, 1u);
-                        length++;
-                        memcpy(&s_buffer[length], &matchedDTC->DTCExtDataRecordNumber[i], 1u);
-                        length++;
-                        memcpy(&s_buffer[length], &matchedDTC->DTCExtendedDataAddress[i]->DTCExtendedDataPayload, (uint16_t)matchedDTC->DTCExtendedDataLength[i]);
-                        length += (uint16_t)matchedDTC->DTCExtendedDataLength[i];
+						charon_sendNegativeResponse(uds_responseCode_ResponseTooLong, uds_sid_ReadDtcInformation);
+						CHARON_ERROR("Response is too long! Maximum size is %i.", MAX_TX_BUFFER_SIZE);
+						return uds_responseCode_ResponseTooLong;
                     }
-                }
-            }          
-#endif     
-            if (DTCExtDataRecordNumber != PRINT_ALL_OBD)
-            {
-                // If 0xFF was input by user, all ExtData shall be printed.
-                if (DTCExtDataRecordNumber == PRINT_ALL)
-                {
-                    recordNumberLoops = matchedDTC->NumberOfSavedExtendedData;
-                    printAll = true;
-                }
-                else
-                {
-                    recordNumberLoops = 0x01; 
-                }
+					extFound = true;
+					memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
+					length += lengthOfDTC;
+					s_buffer[length++] = matchedDTC->statusOfDTC;
+					s_buffer[length++] = matchedDTC->DTCExtDataRecordNumber[i];
+					memcpy(&s_buffer[length], matchedDTC->DTCExtendedDataAddress[i]->DTCExtendedDataPayload, (uint16_t)matchedDTC->DTCExtendedDataLength[i]);
+					length += (uint16_t)matchedDTC->DTCExtendedDataLength[i];
 
-                for (uint8_t i = 0; i < sizeof(matchedDTC->DTCExtDataRecordNumber); i++)
-                {
-                    if (matchedDTC->DTCExtendedDataLength[i] != 0)
+                    if (DTCExtDataRecordNumber != PRINT_ALL)
                     {
-                        if ((matchedDTC->DTCExtDataRecordNumber[i] == DTCExtDataRecordNumber) || (printAll))
-                        {
-                            // Check if the new input will fit into the buffer.
-                            if((length + lengthOfDTC + 1u + 1u + (uint16_t)matchedDTC->DTCExtendedDataLength[i]) > MAX_TX_BUFFER_SIZE)
-                            {
-                                // Too many DTC found, 
-                                charon_sendNegativeResponse(uds_responseCode_ResponseTooLong, uds_sid_ReadDtcInformation);
-                                CHARON_ERROR("Response is too long! Maximum size is %i.", MAX_TX_BUFFER_SIZE);
-                                return uds_responseCode_ResponseTooLong;
-                            }
-
-                            // Building response buffer.
-                            memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
-                            length += lengthOfDTC;
-                            memcpy(&s_buffer[length], &matchedDTC->statusOfDTC, 1u);
-                            length++;
-                            memcpy(&s_buffer[length], &matchedDTC->DTCExtDataRecordNumber[i], 1u);
-                            length++;
-                            memcpy(&s_buffer[length], &matchedDTC->DTCExtendedDataAddress[i]->DTCExtendedDataPayload, (uint16_t)matchedDTC->DTCExtendedDataLength[i]);
-                            length += (uint16_t)matchedDTC->DTCExtendedDataLength[i];
-
-                            recordNumberLoops--;
-                            if (recordNumberLoops == 0)
-                            {
-                                break;
-                            }
-                        }
+						break;
                     }
                 }
             }
         }
+	
+		if (!extFound)
+		{
+			/* ISO 14229-1 Table 285: DTC matched but no extended data saved / matched */
+			memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
+			length += lengthOfDTC;
+			s_buffer[length++] = matchedDTC->statusOfDTC;
+		}
     }
-    
-    if ((matchedDTC == NULL) || (recordNumberLoops != 0))
+    else
     {
-        // When no ExtData was found an echo shall be send back.
+        /* When no DTC match was found: echo requested DTC with status 0x00 */
         memcpy(&s_buffer[length], &receiveBuffer[2], lengthOfDTC);
         length += lengthOfDTC;
-        s_buffer[length] = charon_getDTCStatusAvailabilityMask();
-        length++; 
+        s_buffer[length++] = 0x00u;
     }
 
     charon_sscTxMessage(s_buffer,length);
@@ -1738,6 +1693,64 @@ static uds_responseCode_t DTCExtDataRecordByRecordNumber (const uint8_t * receiv
 }
 
 
+static uds_responseCode_t WWHOBDDTCByMaskRecord (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
+{
+    (void)receiveBufferSize;
+    uint8_t functionalGroupIdentifier = (receiveBuffer != NULL) ? receiveBuffer[2] : 0x33u;
+    uint8_t statusMask = (receiveBuffer != NULL) ? receiveBuffer[3] : 0xFFu;
+    uint8_t severityMask = (receiveBuffer != NULL) ? receiveBuffer[4] : 0xFFu;
+
+    static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
+    uint32_t length = 4u;
+    uint8_t lengthOfDTC = 3u;
+
+    s_buffer[0] = (uds_sid_ReadDtcInformation | (uint8_t)uds_sid_PositiveResponseMask);
+    s_buffer[1] = reportWWHOBDDTCByMaskRecord;
+    s_buffer[2] = functionalGroupIdentifier;
+    s_buffer[3] = charon_getDTCStatusAvailabilityMask();
+
+    DTC_t *DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    DTC_header_t *DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
+    uint32_t countOfSavedDTC = DTC_header->totalDTCCounter;
+
+    uint8_t index;
+    uint8_t number;
+
+    for (uint32_t i = 0; i < countOfSavedDTC; i++)
+    {
+        LOOKUP_CALC(i, index, number);
+        index = (uint8_t)DTC_header->nvmDTCLookupTable[index];
+        number = (0x01 << number);
+
+        if ((index & number) > 0x00)
+        {
+            bool groupMatch = (functionalGroupIdentifier == 0xFFu) || 
+                              (DTC[i].FunctionalGroupIdentifier == functionalGroupIdentifier);
+            bool statusMatch = ((DTC[i].DTCStatusMask & statusMask) != 0u);
+            bool severityMatch = ((DTC[i].DTCSeverityMask & severityMask) != 0u);
+
+            if (groupMatch && statusMatch && severityMatch)
+            {
+                if ((length + 1u + 1u + lengthOfDTC + 1u) > MAX_TX_BUFFER_SIZE)
+                {
+                    charon_sendNegativeResponse(uds_responseCode_ResponseTooLong, uds_sid_ReadDtcInformation);
+                    return uds_responseCode_ResponseTooLong;
+                }
+                /* ISO 14229-1 Table 289: {DTCSeverity, FunctionalGroup, DTCHigh, DTCMid, DTCLow, statusOfDTC} */
+                s_buffer[length++] = DTC[i].DTCSeverityMask;
+                s_buffer[length++] = DTC[i].FunctionalGroupIdentifier;
+                memcpy(&s_buffer[length], &DTC[i].DTCHighByte, lengthOfDTC);
+                length += lengthOfDTC;
+                s_buffer[length++] = DTC[i].statusOfDTC;
+            }
+        }
+    }
+
+    charon_sscTxMessage(s_buffer, length);
+    return uds_responseCode_PositiveResponse;
+}
+
+
 static uint8_t charon_DTC_LookupTable_getBitNumber (uint8_t input)
 {
     uint8_t number;
@@ -1939,20 +1952,20 @@ static void charon_StoredDataTransmissionFunctionalUnit_writeUpdateDTCToNvm (DTC
         // First DTC save.
         if ((DTC_header->FirstFailedDTC == 0) && ((DTCcurrent->DTCStatusMask & TEST_FAILED_CHECK) == TEST_FAILED_CHECK))
         {
-            DTC_header->FirstFailedDTC = (uint32_t)&DTCcurrent;
+            DTC_header->FirstFailedDTC = (uint32_t)DTCcurrent;
         }
         if ((DTC_header->FirstConfirmedDTC == 0) && ((DTCcurrent->DTCStatusMask & CONFIRMED_DTC_CHECK) == CONFIRMED_DTC_CHECK))
         {
-            DTC_header->FirstConfirmedDTC = (uint32_t)&DTCcurrent;
+            DTC_header->FirstConfirmedDTC = (uint32_t)DTCcurrent;
         }
         // Most recent DTC save.
         if ((DTCcurrent->DTCStatusMask & TEST_FAILED_CHECK) == TEST_FAILED_CHECK)
         {
-            DTC_header->MostRecentTestFailed = (uint32_t)&DTCcurrent;
+            DTC_header->MostRecentTestFailed = (uint32_t)DTCcurrent;
         }
         if ((DTCcurrent->DTCStatusMask & CONFIRMED_DTC_CHECK) == CONFIRMED_DTC_CHECK)
         {
-            DTC_header->MostRecentConfirmedDTC = (uint32_t)&DTCcurrent;
+            DTC_header->MostRecentConfirmedDTC = (uint32_t)DTCcurrent;
         }
     }
 }

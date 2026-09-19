@@ -48,7 +48,7 @@ void DTC_dataPackage (void)
 
 
     // All Data is "random" and mostly Magic Numbers as filler.
-    for (uint32_t i = 0; i < 98; i++)
+    for (uint32_t i = 0; i < (AMOUNT_OF_DTC - 1); i++)
     {
         // Prepare StatusMask for each DTC.
         demo_number_3 = (i % 3);

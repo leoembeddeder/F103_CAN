@@ -639,31 +639,7 @@ void charon_DTC_LookupTable_header_SET (void)
     // Re/Setting the DTC header.
     DTC_header_t *DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
 
-    for (uint32_t i = 0; i < (uint16_t)DTC_header->sizeOfDTCLookupTable; i++)
-    {
-        DTC_header->nvmDTCLookupTable[i] = 0x00;
-    }
-    for (uint32_t i = 0; i < (uint16_t)DTC_header->sizeOfSnapshotLookupTable; i++)
-    {
-        DTC_header->nvmSnapshotLookupTable[i] = 0x00;
-    }
-    for (uint32_t i = 0; i < (uint16_t)DTC_header->sizeOfStoredDataLookupTable; i++)
-    {
-        DTC_header->nvmStoredDataLookupTable[i] = 0x00;
-    }
-    for (uint32_t i = 0; i < (uint16_t)DTC_header->sizeOfExtDataLookupTable; i++)
-    {
-        DTC_header->nvmExtDataLookupTable[i] = 0x00;
-    }
-
-    DTC_header->deletedDTCCounter = 0x00;
-    DTC_header->deletedSnapshotRecordCounter = 0x00;
-    DTC_header->deletedDataRecordCounter = 0x00;
-    DTC_header->deletedExtDataRecordCounter = 0x00;
-    DTC_header->FirstConfirmedDTC = 0x00;
-    DTC_header->FirstFailedDTC = 0x00;
-    DTC_header->MostRecentConfirmedDTC = 0x00;
-    DTC_header->MostRecentTestFailed = 0x00;
+	memset(DTC_header, 0, sizeof(DTC_header_t));
 
     DTC_header->sizeOfDTCLookupTable = sizeof(DTC_header->nvmDTCLookupTable);
     DTC_header->sizeOfSnapshotLookupTable = sizeof(DTC_header->nvmSnapshotLookupTable);

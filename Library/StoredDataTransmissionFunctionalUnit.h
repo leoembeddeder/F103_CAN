@@ -4,6 +4,7 @@
 /* Includes ******************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include "uds_types.h"
 #include "uds_config.h"
 
@@ -46,7 +47,8 @@ typedef enum DTCSubfunction_t_public
     reportUserDefMemoryDTCByStatusMask                  = 0x17,
     reportUserDefMemoryDTCSnapshotRecordByDTCNumber     = 0x18,
     reportUserDefMemoryDTCExtDataRecordByDTCNumber      = 0x19,
-
+    reportWWHOBDDTCByMaskRecord                         = 0x42,
+    reportWWHOBDDTCWithPermanentStatus                  = 0x55,
     amountOFSubfunctions
 }DTCSubfunction_t;
 

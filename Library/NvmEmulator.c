@@ -93,6 +93,161 @@ static void charon_NvmDriver_reanchorPointers(void)
     }
 }
 
+static void charon_NvmDriver_seedDefaultDTCs(void)
+{
+    charon_DTC_LookupTable_header_SET();
+
+    /* DTC 1: P010016 - Mass Air Flow Sensor Circuit */
+    {
+        DTC_t dtc;
+        memset(&dtc, 0, sizeof(dtc));
+        dtc.DTCHighByte = 0x01;
+        dtc.DTCMiddleByte = 0x00;
+        dtc.DTCLowByte = 0x16;
+        dtc.DTCStatusMask = 0x2F;
+        dtc.statusOfDTC = 0x2F;
+        dtc.DTCSeverityMask = 0x20;
+        dtc.DTCSeverityMaskRecordHigh = 0x20;
+        dtc.DTCSeverityMaskRecordLow = 0x2F;
+        dtc.FunctionalGroupIdentifier = 0x33;
+        dtc.DTCSettingType = 0x01;
+
+        DTC_SnapshotData_t snap;
+        memset(&snap, 0, sizeof(snap));
+        snap.DTCSnapshotDataRecordNumberOfIdentifiers = 0x01;
+        snap.DTCSnapshotDataPayload[0] = 0x00;
+        snap.DTCSnapshotDataPayload[1] = 0x40;
+        snap.DTCSnapshotDataPayload[2] = 0x12;
+        dtc.DTCSnapshotLength[0] = 0x03;
+
+        DTC_StoredData_t stored;
+        memset(&stored, 0, sizeof(stored));
+        stored.DTCStoredDataRecordNumberOfIdentifiers = 0x01;
+        stored.DTCStoredDataPayload[0] = 0xEE;
+        dtc.DTCStoredDataLength[0] = 0x01;
+
+        DTC_ExtendedData_t ext;
+        memset(&ext, 0, sizeof(ext));
+        ext.DTCExtendedDataRecordNumberOfIdentifiers = 0x01;
+        ext.DTCExtendedDataPayload[0] = 0x05;
+        dtc.DTCExtendedDataLength[0] = 0x01;
+
+        charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm(dtc, snap, stored, ext);
+    }
+
+    /* DTC 2: P020017 - Injector Circuit Open */
+    {
+        DTC_t dtc;
+        memset(&dtc, 0, sizeof(dtc));
+        dtc.DTCHighByte = 0x02;
+        dtc.DTCMiddleByte = 0x00;
+        dtc.DTCLowByte = 0x17;
+        dtc.DTCStatusMask = 0x2B;
+        dtc.statusOfDTC = 0x2B;
+        dtc.DTCSeverityMask = 0x40;
+        dtc.DTCSeverityMaskRecordHigh = 0x40;
+        dtc.DTCSeverityMaskRecordLow = 0x2B;
+        dtc.FunctionalGroupIdentifier = 0x33;
+        dtc.DTCSettingType = 0x01;
+
+        DTC_SnapshotData_t snap;
+        memset(&snap, 0, sizeof(snap));
+        snap.DTCSnapshotDataRecordNumberOfIdentifiers = 0x01;
+        snap.DTCSnapshotDataPayload[0] = 0x00;
+        snap.DTCSnapshotDataPayload[1] = 0x50;
+        snap.DTCSnapshotDataPayload[2] = 0x22;
+        dtc.DTCSnapshotLength[0] = 0x03;
+
+        DTC_StoredData_t stored;
+        memset(&stored, 0, sizeof(stored));
+        stored.DTCStoredDataRecordNumberOfIdentifiers = 0x01;
+        stored.DTCStoredDataPayload[0] = 0xEE;
+        dtc.DTCStoredDataLength[0] = 0x01;
+
+        DTC_ExtendedData_t ext;
+        memset(&ext, 0, sizeof(ext));
+        ext.DTCExtendedDataRecordNumberOfIdentifiers = 0x01;
+        ext.DTCExtendedDataPayload[0] = 0x02;
+        dtc.DTCExtendedDataLength[0] = 0x01;
+
+        charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm(dtc, snap, stored, ext);
+    }
+
+    /* DTC 3: P030011 - Cylinder Misfire Detected */
+    {
+        DTC_t dtc;
+        memset(&dtc, 0, sizeof(dtc));
+        dtc.DTCHighByte = 0x03;
+        dtc.DTCMiddleByte = 0x00;
+        dtc.DTCLowByte = 0x11;
+        dtc.DTCStatusMask = 0x01;
+        dtc.statusOfDTC = 0x01;
+        dtc.DTCSeverityMask = 0x60;
+        dtc.DTCSeverityMaskRecordHigh = 0x60;
+        dtc.DTCSeverityMaskRecordLow = 0x01;
+        dtc.FunctionalGroupIdentifier = 0x33;
+        dtc.DTCSettingType = 0x01;
+
+        DTC_SnapshotData_t snap;
+        memset(&snap, 0, sizeof(snap));
+        snap.DTCSnapshotDataRecordNumberOfIdentifiers = 0x01;
+        snap.DTCSnapshotDataPayload[0] = 0x00;
+        snap.DTCSnapshotDataPayload[1] = 0x60;
+        snap.DTCSnapshotDataPayload[2] = 0x33;
+        dtc.DTCSnapshotLength[0] = 0x03;
+
+        DTC_StoredData_t stored;
+        memset(&stored, 0, sizeof(stored));
+        stored.DTCStoredDataRecordNumberOfIdentifiers = 0x01;
+        stored.DTCStoredDataPayload[0] = 0xEE;
+        dtc.DTCStoredDataLength[0] = 0x01;
+
+        DTC_ExtendedData_t ext;
+        memset(&ext, 0, sizeof(ext));
+        ext.DTCExtendedDataRecordNumberOfIdentifiers = 0x01;
+        ext.DTCExtendedDataPayload[0] = 0x01;
+        dtc.DTCExtendedDataLength[0] = 0x01;
+
+        charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm(dtc, snap, stored, ext);
+    }
+
+    /* DTC 4: U010000 - Lost Communication With ECM */
+    {
+        DTC_t dtc;
+        memset(&dtc, 0, sizeof(dtc));
+        dtc.DTCHighByte = 0xC1;
+        dtc.DTCMiddleByte = 0x00;
+        dtc.DTCLowByte = 0x00;
+        dtc.DTCStatusMask = 0x08;
+        dtc.statusOfDTC = 0x08;
+        dtc.DTCSeverityMask = 0x80;
+        dtc.DTCSeverityMaskRecordHigh = 0x80;
+        dtc.DTCSeverityMaskRecordLow = 0x08;
+        dtc.FunctionalGroupIdentifier = 0xD0;
+        dtc.DTCSettingType = 0x01;
+
+        DTC_SnapshotData_t snap;
+        memset(&snap, 0, sizeof(snap));
+        snap.DTCSnapshotDataRecordNumberOfIdentifiers = 0x01;
+        snap.DTCSnapshotDataPayload[0] = 0x12;
+        snap.DTCSnapshotDataPayload[1] = 0x34;
+        dtc.DTCSnapshotLength[0] = 0x02;
+
+        DTC_StoredData_t stored;
+        memset(&stored, 0, sizeof(stored));
+        stored.DTCStoredDataRecordNumberOfIdentifiers = 0x01;
+        stored.DTCStoredDataPayload[0] = 0xEE;
+        dtc.DTCStoredDataLength[0] = 0x01;
+
+        DTC_ExtendedData_t ext;
+        memset(&ext, 0, sizeof(ext));
+        ext.DTCExtendedDataRecordNumberOfIdentifiers = 0x01;
+        ext.DTCExtendedDataPayload[0] = 0x03;
+        dtc.DTCExtendedDataLength[0] = 0x01;
+
+        charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm(dtc, snap, stored, ext);
+    }
+}
 
 void charon_NvmDriver_init(void)
 {
@@ -105,18 +260,18 @@ void charon_NvmDriver_init(void)
         if (syn_param_load(&s_nvmStore, NvmEmulator_MemorySpace) == SYN_OK)
         {
             DTC_header_t *hdr = (DTC_header_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
-            if (hdr->iniDone == 0xDEADBEEF)
+            if (hdr->iniDone == 0xDEADBEEF && hdr->currentDTCCounter > 0)
             {
                 charon_NvmDriver_reanchorPointers();
                 s_nvmInitialized = true;
-                return;
+                return;//
             }
         }
     }
-    /* First boot or blank flash: format default tables */
+    /* First boot, blank flash, or unseeded table: format default tables and seed initial demonstration DTCs */
     memset(NvmEmulator_MemorySpace, 0, sizeof(NvmEmulator_MemorySpace));
     s_nvmInitialized = true;
-    charon_DTC_LookupTable_header_SET();
+    charon_NvmDriver_seedDefaultDTCs();
     charon_NvmDriver_flush();
 }
 
