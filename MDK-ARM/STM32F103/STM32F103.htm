@@ -3,9 +3,9 @@
 <title>Static Call Graph - [STM32F103\STM32F103.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image STM32F103\STM32F103.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6220000: Last Updated: Sat Sep 19 15:16:10 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6220000: Last Updated: Sat Sep 19 15:56:04 2026
 <BR><P>
-<H3>Maximum Stack Usage =       4736 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
+<H3>Maximum Stack Usage =       4744 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
 charon_UploadDownloadFunctionalUnit_TransferData &rArr; charon_NvmDriver_write &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
 <P>
@@ -137,7 +137,7 @@ Global Symbols
 <P><STRONG><a name="[62]"></a>__main</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry.o(.ARM.Collect$$$$00000000))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(.text)
 </UL>
-<P><STRONG><a name="[110]"></a>_main_stk</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry2.o(.ARM.Collect$$$$00000001))
+<P><STRONG><a name="[112]"></a>_main_stk</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry2.o(.ARM.Collect$$$$00000001))
 
 <P><STRONG><a name="[68]"></a>_main_scatterload</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry5.o(.ARM.Collect$$$$00000004))
 <BR><BR>[Calls]<UL><LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload
@@ -147,15 +147,15 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload
 </UL>
 
-<P><STRONG><a name="[111]"></a>_main_clock</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry7b.o(.ARM.Collect$$$$00000008))
+<P><STRONG><a name="[113]"></a>_main_clock</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry7b.o(.ARM.Collect$$$$00000008))
 
-<P><STRONG><a name="[112]"></a>_main_cpp_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry8b.o(.ARM.Collect$$$$0000000A))
+<P><STRONG><a name="[114]"></a>_main_cpp_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry8b.o(.ARM.Collect$$$$0000000A))
 
-<P><STRONG><a name="[113]"></a>_main_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry9a.o(.ARM.Collect$$$$0000000B))
+<P><STRONG><a name="[115]"></a>_main_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry9a.o(.ARM.Collect$$$$0000000B))
 
-<P><STRONG><a name="[114]"></a>__rt_final_cpp</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry10a.o(.ARM.Collect$$$$0000000D))
+<P><STRONG><a name="[116]"></a>__rt_final_cpp</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry10a.o(.ARM.Collect$$$$0000000D))
 
-<P><STRONG><a name="[115]"></a>__rt_final_exit</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry11a.o(.ARM.Collect$$$$0000000F))
+<P><STRONG><a name="[117]"></a>__rt_final_exit</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry11a.o(.ARM.Collect$$$$0000000F))
 
 <P><STRONG><a name="[1a]"></a>Reset_Handler</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, startup_stm32f103xe.o(.text))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(RESET)
@@ -343,13 +343,13 @@ Global Symbols
 </UL>
 <P><STRONG><a name="[86]"></a>__aeabi_memcpy</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, memcpya.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_CAN_RxFifo0MsgPendingCallback
-<LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
-<LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_receive
-<LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
-<LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write_word
-<LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_read
-<LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_task
+<LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
+<LI><a href="#[fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_receive
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
+<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
+<LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write_word
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_read
+<LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_task
 <LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DTCExtDataRecordByDTCNumber
 <LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DTCStoredDataByRecordNumber
 <LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DTCSnapshotRecordByDTCNumber
@@ -365,30 +365,30 @@ Global Symbols
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_read
 </UL>
 
-<P><STRONG><a name="[116]"></a>__aeabi_memcpy4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memcpya.o(.text), UNUSED)
+<P><STRONG><a name="[118]"></a>__aeabi_memcpy4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memcpya.o(.text), UNUSED)
 
-<P><STRONG><a name="[117]"></a>__aeabi_memcpy8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memcpya.o(.text), UNUSED)
+<P><STRONG><a name="[119]"></a>__aeabi_memcpy8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memcpya.o(.text), UNUSED)
 
 <P><STRONG><a name="[6b]"></a>__aeabi_memset</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, memseta.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
+<BR><BR>[Called By]<UL><LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
+<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
 <LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_memset$wrapper
 <LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 </UL>
 
-<P><STRONG><a name="[118]"></a>__aeabi_memset4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[11a]"></a>__aeabi_memset4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
-<P><STRONG><a name="[119]"></a>__aeabi_memset8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[11b]"></a>__aeabi_memset8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
 <P><STRONG><a name="[6a]"></a>__aeabi_memclr</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, memseta.o(.text))
 <BR><BR>[Calls]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
+<BR>[Called By]<UL><LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
 </UL>
 
 <P><STRONG><a name="[c9]"></a>__aeabi_memclr4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_init_link
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
+<BR><BR>[Called By]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_init_link
+<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
 <LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_init
 <LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_erase
 <LI><a href="#[c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DTC_LookupTable_header_SET
@@ -396,7 +396,7 @@ Global Symbols
 <LI><a href="#[b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DataTransmissionFunctionalUnit_WriteDataByIdentifier
 </UL>
 
-<P><STRONG><a name="[11a]"></a>__aeabi_memclr8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[11c]"></a>__aeabi_memclr8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
 <P><STRONG><a name="[6c]"></a>_memset$wrapper</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, memseta.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
@@ -406,7 +406,7 @@ Global Symbols
 <BR><BR>[Calls]<UL><LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsr
 <LI><a href="#[6f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsl
 </UL>
-<BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<BR>[Called By]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
 <P><STRONG><a name="[69]"></a>__scatterload</STRONG> (Thumb, 38 bytes, Stack size 0 bytes, init.o(.text))
@@ -415,23 +415,23 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[68]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_main_scatterload
 </UL>
 
-<P><STRONG><a name="[11b]"></a>__scatterload_rt2</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, init.o(.text), UNUSED)
+<P><STRONG><a name="[11d]"></a>__scatterload_rt2</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, init.o(.text), UNUSED)
 
 <P><STRONG><a name="[6f]"></a>__aeabi_llsl</STRONG> (Thumb, 30 bytes, Stack size 0 bytes, llshl.o(.text), UNUSED)
 <BR><BR>[Called By]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_uldivmod
 </UL>
 
-<P><STRONG><a name="[11c]"></a>_ll_shift_l</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llshl.o(.text), UNUSED)
+<P><STRONG><a name="[11e]"></a>_ll_shift_l</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llshl.o(.text), UNUSED)
 
 <P><STRONG><a name="[6e]"></a>__aeabi_llsr</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, llushr.o(.text), UNUSED)
 <BR><BR>[Called By]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_uldivmod
 </UL>
 
-<P><STRONG><a name="[11d]"></a>_ll_ushift_r</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llushr.o(.text), UNUSED)
+<P><STRONG><a name="[11f]"></a>_ll_ushift_r</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llushr.o(.text), UNUSED)
 
-<P><STRONG><a name="[11e]"></a>__decompress</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __dczerorl2.o(.text), UNUSED)
+<P><STRONG><a name="[120]"></a>__decompress</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __dczerorl2.o(.text), UNUSED)
 
-<P><STRONG><a name="[11f]"></a>__decompress1</STRONG> (Thumb, 86 bytes, Stack size unknown bytes, __dczerorl2.o(.text), UNUSED)
+<P><STRONG><a name="[121]"></a>__decompress1</STRONG> (Thumb, 86 bytes, Stack size unknown bytes, __dczerorl2.o(.text), UNUSED)
 
 <P><STRONG><a name="[1e]"></a>BusFault_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f1xx_it.o(.text.BusFault_Handler))
 <BR><BR>[Calls]<UL><LI><a href="#[1e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BusFault_Handler
@@ -457,7 +457,7 @@ Global Symbols
 <LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_CAN_GetTxMailboxesFreeLevel
 <LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Error_Handler
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_send_can
+<BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_send_can
 </UL>
 
 <P><STRONG><a name="[21]"></a>DebugMon_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f1xx_it.o(.text.DebugMon_Handler))
@@ -481,7 +481,7 @@ Global Symbols
 <P><STRONG><a name="[94]"></a>GetTickMS</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, main.o(.text.GetTickMS))
 <BR><BR>[Calls]<UL><LI><a href="#[91]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_get_us
+<BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_get_us
 <LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_interface_clock_getTime
 <LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_interface_clock_getTimeElapsed
 </UL>
@@ -621,12 +621,12 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FLASH_WaitForLastOperation
 </UL>
-<BR>[Called By]<UL><LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_erase
+<BR>[Called By]<UL><LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_erase
 </UL>
 
-<P><STRONG><a name="[109]"></a>HAL_FLASH_Lock</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, stm32f1xx_hal_flash.o(.text.HAL_FLASH_Lock))
-<BR><BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write_word
-<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_erase
+<P><STRONG><a name="[10b]"></a>HAL_FLASH_Lock</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, stm32f1xx_hal_flash.o(.text.HAL_FLASH_Lock))
+<BR><BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write_word
+<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_erase
 </UL>
 
 <P><STRONG><a name="[aa]"></a>HAL_FLASH_Program</STRONG> (Thumb, 278 bytes, Stack size 32 bytes, stm32f1xx_hal_flash.o(.text.HAL_FLASH_Program))
@@ -634,12 +634,12 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FLASH_WaitForLastOperation
 </UL>
-<BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write_word
+<BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write_word
 </UL>
 
-<P><STRONG><a name="[108]"></a>HAL_FLASH_Unlock</STRONG> (Thumb, 46 bytes, Stack size 0 bytes, stm32f1xx_hal_flash.o(.text.HAL_FLASH_Unlock))
-<BR><BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write_word
-<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_erase
+<P><STRONG><a name="[10a]"></a>HAL_FLASH_Unlock</STRONG> (Thumb, 46 bytes, Stack size 0 bytes, stm32f1xx_hal_flash.o(.text.HAL_FLASH_Unlock))
+<BR><BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write_word
+<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_erase
 </UL>
 
 <P><STRONG><a name="[a5]"></a>HAL_GPIO_Init</STRONG> (Thumb, 486 bytes, Stack size 44 bytes, stm32f1xx_hal_gpio.o(.text.HAL_GPIO_Init))
@@ -847,8 +847,8 @@ Global Symbols
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fputs
 <LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;abort
 </UL>
-<BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
+<BR>[Called By]<UL><LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
+<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
 </UL>
 
 <P><STRONG><a name="[c7]"></a>abort</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, retarget_io.o(.text.abort))
@@ -873,7 +873,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[a]"></a>charon_DataTransmissionFunctionalUnit_DynamicallyDefineDataIdentifier</STRONG> (Thumb, 916 bytes, Stack size 64 bytes, datatransmissionfunctionalunit.o(.text.charon_DataTransmissionFunctionalUnit_DynamicallyDefineDataIdentifier))
-<BR><BR>[Stack]<UL><LI>Max Depth = 672<LI>Call Chain = charon_DataTransmissionFunctionalUnit_DynamicallyDefineDataIdentifier &rArr; charon_NvmDriver_write &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
+<BR><BR>[Stack]<UL><LI>Max Depth = 680<LI>Call Chain = charon_DataTransmissionFunctionalUnit_DynamicallyDefineDataIdentifier &rArr; charon_NvmDriver_write &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_getDataLookupTableByDID
 <LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
@@ -942,7 +942,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[b]"></a>charon_DataTransmissionFunctionalUnit_WriteDataByIdentifier</STRONG> (Thumb, 392 bytes, Stack size 1064 bytes, datatransmissionfunctionalunit.o(.text.charon_DataTransmissionFunctionalUnit_WriteDataByIdentifier))
-<BR><BR>[Stack]<UL><LI>Max Depth = 1672<LI>Call Chain = charon_DataTransmissionFunctionalUnit_WriteDataByIdentifier &rArr; charon_NvmDriver_write &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
+<BR><BR>[Stack]<UL><LI>Max Depth = 1680<LI>Call Chain = charon_DataTransmissionFunctionalUnit_WriteDataByIdentifier &rArr; charon_NvmDriver_write &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_getDataLookupTableByDID
 <LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
@@ -955,7 +955,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> servicelookuptable.o(.data.serviceLookupTable)
 </UL>
 <P><STRONG><a name="[13]"></a>charon_DataTransmissionFunctionalUnit_WriteMemoryByAddress</STRONG> (Thumb, 302 bytes, Stack size 56 bytes, datatransmissionfunctionalunit.o(.text.charon_DataTransmissionFunctionalUnit_WriteMemoryByAddress))
-<BR><BR>[Stack]<UL><LI>Max Depth = 664<LI>Call Chain = charon_DataTransmissionFunctionalUnit_WriteMemoryByAddress &rArr; charon_NvmDriver_write &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
+<BR><BR>[Stack]<UL><LI>Max Depth = 672<LI>Call Chain = charon_DataTransmissionFunctionalUnit_WriteMemoryByAddress &rArr; charon_NvmDriver_write &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_getDataLookupTableByAddress
 <LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
@@ -1001,10 +1001,13 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> servicelookuptable.o(.data.serviceLookupTable)
 </UL>
-<P><STRONG><a name="[1]"></a>charon_DiagnosticAndCommunicationManagementFunctionalUnit_EcuReset</STRONG> (Thumb, 12 bytes, Stack size 8 bytes, diagnosticandcommunicationmanagementfunctionalunit.o(.text.charon_DiagnosticAndCommunicationManagementFunctionalUnit_EcuReset))
-<BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = charon_DiagnosticAndCommunicationManagementFunctionalUnit_EcuReset &rArr; __2printf
+<P><STRONG><a name="[1]"></a>charon_DiagnosticAndCommunicationManagementFunctionalUnit_EcuReset</STRONG> (Thumb, 116 bytes, Stack size 16 bytes, diagnosticandcommunicationmanagementfunctionalunit.o(.text.charon_DiagnosticAndCommunicationManagementFunctionalUnit_EcuReset))
+<BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = charon_DiagnosticAndCommunicationManagementFunctionalUnit_EcuReset &rArr; charon_sendNegativeResponse &rArr; charon_sscTxMessage &rArr; __2printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
+<BR>[Calls]<UL><LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_interface_clock_getTime
+<LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscTxMessage
+<LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sendNegativeResponse
+<LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> servicelookuptable.o(.data.serviceLookupTable)
 </UL>
@@ -1047,7 +1050,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> servicelookuptable.o(.data.serviceLookupTable)
 </UL>
 <P><STRONG><a name="[ec]"></a>charon_DiagnosticAndCommunicationManagementFunctionalUnit_reset</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, diagnosticandcommunicationmanagementfunctionalunit.o(.text.charon_DiagnosticAndCommunicationManagementFunctionalUnit_reset))
-<BR><BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
+<BR><BR>[Called By]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_init
 </UL>
 
@@ -1061,12 +1064,12 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> servicelookuptable.o(.data.serviceLookupTable)
 </UL>
-<P><STRONG><a name="[101]"></a>charon_NvmDriver_checkAddressRange</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, nvmemulator.o(.text.charon_NvmDriver_checkAddressRange))
+<P><STRONG><a name="[103]"></a>charon_NvmDriver_checkAddressRange</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, nvmemulator.o(.text.charon_NvmDriver_checkAddressRange))
 <BR><BR>[Called By]<UL><LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;requestTransfer
 </UL>
 
 <P><STRONG><a name="[d8]"></a>charon_NvmDriver_erase</STRONG> (Thumb, 70 bytes, Stack size 16 bytes, nvmemulator.o(.text.charon_NvmDriver_erase))
-<BR><BR>[Stack]<UL><LI>Max Depth = 616<LI>Call Chain = charon_NvmDriver_erase &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
+<BR><BR>[Stack]<UL><LI>Max Depth = 624<LI>Call Chain = charon_NvmDriver_erase &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_erase_all
 <LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_save
@@ -1148,8 +1151,8 @@ Global Symbols
 <LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_deleteDTC
 </UL>
 
-<P><STRONG><a name="[da]"></a>charon_NvmDriver_init</STRONG> (Thumb, 1112 bytes, Stack size 304 bytes, nvmemulator.o(.text.charon_NvmDriver_init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 600 + In Cycle
+<P><STRONG><a name="[da]"></a>charon_NvmDriver_init</STRONG> (Thumb, 1624 bytes, Stack size 312 bytes, nvmemulator.o(.text.charon_NvmDriver_init))
+<BR><BR>[Stack]<UL><LI>Max Depth = 608 + In Cycle
 <LI>Call Chain = charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_save
@@ -1181,7 +1184,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[cf]"></a>charon_NvmDriver_write</STRONG> (Thumb, 78 bytes, Stack size 8 bytes, nvmemulator.o(.text.charon_NvmDriver_write))
-<BR><BR>[Stack]<UL><LI>Max Depth = 608<LI>Call Chain = charon_NvmDriver_write &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
+<BR><BR>[Stack]<UL><LI>Max Depth = 616<LI>Call Chain = charon_NvmDriver_write &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_save
 <LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_init
@@ -1195,7 +1198,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[d]"></a>charon_RoutineFunctionalUnit_RoutineControl</STRONG> (Thumb, 102 bytes, Stack size 16 bytes, routinefunctionalunit.o(.text.charon_RoutineFunctionalUnit_RoutineControl))
-<BR><BR>[Stack]<UL><LI>Max Depth = 632<LI>Call Chain = charon_RoutineFunctionalUnit_RoutineControl &rArr; charon_NvmDriver_erase &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
+<BR><BR>[Stack]<UL><LI>Max Depth = 640<LI>Call Chain = charon_RoutineFunctionalUnit_RoutineControl &rArr; charon_NvmDriver_erase &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_erase
 <LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscTxMessage
@@ -1204,20 +1207,20 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> servicelookuptable.o(.data.serviceLookupTable)
 </UL>
 <P><STRONG><a name="[ef]"></a>charon_ServiceLookupTable_getNameForReturnCode</STRONG> (Thumb, 756 bytes, Stack size 0 bytes, servicelookuptable.o(.text.charon_ServiceLookupTable_getNameForReturnCode))
-<BR><BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
+<BR><BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
 <LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sendNegativeResponse
 </UL>
 
 <P><STRONG><a name="[f0]"></a>charon_ServiceLookupTable_getNameForServiceSid</STRONG> (Thumb, 536 bytes, Stack size 0 bytes, servicelookuptable.o(.text.charon_ServiceLookupTable_getNameForServiceSid))
-<BR><BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
+<BR><BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
 <LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscTxMessage
 <LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sendNegativeResponse
 </UL>
 
-<P><STRONG><a name="[f3]"></a>charon_ServiceLookupTable_getServiceObject</STRONG> (Thumb, 158 bytes, Stack size 8 bytes, servicelookuptable.o(.text.charon_ServiceLookupTable_getServiceObject))
+<P><STRONG><a name="[f4]"></a>charon_ServiceLookupTable_getServiceObject</STRONG> (Thumb, 158 bytes, Stack size 8 bytes, servicelookuptable.o(.text.charon_ServiceLookupTable_getServiceObject))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = charon_ServiceLookupTable_getServiceObject
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
+<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
 </UL>
 
 <P><STRONG><a name="[ca]"></a>charon_StoredDataTransmissionFunctionalUnit_CRC16_update</STRONG> (Thumb, 34 bytes, Stack size 8 bytes, storeddatatransmissionfunctionalunit.o(.text.charon_StoredDataTransmissionFunctionalUnit_CRC16_update))
@@ -1351,7 +1354,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> servicelookuptable.o(.data.serviceLookupTable)
 </UL>
 <P><STRONG><a name="[10]"></a>charon_UploadDownloadFunctionalUnit_TransferData</STRONG> (Thumb, 284 bytes, Stack size 4128 bytes, uploaddownloadfunctionalunit.o(.text.charon_UploadDownloadFunctionalUnit_TransferData))
-<BR><BR>[Stack]<UL><LI>Max Depth = 4736<LI>Call Chain = charon_UploadDownloadFunctionalUnit_TransferData &rArr; charon_NvmDriver_write &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
+<BR><BR>[Stack]<UL><LI>Max Depth = 4744<LI>Call Chain = charon_UploadDownloadFunctionalUnit_TransferData &rArr; charon_NvmDriver_write &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_write
 <LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscTxMessage
@@ -1362,7 +1365,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> servicelookuptable.o(.data.serviceLookupTable)
 </UL>
 <P><STRONG><a name="[ed]"></a>charon_UploadDownloadFunctionalUnit_reset</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, uploaddownloadfunctionalunit.o(.text.charon_UploadDownloadFunctionalUnit_reset))
-<BR><BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
+<BR><BR>[Called By]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_init
 </UL>
 
@@ -1540,9 +1543,10 @@ Global Symbols
 <P><STRONG><a name="[d4]"></a>charon_interface_clock_getTime</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, interface_clock.o(.text.charon_interface_clock_getTime))
 <BR><BR>[Calls]<UL><LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GetTickMS
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
+<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
 <LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscCyclic
 <LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscTesterPresentHeartbeat
+<LI><a href="#[1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DiagnosticAndCommunicationManagementFunctionalUnit_EcuReset
 <LI><a href="#[d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscSetSession
 <LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DataTransmissionFunctionalUnit_SendPeriodic
 </UL>
@@ -1574,7 +1578,7 @@ Global Symbols
 <LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DTCSnapshotRecordByDTCNumber
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WWHOBDDTCByMaskRecord
 <LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DTCExtDataRecordByRecordNumber
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
 <LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscCyclic
 <LI><a href="#[12]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_UploadDownloadFunctionalUnit_RequestFileTransfer
 <LI><a href="#[11]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_UploadDownloadFunctionalUnit_RequestTransferExit
@@ -1587,6 +1591,7 @@ Global Symbols
 <LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_getDTCLookup_reportAllDataRecords
 <LI><a href="#[17]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DiagnosticAndCommunicationManagementFunctionalUnit_ControlDtcSetting
 <LI><a href="#[14]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DiagnosticAndCommunicationManagementFunctionalUnit_TesterPresent
+<LI><a href="#[1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DiagnosticAndCommunicationManagementFunctionalUnit_EcuReset
 <LI><a href="#[0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DiagnosticAndCommunicationManagementFunctionalUnit_DiagnosticSessionControl
 <LI><a href="#[13]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DataTransmissionFunctionalUnit_WriteMemoryByAddress
 <LI><a href="#[b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DataTransmissionFunctionalUnit_WriteDataByIdentifier
@@ -1597,20 +1602,21 @@ Global Symbols
 <LI><a href="#[4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DataTransmissionFunctionalUnit_ReadDataByIdentifier
 </UL>
 
-<P><STRONG><a name="[f1]"></a>charon_sscCyclic</STRONG> (Thumb, 124 bytes, Stack size 16 bytes, sessionandservicecontrol.o(.text.charon_sscCyclic))
+<P><STRONG><a name="[f1]"></a>charon_sscCyclic</STRONG> (Thumb, 152 bytes, Stack size 16 bytes, sessionandservicecontrol.o(.text.charon_sscCyclic))
 <BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = charon_sscCyclic &rArr; charon_sendNegativeResponse &rArr; charon_sscTxMessage &rArr; __2printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_interface_clock_getTime
+<BR>[Calls]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;on_ecu_reset
+<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_interface_clock_getTime
 <LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_interface_clock_getTimeElapsed
 <LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DataTransmissionFunctionalUnit_SendPeriodic
 <LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sendNegativeResponse
 <LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
+<BR>[Called By]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
 </UL>
 
 <P><STRONG><a name="[d0]"></a>charon_sscGetSession</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, sessionandservicecontrol.o(.text.charon_sscGetSession))
-<BR><BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
+<BR><BR>[Called By]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
 <LI><a href="#[17]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DiagnosticAndCommunicationManagementFunctionalUnit_ControlDtcSetting
 <LI><a href="#[13]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DataTransmissionFunctionalUnit_WriteMemoryByAddress
 <LI><a href="#[b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DataTransmissionFunctionalUnit_WriteDataByIdentifier
@@ -1624,21 +1630,21 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_init
 </UL>
 
-<P><STRONG><a name="[f2]"></a>charon_sscRcvMessage</STRONG> (Thumb, 240 bytes, Stack size 24 bytes, sessionandservicecontrol.o(.text.charon_sscRcvMessage))
+<P><STRONG><a name="[f3]"></a>charon_sscRcvMessage</STRONG> (Thumb, 240 bytes, Stack size 24 bytes, sessionandservicecontrol.o(.text.charon_sscRcvMessage))
 <BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = charon_sscRcvMessage &rArr; charon_sendNegativeResponse &rArr; charon_sscTxMessage &rArr; __2printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_ServiceLookupTable_getServiceObject
+<BR>[Calls]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_ServiceLookupTable_getServiceObject
 <LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_ServiceLookupTable_getNameForServiceSid
 <LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_ServiceLookupTable_getNameForReturnCode
 <LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_interface_clock_getTime
 <LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sendNegativeResponse
 <LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
+<BR>[Called By]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
 </UL>
 
 <P><STRONG><a name="[eb]"></a>charon_sscReset</STRONG> (Thumb, 42 bytes, Stack size 0 bytes, sessionandservicecontrol.o(.text.charon_sscReset))
-<BR><BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
+<BR><BR>[Called By]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_init
 </UL>
 
@@ -1690,6 +1696,7 @@ Global Symbols
 <LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_getDTCLookup_reportAllDataRecords
 <LI><a href="#[17]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DiagnosticAndCommunicationManagementFunctionalUnit_ControlDtcSetting
 <LI><a href="#[14]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DiagnosticAndCommunicationManagementFunctionalUnit_TesterPresent
+<LI><a href="#[1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DiagnosticAndCommunicationManagementFunctionalUnit_EcuReset
 <LI><a href="#[0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DiagnosticAndCommunicationManagementFunctionalUnit_DiagnosticSessionControl
 <LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DataTransmissionFunctionalUnit_SendPeriodic
 <LI><a href="#[13]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DataTransmissionFunctionalUnit_WriteMemoryByAddress
@@ -1702,11 +1709,11 @@ Global Symbols
 <LI><a href="#[4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DataTransmissionFunctionalUnit_ReadDataByIdentifier
 </UL>
 
-<P><STRONG><a name="[f4]"></a>charon_task</STRONG> (Thumb, 36 bytes, Stack size 8 bytes, uds.o(.text.charon_task))
+<P><STRONG><a name="[f5]"></a>charon_task</STRONG> (Thumb, 36 bytes, Stack size 8 bytes, uds.o(.text.charon_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = charon_task &rArr; charon_sscRcvMessage &rArr; charon_sendNegativeResponse &rArr; charon_sscTxMessage &rArr; __2printf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_UploadDownloadFunctionalUnit_reset
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
 <LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscCyclic
 <LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscReset
 <LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DiagnosticAndCommunicationManagementFunctionalUnit_reset
@@ -1726,39 +1733,39 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> printf8.o(i.__0printf$8)
 </UL>
-<P><STRONG><a name="[f5]"></a>isotp_init_link</STRONG> (Thumb, 50 bytes, Stack size 32 bytes, isotp.o(.text.isotp_init_link))
+<P><STRONG><a name="[f6]"></a>isotp_init_link</STRONG> (Thumb, 50 bytes, Stack size 32 bytes, isotp.o(.text.isotp_init_link))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = isotp_init_link
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_init
+<BR>[Called By]<UL><LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_init
 </UL>
 
-<P><STRONG><a name="[f6]"></a>isotp_on_can_message</STRONG> (Thumb, 788 bytes, Stack size 40 bytes, isotp.o(.text.isotp_on_can_message))
+<P><STRONG><a name="[f7]"></a>isotp_on_can_message</STRONG> (Thumb, 788 bytes, Stack size 40 bytes, isotp.o(.text.isotp_on_can_message))
 <BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = isotp_on_can_message &rArr; isotp_user_send_can &rArr; CAN_TX &rArr; HAL_CAN_AddTxMessage
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_get_us
-<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_send_can
-<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_debug
+<BR>[Calls]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_get_us
+<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_send_can
+<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_debug
 <LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 <LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
-<BR>[Called By]<UL><LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_task
+<BR>[Called By]<UL><LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_task
 </UL>
 
-<P><STRONG><a name="[fa]"></a>isotp_poll</STRONG> (Thumb, 272 bytes, Stack size 32 bytes, isotp.o(.text.isotp_poll))
+<P><STRONG><a name="[fb]"></a>isotp_poll</STRONG> (Thumb, 272 bytes, Stack size 32 bytes, isotp.o(.text.isotp_poll))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = isotp_poll &rArr; __aeabi_assert &rArr; fwrite &rArr; fputc &rArr; HAL_UART_Transmit
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_assert
-<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_get_us
-<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_send_can
+<LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_get_us
+<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_send_can
 <LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
 <LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
-<BR>[Called By]<UL><LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_task
+<BR>[Called By]<UL><LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_task
 </UL>
 
-<P><STRONG><a name="[fb]"></a>isotp_receive</STRONG> (Thumb, 50 bytes, Stack size 16 bytes, isotp.o(.text.isotp_receive))
+<P><STRONG><a name="[fc]"></a>isotp_receive</STRONG> (Thumb, 50 bytes, Stack size 16 bytes, isotp.o(.text.isotp_receive))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = isotp_receive
 </UL>
 <BR>[Calls]<UL><LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
@@ -1766,80 +1773,80 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[66]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;receive
 </UL>
 
-<P><STRONG><a name="[fc]"></a>isotp_send</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, isotp.o(.text.isotp_send))
+<P><STRONG><a name="[fd]"></a>isotp_send</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, isotp.o(.text.isotp_send))
 <BR><BR>[Stack]<UL><LI>Max Depth = 248<LI>Call Chain = isotp_send &rArr; isotp_send_with_id &rArr; __aeabi_assert &rArr; fwrite &rArr; fputc &rArr; HAL_UART_Transmit
 </UL>
-<BR>[Calls]<UL><LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
+<BR>[Calls]<UL><LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
 </UL>
 <BR>[Called By]<UL><LI><a href="#[67]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;transmit
 </UL>
 
-<P><STRONG><a name="[fd]"></a>isotp_send_with_id</STRONG> (Thumb, 380 bytes, Stack size 160 bytes, isotp.o(.text.isotp_send_with_id))
+<P><STRONG><a name="[fe]"></a>isotp_send_with_id</STRONG> (Thumb, 380 bytes, Stack size 160 bytes, isotp.o(.text.isotp_send_with_id))
 <BR><BR>[Stack]<UL><LI>Max Depth = 248<LI>Call Chain = isotp_send_with_id &rArr; __aeabi_assert &rArr; fwrite &rArr; fputc &rArr; HAL_UART_Transmit
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_assert
-<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_get_us
-<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_send_can
-<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_debug
+<LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_get_us
+<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_send_can
+<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_user_debug
 <LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 <LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
 <LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
-<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2snprintf
+<LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2snprintf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send
+<BR>[Called By]<UL><LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send
 </UL>
 
-<P><STRONG><a name="[ff]"></a>isotp_socket_init</STRONG> (Thumb, 64 bytes, Stack size 16 bytes, isotp_socket.o(.text.isotp_socket_init))
+<P><STRONG><a name="[100]"></a>isotp_socket_init</STRONG> (Thumb, 64 bytes, Stack size 16 bytes, isotp_socket.o(.text.isotp_socket_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = isotp_socket_init &rArr; isotp_init_link
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_init_link
+<BR>[Calls]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_init_link
 </UL>
 <BR>[Called By]<UL><LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[100]"></a>isotp_socket_task</STRONG> (Thumb, 134 bytes, Stack size 48 bytes, isotp_socket.o(.text.isotp_socket_task))
+<P><STRONG><a name="[101]"></a>isotp_socket_task</STRONG> (Thumb, 134 bytes, Stack size 48 bytes, isotp_socket.o(.text.isotp_socket_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 168<LI>Call Chain = isotp_socket_task &rArr; isotp_poll &rArr; __aeabi_assert &rArr; fwrite &rArr; fputc &rArr; HAL_UART_Transmit
 </UL>
-<BR>[Calls]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
-<LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
+<BR>[Calls]<UL><LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
 <LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
 <BR>[Called By]<UL><LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[f7]"></a>isotp_user_debug</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, isotp_user.o(.text.isotp_user_debug))
-<BR><BR>[Called By]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
+<P><STRONG><a name="[f8]"></a>isotp_user_debug</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, isotp_user.o(.text.isotp_user_debug))
+<BR><BR>[Called By]<UL><LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
+<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
 </UL>
 
-<P><STRONG><a name="[f9]"></a>isotp_user_get_us</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, isotp_user.o(.text.isotp_user_get_us))
+<P><STRONG><a name="[fa]"></a>isotp_user_get_us</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, isotp_user.o(.text.isotp_user_get_us))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = isotp_user_get_us
 </UL>
 <BR>[Calls]<UL><LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GetTickMS
 </UL>
-<BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
-<LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
+<BR>[Called By]<UL><LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
+<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
 </UL>
 
-<P><STRONG><a name="[f8]"></a>isotp_user_send_can</STRONG> (Thumb, 10 bytes, Stack size 8 bytes, isotp_user.o(.text.isotp_user_send_can))
+<P><STRONG><a name="[f9]"></a>isotp_user_send_can</STRONG> (Thumb, 10 bytes, Stack size 8 bytes, isotp_user.o(.text.isotp_user_send_can))
 <BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = isotp_user_send_can &rArr; CAN_TX &rArr; HAL_CAN_AddTxMessage
 </UL>
 <BR>[Calls]<UL><LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CAN_TX
 </UL>
-<BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
-<LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
+<BR>[Called By]<UL><LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_poll
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_on_can_message
+<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
 </UL>
 
 <P><STRONG><a name="[60]"></a>main</STRONG> (Thumb, 146 bytes, Stack size 64 bytes, main.o(.text.main))
-<BR><BR>[Stack]<UL><LI>Max Depth = 664<LI>Call Chain = main &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
+<BR><BR>[Stack]<UL><LI>Max Depth = 672<LI>Call Chain = main &rArr; charon_NvmDriver_init &rArr;  charon_NvmDriver_init (Cycle)
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
-<LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_task
+<BR>[Calls]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_task
+<LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_task
 <LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_init
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_init
-<LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_init
+<LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_socket_init
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CAN_Handler_Init
 <LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_USART1_UART_Init
 <LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_CAN_Init
@@ -1850,14 +1857,23 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> entry9a.o(.ARM.Collect$$$$0000000B)
 </UL>
-<P><STRONG><a name="[103]"></a>syn_assert_failed</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, syn_assert.o(.text.syn_assert_failed))
+<P><STRONG><a name="[f2]"></a>on_ecu_reset</STRONG> (Thumb, 76 bytes, Stack size 0 bytes, sessionandservicecontrol.o(.text.on_ecu_reset))
+<BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = on_ecu_reset &rArr; puts &rArr; fputc &rArr; HAL_UART_Transmit
+</UL>
+<BR>[Calls]<UL><LI><a href="#[cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;puts
+<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__NVIC_SystemReset
+</UL>
+<BR>[Called By]<UL><LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscCyclic
+</UL>
+
+<P><STRONG><a name="[105]"></a>syn_assert_failed</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, syn_assert.o(.text.syn_assert_failed))
 <BR><BR>[Called By]<UL><LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_erase_all
 <LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_save
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_load
 <LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_init
 </UL>
 
-<P><STRONG><a name="[106]"></a>syn_crc16_ccitt_update</STRONG> (Thumb, 198 bytes, Stack size 8 bytes, syn_crc.o(.text.syn_crc16_ccitt_update))
+<P><STRONG><a name="[108]"></a>syn_crc16_ccitt_update</STRONG> (Thumb, 198 bytes, Stack size 8 bytes, syn_crc.o(.text.syn_crc16_ccitt_update))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = syn_crc16_ccitt_update
 </UL>
 <BR>[Called By]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_save
@@ -1868,8 +1884,8 @@ Global Symbols
 <P><STRONG><a name="[d9]"></a>syn_param_erase_all</STRONG> (Thumb, 92 bytes, Stack size 16 bytes, syn_param.o(.text.syn_param_erase_all))
 <BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = syn_param_erase_all &rArr; syn_port_flash_erase &rArr; HAL_FLASHEx_Erase &rArr; FLASH_WaitForLastOperation
 </UL>
-<BR>[Calls]<UL><LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_erase
-<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_assert_failed
+<BR>[Calls]<UL><LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_erase
+<LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_assert_failed
 </UL>
 <BR>[Called By]<UL><LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_erase
 </UL>
@@ -1877,10 +1893,10 @@ Global Symbols
 <P><STRONG><a name="[dc]"></a>syn_param_init</STRONG> (Thumb, 454 bytes, Stack size 104 bytes, syn_param.o(.text.syn_param_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = syn_param_init &rArr; syn_crc16_ccitt_update
 </UL>
-<BR>[Calls]<UL><LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_assert_failed
-<LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_crc16_ccitt_update
-<LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_read
-<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_sector_size
+<BR>[Calls]<UL><LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_assert_failed
+<LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_crc16_ccitt_update
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_read
+<LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_sector_size
 </UL>
 <BR>[Called By]<UL><LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_init
 </UL>
@@ -1888,9 +1904,9 @@ Global Symbols
 <P><STRONG><a name="[dd]"></a>syn_param_load</STRONG> (Thumb, 166 bytes, Stack size 32 bytes, syn_param.o(.text.syn_param_load))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = syn_param_load &rArr; syn_crc16_ccitt_update
 </UL>
-<BR>[Calls]<UL><LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_assert_failed
-<LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_crc16_ccitt_update
-<LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_read
+<BR>[Calls]<UL><LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_assert_failed
+<LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_crc16_ccitt_update
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_read
 </UL>
 <BR>[Called By]<UL><LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_init
 </UL>
@@ -1898,10 +1914,10 @@ Global Symbols
 <P><STRONG><a name="[db]"></a>syn_param_save</STRONG> (Thumb, 258 bytes, Stack size 40 bytes, syn_param.o(.text.syn_param_save))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = syn_param_save &rArr; syn_port_flash_write &rArr; syn_port_flash_write_word &rArr; HAL_FLASH_Program &rArr; FLASH_WaitForLastOperation
 </UL>
-<BR>[Calls]<UL><LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write
-<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_erase
-<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_assert_failed
-<LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_crc16_ccitt_update
+<BR>[Calls]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write
+<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_erase
+<LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_assert_failed
+<LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_crc16_ccitt_update
 </UL>
 <BR>[Called By]<UL><LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_init
 <LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_erase
@@ -1909,18 +1925,18 @@ Global Symbols
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_write
 </UL>
 
-<P><STRONG><a name="[102]"></a>syn_port_flash_erase</STRONG> (Thumb, 52 bytes, Stack size 32 bytes, flash.o(.text.syn_port_flash_erase))
+<P><STRONG><a name="[104]"></a>syn_port_flash_erase</STRONG> (Thumb, 52 bytes, Stack size 32 bytes, flash.o(.text.syn_port_flash_erase))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = syn_port_flash_erase &rArr; HAL_FLASHEx_Erase &rArr; FLASH_WaitForLastOperation
 </UL>
 <BR>[Calls]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FLASHEx_Erase
-<LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FLASH_Lock
-<LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FLASH_Unlock
+<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FLASH_Lock
+<LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FLASH_Unlock
 </UL>
 <BR>[Called By]<UL><LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_erase_all
 <LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_save
 </UL>
 
-<P><STRONG><a name="[105]"></a>syn_port_flash_read</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, flash.o(.text.syn_port_flash_read))
+<P><STRONG><a name="[107]"></a>syn_port_flash_read</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, flash.o(.text.syn_port_flash_read))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = syn_port_flash_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
@@ -1929,34 +1945,34 @@ Global Symbols
 <LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_init
 </UL>
 
-<P><STRONG><a name="[104]"></a>syn_port_flash_sector_size</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, flash.o(.text.syn_port_flash_sector_size))
+<P><STRONG><a name="[106]"></a>syn_port_flash_sector_size</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, flash.o(.text.syn_port_flash_sector_size))
 <BR><BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_init
 </UL>
 
-<P><STRONG><a name="[107]"></a>syn_port_flash_write</STRONG> (Thumb, 16 bytes, Stack size 8 bytes, flash.o(.text.syn_port_flash_write))
+<P><STRONG><a name="[109]"></a>syn_port_flash_write</STRONG> (Thumb, 16 bytes, Stack size 8 bytes, flash.o(.text.syn_port_flash_write))
 <BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = syn_port_flash_write &rArr; syn_port_flash_write_word &rArr; HAL_FLASH_Program &rArr; FLASH_WaitForLastOperation
 </UL>
-<BR>[Calls]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write_word
+<BR>[Calls]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write_word
 </UL>
 <BR>[Called By]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_param_save
 </UL>
 
-<P><STRONG><a name="[10a]"></a>syn_port_flash_write_word</STRONG> (Thumb, 124 bytes, Stack size 32 bytes, flash.o(.text.syn_port_flash_write_word))
+<P><STRONG><a name="[10c]"></a>syn_port_flash_write_word</STRONG> (Thumb, 124 bytes, Stack size 32 bytes, flash.o(.text.syn_port_flash_write_word))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = syn_port_flash_write_word &rArr; HAL_FLASH_Program &rArr; FLASH_WaitForLastOperation
 </UL>
-<BR>[Calls]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FLASH_Lock
-<LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FLASH_Unlock
+<BR>[Calls]<UL><LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FLASH_Lock
+<LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FLASH_Unlock
 <LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FLASH_Program
 <LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
-<BR>[Called By]<UL><LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write
+<BR>[Called By]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;syn_port_flash_write
 </UL>
 
-<P><STRONG><a name="[10b]"></a>__0printf$8</STRONG> (Thumb, 22 bytes, Stack size 24 bytes, printf8.o(i.__0printf$8), UNUSED)
-<BR><BR>[Calls]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<P><STRONG><a name="[10d]"></a>__0printf$8</STRONG> (Thumb, 22 bytes, Stack size 24 bytes, printf8.o(i.__0printf$8), UNUSED)
+<BR><BR>[Calls]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
-<P><STRONG><a name="[120]"></a>__1printf$8</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printf8.o(i.__0printf$8), UNUSED)
+<P><STRONG><a name="[122]"></a>__1printf$8</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printf8.o(i.__0printf$8), UNUSED)
 
 <P><STRONG><a name="[7f]"></a>__2printf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printf8.o(i.__0printf$8))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = __2printf
@@ -1970,7 +1986,7 @@ Global Symbols
 <LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DTCSnapshotIdentification
 <LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DTCSnapshotRecordByDTCNumber
 <LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DTCExtDataRecordByRecordNumber
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscRcvMessage
 <LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscCyclic
 <LI><a href="#[11]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_UploadDownloadFunctionalUnit_RequestTransferExit
 <LI><a href="#[10]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_UploadDownloadFunctionalUnit_TransferData
@@ -1993,23 +2009,23 @@ Global Symbols
 <LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sendNegativeResponse
 </UL>
 
-<P><STRONG><a name="[10d]"></a>__0snprintf$8</STRONG> (Thumb, 48 bytes, Stack size 40 bytes, printf8.o(i.__0snprintf$8), UNUSED)
-<BR><BR>[Calls]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<P><STRONG><a name="[10f]"></a>__0snprintf$8</STRONG> (Thumb, 48 bytes, Stack size 40 bytes, printf8.o(i.__0snprintf$8), UNUSED)
+<BR><BR>[Calls]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
-<P><STRONG><a name="[121]"></a>__1snprintf$8</STRONG> (Thumb, 0 bytes, Stack size 40 bytes, printf8.o(i.__0snprintf$8), UNUSED)
+<P><STRONG><a name="[123]"></a>__1snprintf$8</STRONG> (Thumb, 0 bytes, Stack size 40 bytes, printf8.o(i.__0snprintf$8), UNUSED)
 
-<P><STRONG><a name="[fe]"></a>__2snprintf</STRONG> (Thumb, 0 bytes, Stack size 40 bytes, printf8.o(i.__0snprintf$8))
+<P><STRONG><a name="[ff]"></a>__2snprintf</STRONG> (Thumb, 0 bytes, Stack size 40 bytes, printf8.o(i.__0snprintf$8))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = __2snprintf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
+<BR>[Called By]<UL><LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send_with_id
 </UL>
 
-<P><STRONG><a name="[122]"></a>__scatterload_copy</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_copy), UNUSED)
+<P><STRONG><a name="[124]"></a>__scatterload_copy</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_copy), UNUSED)
 
-<P><STRONG><a name="[123]"></a>__scatterload_null</STRONG> (Thumb, 2 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_null), UNUSED)
+<P><STRONG><a name="[125]"></a>__scatterload_null</STRONG> (Thumb, 2 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_null), UNUSED)
 
-<P><STRONG><a name="[124]"></a>__scatterload_zeroinit</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_zeroinit), UNUSED)
+<P><STRONG><a name="[126]"></a>__scatterload_zeroinit</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_zeroinit), UNUSED)
 
 <P><STRONG><a name="[c6]"></a>fputs</STRONG> (Thumb, 24 bytes, Stack size 16 bytes, fputs.o(i.fputs))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = fputs &rArr; fputc &rArr; HAL_UART_Transmit
@@ -2032,7 +2048,8 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fputc
 </UL>
-<BR>[Called By]<UL><LI><a href="#[3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformation
+<BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;on_ecu_reset
+<LI><a href="#[3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformation
 <LI><a href="#[2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_StoredDataTransmissionFunctionalUnit_ClearDiagnosticInformation
 <LI><a href="#[c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_DTC_LookupTable_header_SET
 </UL>
@@ -2046,14 +2063,14 @@ Local Symbols
 <P><STRONG><a name="[66]"></a>receive</STRONG> (Thumb, 40 bytes, Stack size 16 bytes, isotp_socket.o(.text.receive))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = receive &rArr; isotp_receive
 </UL>
-<BR>[Calls]<UL><LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_receive
+<BR>[Calls]<UL><LI><a href="#[fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_receive
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> isotp_socket.o(.rodata.isotp_socket)
 </UL>
 <P><STRONG><a name="[67]"></a>transmit</STRONG> (Thumb, 38 bytes, Stack size 16 bytes, isotp_socket.o(.text.transmit))
 <BR><BR>[Stack]<UL><LI>Max Depth = 264<LI>Call Chain = transmit &rArr; isotp_send &rArr; isotp_send_with_id &rArr; __aeabi_assert &rArr; fwrite &rArr; fputc &rArr; HAL_UART_Transmit
 </UL>
-<BR>[Calls]<UL><LI><a href="#[fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send
+<BR>[Calls]<UL><LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isotp_send
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> isotp_socket.o(.rodata.isotp_socket)
 </UL>
@@ -2061,6 +2078,10 @@ Local Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = charon_deleteDTC_inNvm
 </UL>
 <BR>[Called By]<UL><LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_deleteDTC
+</UL>
+
+<P><STRONG><a name="[102]"></a>__NVIC_SystemReset</STRONG> (Thumb, 42 bytes, Stack size 0 bytes, sessionandservicecontrol.o(.text.__NVIC_SystemReset))
+<BR><BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;on_ecu_reset
 </UL>
 
 <P><STRONG><a name="[87]"></a>DTCExtDataRecordByRecordNumber</STRONG> (Thumb, 276 bytes, Stack size 40 bytes, storeddatatransmissionfunctionalunit.o(.text.DTCExtDataRecordByRecordNumber))
@@ -2251,7 +2272,7 @@ Local Symbols
 <P><STRONG><a name="[e7]"></a>requestTransfer</STRONG> (Thumb, 476 bytes, Stack size 56 bytes, uploaddownloadfunctionalunit.o(.text.requestTransfer))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = requestTransfer &rArr; charon_sendNegativeResponse &rArr; charon_sscTxMessage &rArr; __2printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_checkAddressRange
+<BR>[Calls]<UL><LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_NvmDriver_checkAddressRange
 <LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sscTxMessage
 <LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_sendNegativeResponse
 <LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
@@ -2260,21 +2281,21 @@ Local Symbols
 <LI><a href="#[e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;charon_UploadDownloadFunctionalUnit_RequestDownload
 </UL>
 
-<P><STRONG><a name="[10c]"></a>_printf_core</STRONG> (Thumb, 996 bytes, Stack size 104 bytes, printf8.o(i._printf_core), UNUSED)
+<P><STRONG><a name="[10e]"></a>_printf_core</STRONG> (Thumb, 996 bytes, Stack size 104 bytes, printf8.o(i._printf_core), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_uldivmod
-<LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_pre_padding
-<LI><a href="#[10f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_post_padding
+<LI><a href="#[110]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_pre_padding
+<LI><a href="#[111]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_post_padding
 </UL>
-<BR>[Called By]<UL><LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0snprintf$8
-<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0printf$8
-</UL>
-
-<P><STRONG><a name="[10f]"></a>_printf_post_padding</STRONG> (Thumb, 36 bytes, Stack size 24 bytes, printf8.o(i._printf_post_padding), UNUSED)
-<BR><BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<BR>[Called By]<UL><LI><a href="#[10f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0snprintf$8
+<LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0printf$8
 </UL>
 
-<P><STRONG><a name="[10e]"></a>_printf_pre_padding</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, printf8.o(i._printf_pre_padding), UNUSED)
-<BR><BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<P><STRONG><a name="[111]"></a>_printf_post_padding</STRONG> (Thumb, 36 bytes, Stack size 24 bytes, printf8.o(i._printf_post_padding), UNUSED)
+<BR><BR>[Called By]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+</UL>
+
+<P><STRONG><a name="[110]"></a>_printf_pre_padding</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, printf8.o(i._printf_pre_padding), UNUSED)
+<BR><BR>[Called By]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
 <P><STRONG><a name="[64]"></a>_snputc</STRONG> (Thumb, 22 bytes, Stack size 0 bytes, printf8.o(i._snputc))

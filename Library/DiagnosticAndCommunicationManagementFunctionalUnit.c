@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include "DiagnosticAndCommunicationManagementFunctionalUnit.h"
 #include "SessionAndServiceControl.h"
+#include "interface_clock.h"
 #include "interface_debug.h"
 #include "negativeResponse.h"
 #include "ServiceLookupTable.h"
@@ -14,6 +15,7 @@
 /* Macros ********************************************************************/
 
 /* Types *********************************************************************/
+uds_reset_t ecu_reset;
 
 /**
  * Container Type for Timings
@@ -120,8 +122,38 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Dia
 
 uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_EcuReset (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
 {
-    (void)receiveBuffer;
-    (void)receiveBufferSize;
+    static uint8_t s_buffer[2];
+    uint8_t sub;
+
+    if ((receiveBuffer == NULL) || (receiveBufferSize != 2u))
+    {
+        CHARON_ERROR("Unexpected message length.");
+        charon_sendNegativeResponse(
+            uds_responseCode_IncorrectMessageLengthOrInvalidFormat,
+            uds_sid_EcuReset);
+        return uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+    }
+
+    sub = receiveBuffer[1] & 0x7Fu;
+    if ((sub < RESET_HARD) ||
+        (sub > RESET_DISABLE_RAPID_POWER_SHUTDOWN))
+    {
+        charon_sendNegativeResponse(
+            uds_responseCode_SubfunctionNotSupported,
+            uds_sid_EcuReset);
+        return uds_responseCode_SubfunctionNotSupported;
+    }
+
+    ecu_reset.reset_type_requested = sub;
+    ecu_reset.reset_wait_elapsed_ms = charon_interface_clock_getTime();
+
+    if ((receiveBuffer[1] & 0x80u) == 0u)
+    {
+        s_buffer[0] = (uint8_t)uds_sid_EcuReset | (uint8_t)uds_sid_PositiveResponseMask;
+        s_buffer[1] = sub;
+        charon_sscTxMessage(s_buffer, sizeof(s_buffer));
+    }
+
     CHARON_INFO("ECU Reset Service SID:0x11 Triggered");
     return uds_responseCode_ServiceNotSupported;
 }

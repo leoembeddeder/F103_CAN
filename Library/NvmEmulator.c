@@ -247,6 +247,155 @@ static void charon_NvmDriver_seedDefaultDTCs(void)
 
         charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm(dtc, snap, stored, ext);
     }
+
+    /* DTC 5: C100616 - Battery Volt High */
+    {
+        DTC_t dtc;
+        memset(&dtc, 0, sizeof(dtc));
+        dtc.DTCHighByte = 0xD0;
+        dtc.DTCMiddleByte = 0x06;
+        dtc.DTCLowByte = 0x16;
+        dtc.DTCStatusMask = 0x08;
+        dtc.statusOfDTC = 0x08;
+        dtc.DTCSeverityMask = 0x80;
+        dtc.DTCSeverityMaskRecordHigh = 0x80;
+        dtc.DTCSeverityMaskRecordLow = 0x08;
+        dtc.FunctionalGroupIdentifier = 0xD0;
+        dtc.DTCSettingType = 0x01;
+
+        DTC_SnapshotData_t snap;
+        memset(&snap, 0, sizeof(snap));
+        snap.DTCSnapshotDataRecordNumberOfIdentifiers = 0x01;
+        snap.DTCSnapshotDataPayload[0] = 0x12;
+        snap.DTCSnapshotDataPayload[1] = 0x34;
+        dtc.DTCSnapshotLength[0] = 0x02;
+
+        DTC_StoredData_t stored;
+        memset(&stored, 0, sizeof(stored));
+        stored.DTCStoredDataRecordNumberOfIdentifiers = 0x01;
+        stored.DTCStoredDataPayload[0] = 0xEE;
+        dtc.DTCStoredDataLength[0] = 0x01;
+
+        DTC_ExtendedData_t ext;
+        memset(&ext, 0, sizeof(ext));
+        ext.DTCExtendedDataRecordNumberOfIdentifiers = 0x01;
+        ext.DTCExtendedDataPayload[0] = 0x03;
+        dtc.DTCExtendedDataLength[0] = 0x01;
+
+        charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm(dtc, snap, stored, ext);
+    }
+
+    /* DTC 6: C100617 - Battery Volt Low  */
+    {
+        DTC_t dtc;
+        memset(&dtc, 0, sizeof(dtc));
+        dtc.DTCHighByte = 0xD0;
+        dtc.DTCMiddleByte = 0x06;
+        dtc.DTCLowByte = 0x17;
+        dtc.DTCStatusMask = 0x08;
+        dtc.statusOfDTC = 0x08;
+        dtc.DTCSeverityMask = 0x80;
+        dtc.DTCSeverityMaskRecordHigh = 0x80;
+        dtc.DTCSeverityMaskRecordLow = 0x08;
+        dtc.FunctionalGroupIdentifier = 0xD0;
+        dtc.DTCSettingType = 0x01;
+
+        DTC_SnapshotData_t snap;
+        memset(&snap, 0, sizeof(snap));
+        snap.DTCSnapshotDataRecordNumberOfIdentifiers = 0x01;
+        snap.DTCSnapshotDataPayload[0] = 0x12;
+        snap.DTCSnapshotDataPayload[1] = 0x34;
+        dtc.DTCSnapshotLength[0] = 0x02;
+
+        DTC_StoredData_t stored;
+        memset(&stored, 0, sizeof(stored));
+        stored.DTCStoredDataRecordNumberOfIdentifiers = 0x01;
+        stored.DTCStoredDataPayload[0] = 0xEE;
+        dtc.DTCStoredDataLength[0] = 0x01;
+
+        DTC_ExtendedData_t ext;
+        memset(&ext, 0, sizeof(ext));
+        ext.DTCExtendedDataRecordNumberOfIdentifiers = 0x01;
+        ext.DTCExtendedDataPayload[0] = 0x03;
+        dtc.DTCExtendedDataLength[0] = 0x01;
+
+        charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm(dtc, snap, stored, ext);
+    }
+
+    /* DTC 7: C100618 - Can Bus Off  */
+    {
+        DTC_t dtc;
+        memset(&dtc, 0, sizeof(dtc));
+        dtc.DTCHighByte = 0xD0;
+        dtc.DTCMiddleByte = 0x06;
+        dtc.DTCLowByte = 0x18;
+        dtc.DTCStatusMask = 0x08;
+        dtc.statusOfDTC = 0x08;
+        dtc.DTCSeverityMask = 0x80;
+        dtc.DTCSeverityMaskRecordHigh = 0x80;
+        dtc.DTCSeverityMaskRecordLow = 0x08;
+        dtc.FunctionalGroupIdentifier = 0xD0;
+        dtc.DTCSettingType = 0x01;
+
+        DTC_SnapshotData_t snap;
+        memset(&snap, 0, sizeof(snap));
+        snap.DTCSnapshotDataRecordNumberOfIdentifiers = 0x01;
+        snap.DTCSnapshotDataPayload[0] = 0x12;
+        snap.DTCSnapshotDataPayload[1] = 0x34;
+        dtc.DTCSnapshotLength[0] = 0x02;
+
+        DTC_StoredData_t stored;
+        memset(&stored, 0, sizeof(stored));
+        stored.DTCStoredDataRecordNumberOfIdentifiers = 0x01;
+        stored.DTCStoredDataPayload[0] = 0xEE;
+        dtc.DTCStoredDataLength[0] = 0x01;
+
+        DTC_ExtendedData_t ext;
+        memset(&ext, 0, sizeof(ext));
+        ext.DTCExtendedDataRecordNumberOfIdentifiers = 0x01;
+        ext.DTCExtendedDataPayload[0] = 0x03;
+        dtc.DTCExtendedDataLength[0] = 0x01;
+
+        charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm(dtc, snap, stored, ext);
+    }
+
+    /* DTC 8: C100619 - SysPrs Sig Lost  */
+    {
+        DTC_t dtc;
+        memset(&dtc, 0, sizeof(dtc));
+        dtc.DTCHighByte = 0xD0;
+        dtc.DTCMiddleByte = 0x06;
+        dtc.DTCLowByte = 0x19;
+        dtc.DTCStatusMask = 0x08;
+        dtc.statusOfDTC = 0x08;
+        dtc.DTCSeverityMask = 0x80;
+        dtc.DTCSeverityMaskRecordHigh = 0x80;
+        dtc.DTCSeverityMaskRecordLow = 0x08;
+        dtc.FunctionalGroupIdentifier = 0xD0;
+        dtc.DTCSettingType = 0x01;
+
+        DTC_SnapshotData_t snap;
+        memset(&snap, 0, sizeof(snap));
+        snap.DTCSnapshotDataRecordNumberOfIdentifiers = 0x01;
+        snap.DTCSnapshotDataPayload[0] = 0x12;
+        snap.DTCSnapshotDataPayload[1] = 0x34;
+        dtc.DTCSnapshotLength[0] = 0x02;
+
+        DTC_StoredData_t stored;
+        memset(&stored, 0, sizeof(stored));
+        stored.DTCStoredDataRecordNumberOfIdentifiers = 0x01;
+        stored.DTCStoredDataPayload[0] = 0xEE;
+        dtc.DTCStoredDataLength[0] = 0x01;
+
+        DTC_ExtendedData_t ext;
+        memset(&ext, 0, sizeof(ext));
+        ext.DTCExtendedDataRecordNumberOfIdentifiers = 0x01;
+        ext.DTCExtendedDataPayload[0] = 0x03;
+        dtc.DTCExtendedDataLength[0] = 0x01;
+
+        charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm(dtc, snap, stored, ext);
+    }
+
 }
 
 void charon_NvmDriver_init(void)
@@ -264,7 +413,7 @@ void charon_NvmDriver_init(void)
             {
                 charon_NvmDriver_reanchorPointers();
                 s_nvmInitialized = true;
-                return;//
+                return;
             }
         }
     }

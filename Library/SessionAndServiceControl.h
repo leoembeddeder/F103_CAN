@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include "isotp_socket.h"
-
+#include "main.h"
 /* Constants *****************************************************************/
 
 /* Macros ********************************************************************/
@@ -66,5 +66,8 @@ charon_sessionTypes_t charon_sscGetSession (void);
 
 /** @brief Function checks timestamp for tester present heartbeat. */
 void charon_sscTesterPresentHeartbeat(void);
+
+void on_ecu_reset(uint8_t reset_type);
+
 
 #endif 

@@ -38,7 +38,7 @@ I (..\Library\uds.h)(0x6AAE0EE4)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
 I (..\Library\uds_config.h)(0x6AAE0EE4)
 I (..\Library\NvmEmulator.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
 F (../Core/Src/gpio.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/gpio.o -MMD)
 I (..\Core\Inc\gpio.h)(0x6AAE0EE4)
 I (..\Core\Inc\main.h)(0x6AAE35EC)
@@ -616,28 +616,95 @@ I (..\TP\isotp_user.h)(0x6AAE325D)
 F (..\Library\crc16.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/crc16.o -MMD)
 I (..\Library\crc16.h)(0x6AAE0EE4)
 F (..\Library\DataLookupTable.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/datalookuptable.o -MMD)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
 I (..\Library\DataLookupTable.h)(0x6AAE0EE4)
 I (..\Library\ServiceLookupTable.h)(0x6AAE0EE4)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 F (..\Library\DataTransmissionFunctionalUnit.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/datatransmissionfunctionalunit.o -MMD)
 I (..\Library\uds.h)(0x6AAE0EE4)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
 I (..\Library\uds_config.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
 I (..\Library\interface_debug.h)(0x6AAE0EE4)
 I (..\Library\interface_clock.h)(0x6AAE2E1E)
 I (..\Library\DataLookupTable.h)(0x6AAE0EE4)
 I (..\Library\negativeResponse.h)(0x6AAE0EE4)
 I (..\Library\NvmEmulator.h)(0x6AAE0EE4)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 I (..\Library\DataTransmissionFunctionalUnit.h)(0x6AAE0EE4)
-F (..\Library\DiagnosticAndCommunicationManagementFunctionalUnit.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/diagnosticandcommunicationmanagementfunctionalunit.o -MMD)
+F (..\Library\DiagnosticAndCommunicationManagementFunctionalUnit.c)(0x6AAE3BCF)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/diagnosticandcommunicationmanagementfunctionalunit.o -MMD)
 I (..\Library\DiagnosticAndCommunicationManagementFunctionalUnit.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
+I (..\Library\interface_clock.h)(0x6AAE2E1E)
 I (..\Library\interface_debug.h)(0x6AAE0EE4)
 I (..\Library\uds.h)(0x6AAE0EE4)
 I (..\Library\uds_config.h)(0x6AAE0EE4)
@@ -645,24 +712,68 @@ I (..\Library\negativeResponse.h)(0x6AAE0EE4)
 I (..\Library\ServiceLookupTable.h)(0x6AAE0EE4)
 I (..\Library\StoredDataTransmissionFunctionalUnit.h)(0x6AAE0EE4)
 F (..\Library\DTC_LookupTable.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/dtc_lookuptable.o -MMD)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
 I (..\Library\uds_config.h)(0x6AAE0EE4)
 I (..\Library\DTC_LookupTable.h)(0x6AAE0EE4)
 I (..\Library\StoredDataTransmissionFunctionalUnit.h)(0x6AAE0EE4)
 I (..\Library\negativeResponse.h)(0x6AAE0EE4)
 I (..\Library\NvmEmulator.h)(0x6AAE0EE4)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 I (..\Library\interface_debug.h)(0x6AAE0EE4)
 I (..\Library\uds.h)(0x6AAE0EE4)
 F (..\Library\InputOutputControlFunctionalUnit.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/inputoutputcontrolfunctionalunit.o -MMD)
 I (..\Library\InputOutputControlFunctionalUnit.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
 I (..\Library\interface_debug.h)(0x6AAE0EE4)
 I (..\Library\uds.h)(0x6AAE0EE4)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
 I (..\Library\uds_config.h)(0x6AAE0EE4)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 I (..\Library\negativeResponse.h)(0x6AAE0EE4)
 F (..\Library\interface_clock.c)(0x6AAE2E2E)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/interface_clock.o -MMD)
 I (..\Library\interface_clock.h)(0x6AAE2E1E)
@@ -690,16 +801,38 @@ I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
 I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 F (..\Library\negativeResponse.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/negativeresponse.o -MMD)
 I (..\Library\negativeResponse.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 I (..\Library\ServiceLookupTable.h)(0x6AAE0EE4)
 I (..\Library\interface_debug.h)(0x6AAE0EE4)
 I (..\Library\uds.h)(0x6AAE0EE4)
 I (..\Library\uds_config.h)(0x6AAE0EE4)
-F (..\Library\NvmEmulator.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/nvmemulator.o -MMD)
+F (..\Library\NvmEmulator.c)(0x6AAE3F7B)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/nvmemulator.o -MMD)
 I (..\Library\NvmEmulator.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
 I (..\Library\StoredDataTransmissionFunctionalUnit.h)(0x6AAE0EE4)
 I (..\Library\uds_config.h)(0x6AAE0EE4)
 I (..\Library\DTC_LookupTable.h)(0x6AAE0EE4)
@@ -734,16 +867,60 @@ I (..\SyntropicOS\syn_assert.h)(0x6AAE0EE4)
 I (..\SyntropicOS\syn_crc.h)(0x6AAE0EE4)
 F (..\Library\RoutineFunctionalUnit.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/routinefunctionalunit.o -MMD)
 I (..\Library\NvmEmulator.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
 I (..\Library\RoutineFunctionalUnit.h)(0x6AAE0EE4)
 I (..\Library\negativeResponse.h)(0x6AAE0EE4)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 F (..\Library\ServiceLookupTable.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/servicelookuptable.o -MMD)
 I (..\Library\ServiceLookupTable.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 I (..\Library\DiagnosticAndCommunicationManagementFunctionalUnit.h)(0x6AAE0EE4)
 I (..\Library\RoutineFunctionalUnit.h)(0x6AAE0EE4)
 I (..\Library\UploadDownloadFunctionalUnit.h)(0x6AAE0EE4)
@@ -751,11 +928,33 @@ I (..\Library\InputOutputControlFunctionalUnit.h)(0x6AAE0EE4)
 I (..\Library\StoredDataTransmissionFunctionalUnit.h)(0x6AAE0EE4)
 I (..\Library\uds_config.h)(0x6AAE0EE4)
 I (..\Library\DataTransmissionFunctionalUnit.h)(0x6AAE0EE4)
-F (..\Library\SessionAndServiceControl.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/sessionandservicecontrol.o -MMD)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+F (..\Library\SessionAndServiceControl.c)(0x6AAE3BC2)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/sessionandservicecontrol.o -MMD)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 I (..\Library\ServiceLookupTable.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
 I (..\Library\negativeResponse.h)(0x6AAE0EE4)
 I (..\Library\interface_clock.h)(0x6AAE2E1E)
 I (..\Library\interface_debug.h)(0x6AAE0EE4)
@@ -764,7 +963,7 @@ I (..\Library\uds_config.h)(0x6AAE0EE4)
 I (..\Library\DataTransmissionFunctionalUnit.h)(0x6AAE0EE4)
 F (..\Library\StoredDataTransmissionFunctionalUnit.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/storeddatatransmissionfunctionalunit.o -MMD)
 I (..\Library\crc16.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
 I (..\Library\DTC_LookupTable.h)(0x6AAE0EE4)
 I (..\Library\StoredDataTransmissionFunctionalUnit.h)(0x6AAE0EE4)
 I (..\Library\uds_config.h)(0x6AAE0EE4)
@@ -773,25 +972,91 @@ I (..\Library\uds.h)(0x6AAE0EE4)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
 I (..\Library\negativeResponse.h)(0x6AAE0EE4)
 I (..\Library\NvmEmulator.h)(0x6AAE0EE4)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 F (..\Library\uds.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/uds.o -MMD)
 I (..\Library\uds.h)(0x6AAE0EE4)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
 I (..\Library\uds_config.h)(0x6AAE0EE4)
 I (..\Library\DiagnosticAndCommunicationManagementFunctionalUnit.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
 I (..\Library\UploadDownloadFunctionalUnit.h)(0x6AAE0EE4)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 I (..\Library\interface_debug.h)(0x6AAE0EE4)
 F (..\Library\UploadDownloadFunctionalUnit.c)(0x6AAE0EE4)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/uploaddownloadfunctionalunit.o -MMD)
 I (..\Library\NvmEmulator.h)(0x6AAE0EE4)
-I (..\Library\uds_types.h)(0x6AAE0EE4)
+I (..\Library\uds_types.h)(0x6AAE3BA2)
 I (..\Library\interface_debug.h)(0x6AAE0EE4)
 I (..\Library\uds.h)(0x6AAE0EE4)
 I (..\TP\isotp_socket.h)(0x6AAE3543)
 I (..\Library\uds_config.h)(0x6AAE0EE4)
 I (..\Library\UploadDownloadFunctionalUnit.h)(0x6AAE0EE4)
-I (..\Library\SessionAndServiceControl.h)(0x6AAE0EE4)
+I (..\Library\SessionAndServiceControl.h)(0x6AAE3AAB)
+I (..\Core\Inc\main.h)(0x6AAE35EC)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h)(0x6AAE0EE4)
+I (..\Core\Inc\stm32f1xx_hal_conf.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xe.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Include\core_cm3.h)(0x6AAE0EE4)
+I (..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_can.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h)(0x6AAE0EE4)
+I (..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h)(0x6AAE0EE4)
 I (..\Library\negativeResponse.h)(0x6AAE0EE4)
 F (D:/Keil_v5/Packs/Keil/ARM_Compiler/1.7.2/Source/retarget_io.c)(0x672C0BC0)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__MICROLIB -gdwarf-4 -O3 -ffunction-sections -w -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../SyntropicOS -I ../flash -I ../Library -I ../TP-I./RTE/_STM32F103-ID:/Keil_v5/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-ID:/Keil_v5/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include-D__UVISION_VERSION="541" -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o stm32f103/retarget_io.o -MMD)
 I (RTE\_STM32F103\RTE_Components.h)(0x6AAE0F0D)

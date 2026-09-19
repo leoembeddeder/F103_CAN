@@ -153,6 +153,36 @@ void charon_sscInit (ISocket_t sscComSocket)
     s_systemComSocket = sscComSocket;
 }
 
+void on_ecu_reset(uint8_t reset_type)
+{
+	switch(reset_type)
+	{
+		case RESET_HARD:
+			printf("on hardReset\r\n");
+    		NVIC_SystemReset(); /* Runs 50 ms after 0x51 frame is sent */
+			break;
+		case RESET_KEY_OFF_ON:
+			printf("on keyOffOnReset\r\n");
+    		NVIC_SystemReset(); /* Runs 50 ms after 0x51 frame is sent */
+			break;
+		case RESET_SOFT:
+			printf("on softReset\r\n");
+    		NVIC_SystemReset(); /* Runs 50 ms after 0x51 frame is sent */
+			break;
+		case RESET_ENABLE_RAPID_POWER_SHUTDOWN:
+			printf("on enableRapidPowerShutDown\r\n");
+    		NVIC_SystemReset(); /* Runs 50 ms after 0x51 frame is sent */
+			break;
+		case RESET_DISABLE_RAPID_POWER_SHUTDOWN:
+			printf("on disableRapidPowerShutDown\r\n");
+    		NVIC_SystemReset(); /* Runs 50 ms after 0x51 frame is sent */
+			break;
+		default:
+        	NVIC_SystemReset();
+        	break;
+	}
+}
+
 void charon_sscCyclic (void)
 {
     /* Check Diagnostic Session */
@@ -171,6 +201,17 @@ void charon_sscCyclic (void)
         /* Reset Flag for P2 and P2* distinguish */
         s_p2PendingExceededHandled = false;
     }
+
+	if (ecu_reset.reset_type_requested > 0U)
+	{
+		if (charon_interface_clock_getTime() - ecu_reset.reset_wait_elapsed_ms > DEFAULT_RESET_TX_WAIT_MS)
+		{
+			uint8_t reset_type = ecu_reset.reset_type_requested;
+			ecu_reset.reset_type_requested = 0U;
+			ecu_reset.reset_wait_elapsed_ms = 0U;
+			on_ecu_reset(reset_type);
+		}
+	}
 
     charon_DataTransmissionFunctionalUnit_SendPeriodic(); /** @todo ends in an circle dependence, needs task fix in future*/
 }
