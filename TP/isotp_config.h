@@ -65,7 +65,7 @@
  * Pad transmitted Classical CAN frames to TX_DL. CAN FD frames larger than
  * eight bytes are always padded to a legal CAN FD data length.
  */
-#ifdef DOXYGEN
+#if 1//#ifdef DOXYGEN
     #define ISO_TP_FRAME_PADDING
 #endif
 
@@ -86,7 +86,7 @@
 
 /** Byte written into unused padded frame positions. */
 #ifndef ISO_TP_FRAME_PADDING_VALUE
-    #define ISO_TP_FRAME_PADDING_VALUE 0xAA
+    #define ISO_TP_FRAME_PADDING_VALUE 0xCC
 #endif
 
 /** @def ISO_TP_USER_SEND_CAN_ARG

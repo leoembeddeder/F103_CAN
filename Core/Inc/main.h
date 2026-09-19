@@ -32,6 +32,11 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include <stdarg.h>
+
 
 /* USER CODE END Includes */
 
@@ -44,6 +49,8 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+uint32_t GetTickMS(void); 
+void DelayMS(uint32_t delay); 
 
 /* USER CODE END EC */
 

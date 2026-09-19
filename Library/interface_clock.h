@@ -12,7 +12,6 @@
 /* Types *********************************************************************/
 
 /* Interfaces ****************************************************************/
-uint32_t drvClocks_getRuntime(void);
 
 /** @brief Get Current System Time (preferable as Timestamp in ms).
  *

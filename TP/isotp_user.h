@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,6 +28,7 @@ extern "C" {
  * @param[in] ... Optional format arguments.
  */
 void isotp_user_debug(const char* message, ...);
+
 
 /**
  * @brief Submit one CAN or CAN FD frame to the application's driver.

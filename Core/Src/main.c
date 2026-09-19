@@ -99,14 +99,10 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   CAN_Handler_Init();
-
   isotp_socket_init();
   charon_init(isotp_socket);
   charon_NvmDriver_init(); /* Load persistent DTCs from Flash */
   
-
-
-
   //printf("stm32 can test\r\n");
 
   //stm32f103_flash_test();
@@ -168,6 +164,15 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+uint32_t GetTickMS(void)
+{
+    return HAL_GetTick();
+}
+
+void DelayMS(uint32_t delay)
+{ 
+    HAL_Delay(delay); 
+}
 
 /* USER CODE END 4 */
 

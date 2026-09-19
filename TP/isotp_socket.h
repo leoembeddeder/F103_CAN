@@ -24,14 +24,11 @@ extern const ISocket_t isotp_socket;
  * ISO-TP and CAN driver are initialized by this
  * function.
  */
-void isotp_socket_init (void);
+void isotp_socket_init(void);
+void isotp_socket_task(void);
+uint32_t TpGetDroppedFrameCount(void);
+uint32_t TpGetTransmitErrorCount(void);
+void TpRecordCanTxError(void);
 
-/**
- * @brief Cyclic handling of ISO-TP stuff.
- * CAN bus is polled for new messages and
- * ISO-TP is handled in this function.
- * It must be called on a regular basis.
- */
-void isotp_socket_task (void);
 
 #endif 
