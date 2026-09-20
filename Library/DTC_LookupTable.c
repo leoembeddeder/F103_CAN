@@ -53,6 +53,9 @@ static const uint8_t DTCStatusAvailabilityMask =
     DTC_Enable_warningIndicatorRequested_Status_Bit             << 7u 
 );
 
+/** @brief ISO 14229-1 / AUTOSAR Dem fault detection debouncing counters (-128 to +127) */
+static int8_t s_faultCounters[AMOUNT_OF_DTC] = {0};
+
 
 /* Private Function Definitions **********************************************/
 
@@ -628,6 +631,7 @@ void charon_deleteDTC (uint8_t DTCHighByte, uint8_t DTCMiddleByte, uint8_t DTCLo
     if (delAll)
     {
         memset(DTC_header,0x00,sizeof(DTC_header_t));
+        memset(s_faultCounters, 0, sizeof(s_faultCounters));
         DTC_header->iniDone = NVM_SCHEMA_MAGIC;
         charon_StoredDataTransmissionFunctionalUnit_CRC16_update();
     }
@@ -743,6 +747,11 @@ static void charon_deleteDTC_inNvm (uint16_t found, uint32_t aDTC, uint32_t aDTC
 
     DTC_header->currentDTCCounter--;
     DTC_header->deletedDTCCounter++;
+
+    if (found < AMOUNT_OF_DTC)
+    {
+        s_faultCounters[found] = 0;
+    }
 }
 
 
@@ -766,3 +775,360 @@ static bool charon_DTC_LookupTable_DTClookupTableValidCheck(uint32_t input, uint
 }
 
 
+/* ===========================================================================
+ * AUTOSAR Dem / ISO 14229-1 Fault Debounce & Application Logic Handlers
+ * (Issue #71 & #66)
+ * =========================================================================== */
+
+static DTC_t* find_dtc_entry(uint32_t dtc_number, uint32_t *out_idx)
+{
+    uint8_t h = (uint8_t)((dtc_number >> 16) & 0xFFU);
+    uint8_t m = (uint8_t)((dtc_number >> 8) & 0xFFU);
+    uint8_t l = (uint8_t)(dtc_number & 0xFFU);
+
+    DTC_t *dtc_base = (DTC_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    DTC_header_t *hdr = (DTC_header_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
+    if (hdr == NULL || dtc_base == NULL)
+    {
+        return NULL;
+    }
+    for (uint32_t i = 0; i < hdr->totalDTCCounter && i < AMOUNT_OF_DTC; i++)
+    {
+        if (dtc_base[i].DTCHighByte == h &&
+            dtc_base[i].DTCMiddleByte == m &&
+            dtc_base[i].DTCLowByte == l)
+        {
+            if (out_idx != NULL)
+            {
+                *out_idx = i;
+            }
+            return &dtc_base[i];
+        }
+    }
+    return NULL;
+}
+
+static void init_default_snapshot(OBD_Global_Snapshot_Format *snap)
+{
+    if (snap != NULL)
+    {
+        snap->voltage = 120U; /* 12.0V default */
+        snap->global_power_mode = 0x03U; /* ON */
+        snap->st_global_snapshot_datatime.year = 26U;
+        snap->st_global_snapshot_datatime.month = 9U;
+        snap->st_global_snapshot_datatime.day = 20U;
+        snap->st_global_snapshot_datatime.hour = 12U;
+        snap->st_global_snapshot_datatime.minute = 0U;
+        snap->st_global_snapshot_datatime.second = 0U;
+    }
+}
+
+bool uds_dtc_app_report_event(uint32_t dtc_number, bool failed)
+{
+    uint32_t idx = 0;
+    DTC_t *dtc = find_dtc_entry(dtc_number, &idx);
+    if (dtc == NULL || idx >= AMOUNT_OF_DTC)
+    {
+        return false;
+    }
+
+    if (dtc->DTCSettingType == 0x02)
+    {
+        return true; /* Setting disabled: updates suppressed per ISO 14229-1 */
+    }
+
+    OBD_Extended_Data_Format ext_data;
+    memset(&ext_data, 0, sizeof(ext_data));
+    if (dtc->DTCExtendedDataAddress[0] != NULL && dtc->DTCExtendedDataLength[0] >= sizeof(OBD_Extended_Data_Format))
+    {
+        memcpy(&ext_data, dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, sizeof(OBD_Extended_Data_Format));
+    }
+
+    if (failed)
+    {
+        if (s_faultCounters[idx] <= (127 - 16))
+        {
+            s_faultCounters[idx] = (int8_t)(s_faultCounters[idx] + 16);
+        }
+        else
+        {
+            s_faultCounters[idx] = 127;
+        }
+
+        if (s_faultCounters[idx] > 0)
+        {
+            dtc->DTCStatusMask |= UDS_DTC_STATUS_PENDING;
+            if (ext_data.fault_pending_counter < 255U)
+            {
+                ext_data.fault_pending_counter++;
+            }
+        }
+
+        if (s_faultCounters[idx] >= 127)
+        {
+            uint8_t failed_mask = (uint8_t)(UDS_DTC_STATUS_TEST_FAILED |
+                                            UDS_DTC_STATUS_TEST_FAILED_THIS_CYCLE |
+                                            UDS_DTC_STATUS_PENDING |
+                                            UDS_DTC_STATUS_CONFIRMED |
+                                            UDS_DTC_STATUS_TEST_FAILED_SLC);
+            uint8_t completed_mask = (uint8_t)(UDS_DTC_STATUS_TEST_NOT_COMPLETED_SLC |
+                                               UDS_DTC_STATUS_TEST_NOT_COMPLETED_TOC);
+            s_faultCounters[idx] = 127;
+            dtc->DTCStatusMask |= failed_mask;
+            dtc->DTCStatusMask &= (uint8_t)~completed_mask;
+
+            if (ext_data.fault_occur_counter < 255U)
+            {
+                ext_data.fault_occur_counter++;
+            }
+            ext_data.ageing_counter = 0U;
+
+            if (dtc->DTCSnapshotAddress[0] == NULL)
+            {
+                dtc->DTCSnapshotAddress[0] = (DTC_SnapshotData_t *)charon_NvmDriver_getNvmAddress_for_Snapshot(idx);
+            }
+            if (dtc->DTCSnapshotAddress[0] != NULL && dtc->DTCSnapshotLength[0] == 0)
+            {
+                OBD_Global_Snapshot_Format snap;
+                init_default_snapshot(&snap);
+                dtc->DTCSnapshotRecordNumber[0] = 0x01U;
+                dtc->DTCSnapshotLength[0] = (uint16_t)sizeof(OBD_Global_Snapshot_Format);
+                dtc->NumberOfSavedSnapshots = 1U;
+                dtc->DTCSnapshotAddress[0]->DTCSnapshotDataRecordNumberOfIdentifiers = 0x01U;
+                memcpy(dtc->DTCSnapshotAddress[0]->DTCSnapshotDataPayload, &snap, sizeof(OBD_Global_Snapshot_Format));
+            }
+        }
+    }
+    else
+    {
+        if (s_faultCounters[idx] >= (-128 + 16))
+        {
+            s_faultCounters[idx] = (int8_t)(s_faultCounters[idx] - 16);
+        }
+        else
+        {
+            s_faultCounters[idx] = -128;
+        }
+
+        if (s_faultCounters[idx] <= -128)
+        {
+            uint8_t completed_mask = (uint8_t)(UDS_DTC_STATUS_TEST_NOT_COMPLETED_SLC |
+                                               UDS_DTC_STATUS_TEST_NOT_COMPLETED_TOC);
+            s_faultCounters[idx] = -128;
+            dtc->DTCStatusMask &= (uint8_t)~UDS_DTC_STATUS_TEST_FAILED;
+            dtc->DTCStatusMask &= (uint8_t)~completed_mask;
+
+            if (ext_data.ageing_counter < 255U)
+            {
+                ext_data.ageing_counter++;
+            }
+            if (ext_data.ageing_counter >= 40U)
+            {
+                dtc->DTCStatusMask &= (uint8_t)~UDS_DTC_STATUS_CONFIRMED;
+                if (ext_data.aged_counter < 255U)
+                {
+                    ext_data.aged_counter++;
+                }
+            }
+        }
+    }
+
+    dtc->statusOfDTC = dtc->DTCStatusMask;
+    dtc->DTCSeverityMaskRecordLow = dtc->DTCStatusMask;
+
+    if (dtc->DTCExtendedDataAddress[0] == NULL)
+    {
+        dtc->DTCExtendedDataAddress[0] = (DTC_ExtendedData_t *)charon_NvmDriver_getNvmAddress_for_ExtendedData(idx);
+    }
+    if (dtc->DTCExtendedDataAddress[0] != NULL)
+    {
+        dtc->DTCExtDataRecordNumber[0] = 0x01U;
+        dtc->DTCExtendedDataLength[0] = (uint16_t)sizeof(OBD_Extended_Data_Format);
+        dtc->NumberOfSavedExtendedData = 1U;
+        dtc->DTCExtendedDataAddress[0]->DTCExtendedDataRecordNumberOfIdentifiers = 0x01U;
+        memcpy(dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, &ext_data, sizeof(OBD_Extended_Data_Format));
+    }
+
+    (void)charon_NvmDriver_flush();
+    return true;
+}
+
+bool uds_dtc_app_set_fault(uint32_t dtc_number, uint8_t status)
+{
+    uint32_t idx = 0;
+    DTC_t *dtc = find_dtc_entry(dtc_number, &idx);
+    if (dtc == NULL || idx >= AMOUNT_OF_DTC)
+    {
+        return false;
+    }
+
+    dtc->DTCStatusMask = status;
+    dtc->statusOfDTC = status;
+    dtc->DTCSeverityMaskRecordLow = status;
+    s_faultCounters[idx] = ((status & UDS_DTC_STATUS_CONFIRMED) != 0U) ? 127 : 0;
+
+    OBD_Extended_Data_Format ext_data;
+    memset(&ext_data, 0, sizeof(ext_data));
+    if ((status & UDS_DTC_STATUS_CONFIRMED) != 0U)
+    {
+        ext_data.fault_occur_counter = 1U;
+    }
+    if ((status & UDS_DTC_STATUS_PENDING) != 0U)
+    {
+        ext_data.fault_pending_counter = 1U;
+    }
+    ext_data.ageing_counter = 0U;
+    ext_data.aged_counter = 0U;
+
+    if (dtc->DTCExtendedDataAddress[0] == NULL)
+    {
+        dtc->DTCExtendedDataAddress[0] = (DTC_ExtendedData_t *)charon_NvmDriver_getNvmAddress_for_ExtendedData(idx);
+    }
+    if (dtc->DTCExtendedDataAddress[0] != NULL)
+    {
+        dtc->DTCExtDataRecordNumber[0] = 0x01U;
+        dtc->DTCExtendedDataLength[0] = (uint16_t)sizeof(OBD_Extended_Data_Format);
+        dtc->NumberOfSavedExtendedData = 1U;
+        dtc->DTCExtendedDataAddress[0]->DTCExtendedDataRecordNumberOfIdentifiers = 0x01U;
+        memcpy(dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, &ext_data, sizeof(OBD_Extended_Data_Format));
+    }
+
+    if (((status & UDS_DTC_STATUS_CONFIRMED) != 0U))
+    {
+        if (dtc->DTCSnapshotAddress[0] == NULL)
+        {
+            dtc->DTCSnapshotAddress[0] = (DTC_SnapshotData_t *)charon_NvmDriver_getNvmAddress_for_Snapshot(idx);
+        }
+        if (dtc->DTCSnapshotAddress[0] != NULL)
+        {
+            OBD_Global_Snapshot_Format snap;
+            init_default_snapshot(&snap);
+            dtc->DTCSnapshotRecordNumber[0] = 0x01U;
+            dtc->DTCSnapshotLength[0] = (uint16_t)sizeof(OBD_Global_Snapshot_Format);
+            dtc->NumberOfSavedSnapshots = 1U;
+            dtc->DTCSnapshotAddress[0]->DTCSnapshotDataRecordNumberOfIdentifiers = 0x01U;
+            memcpy(dtc->DTCSnapshotAddress[0]->DTCSnapshotDataPayload, &snap, sizeof(OBD_Global_Snapshot_Format));
+        }
+    }
+
+    (void)charon_NvmDriver_flush();
+    return true;
+}
+
+bool uds_dtc_app_clear_fault(uint32_t dtc_number)
+{
+    uint32_t idx = 0;
+    DTC_t *dtc = find_dtc_entry(dtc_number, &idx);
+    if (dtc == NULL || idx >= AMOUNT_OF_DTC)
+    {
+        return false;
+    }
+
+    uint8_t cleared_status = (uint8_t)(UDS_DTC_STATUS_TEST_NOT_COMPLETED_SLC | UDS_DTC_STATUS_TEST_NOT_COMPLETED_TOC);
+    dtc->DTCStatusMask = cleared_status;
+    dtc->statusOfDTC = cleared_status;
+    dtc->DTCSeverityMaskRecordLow = cleared_status;
+    s_faultCounters[idx] = 0;
+
+    OBD_Extended_Data_Format ext_data;
+    memset(&ext_data, 0, sizeof(ext_data));
+    if (dtc->DTCExtendedDataAddress[0] != NULL)
+    {
+        dtc->DTCExtDataRecordNumber[0] = 0x01U;
+        dtc->DTCExtendedDataLength[0] = (uint16_t)sizeof(OBD_Extended_Data_Format);
+        dtc->NumberOfSavedExtendedData = 1U;
+        dtc->DTCExtendedDataAddress[0]->DTCExtendedDataRecordNumberOfIdentifiers = 0x01U;
+        memcpy(dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, &ext_data, sizeof(OBD_Extended_Data_Format));
+    }
+
+    (void)charon_NvmDriver_flush();
+    return true;
+}
+
+bool uds_dtc_app_set_global_snapshot(uint32_t dtc_number, const OBD_Global_Snapshot_Format *snapshot)
+{
+    if (snapshot == NULL)
+    {
+        return false;
+    }
+    uint32_t idx = 0;
+    DTC_t *dtc = find_dtc_entry(dtc_number, &idx);
+    if (dtc == NULL || idx >= AMOUNT_OF_DTC)
+    {
+        return false;
+    }
+    if (dtc->DTCSnapshotAddress[0] == NULL)
+    {
+        dtc->DTCSnapshotAddress[0] = (DTC_SnapshotData_t *)charon_NvmDriver_getNvmAddress_for_Snapshot(idx);
+    }
+    if (dtc->DTCSnapshotAddress[0] == NULL)
+    {
+        return false;
+    }
+    dtc->DTCSnapshotRecordNumber[0] = 0x01U;
+    dtc->DTCSnapshotLength[0] = (uint16_t)sizeof(OBD_Global_Snapshot_Format);
+    dtc->NumberOfSavedSnapshots = 1U;
+    dtc->DTCSnapshotAddress[0]->DTCSnapshotDataRecordNumberOfIdentifiers = 0x01U;
+    memcpy(dtc->DTCSnapshotAddress[0]->DTCSnapshotDataPayload, snapshot, sizeof(OBD_Global_Snapshot_Format));
+    (void)charon_NvmDriver_flush();
+    return true;
+}
+
+bool uds_dtc_app_get_global_snapshot(uint32_t dtc_number, OBD_Global_Snapshot_Format *snapshot)
+{
+    if (snapshot == NULL)
+    {
+        return false;
+    }
+    DTC_t *dtc = find_dtc_entry(dtc_number, NULL);
+    if (dtc == NULL || dtc->DTCSnapshotAddress[0] == NULL || dtc->DTCSnapshotLength[0] < sizeof(OBD_Global_Snapshot_Format))
+    {
+        return false;
+    }
+    memcpy(snapshot, dtc->DTCSnapshotAddress[0]->DTCSnapshotDataPayload, sizeof(OBD_Global_Snapshot_Format));
+    return true;
+}
+
+bool uds_dtc_app_set_extended_data(uint32_t dtc_number, const OBD_Extended_Data_Format *ext_data)
+{
+    if (ext_data == NULL)
+    {
+        return false;
+    }
+    uint32_t idx = 0;
+    DTC_t *dtc = find_dtc_entry(dtc_number, &idx);
+    if (dtc == NULL || idx >= AMOUNT_OF_DTC)
+    {
+        return false;
+    }
+    if (dtc->DTCExtendedDataAddress[0] == NULL)
+    {
+        dtc->DTCExtendedDataAddress[0] = (DTC_ExtendedData_t *)charon_NvmDriver_getNvmAddress_for_ExtendedData(idx);
+    }
+    if (dtc->DTCExtendedDataAddress[0] == NULL)
+    {
+        return false;
+    }
+    dtc->DTCExtDataRecordNumber[0] = 0x01U;
+    dtc->DTCExtendedDataLength[0] = (uint16_t)sizeof(OBD_Extended_Data_Format);
+    dtc->NumberOfSavedExtendedData = 1U;
+    dtc->DTCExtendedDataAddress[0]->DTCExtendedDataRecordNumberOfIdentifiers = 0x01U;
+    memcpy(dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, ext_data, sizeof(OBD_Extended_Data_Format));
+    (void)charon_NvmDriver_flush();
+    return true;
+}
+
+bool uds_dtc_app_get_extended_data(uint32_t dtc_number, OBD_Extended_Data_Format *ext_data)
+{
+    if (ext_data == NULL)
+    {
+        return false;
+    }
+    DTC_t *dtc = find_dtc_entry(dtc_number, NULL);
+    if (dtc == NULL || dtc->DTCExtendedDataAddress[0] == NULL || dtc->DTCExtendedDataLength[0] < sizeof(OBD_Extended_Data_Format))
+    {
+        return false;
+    }
+    memcpy(ext_data, dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, sizeof(OBD_Extended_Data_Format));
+    return true;
+}

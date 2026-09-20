@@ -456,7 +456,7 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformatio
     CHARON_INFO("Read DTC Information Service SID:0x19 Triggered\r\n");
 
     // NVM needs to be setted on installation or CRC will pick up random values and may fail without real reason.
-    if (DTC_header->iniDone != 0xDEADBEEF)
+    if (DTC_header->iniDone != NVM_SCHEMA_MAGIC)
     {
         charon_DTC_LookupTable_header_SET();
     }

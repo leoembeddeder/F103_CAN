@@ -8,7 +8,7 @@
 #include "uds_types.h"
 
 /* Constants *****************************************************************/
-#define NVM_SCHEMA_MAGIC                                (0xDEADBEE4U)
+#define NVM_SCHEMA_MAGIC                                (0xDEADBEE5U)
 
 /* Macros ********************************************************************/
 
