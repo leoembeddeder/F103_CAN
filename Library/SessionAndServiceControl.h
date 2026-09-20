@@ -69,5 +69,25 @@ void charon_sscTesterPresentHeartbeat(void);
 
 void on_ecu_reset(uint8_t reset_type);
 
+/** @brief Set current addressing mode (ADDRESS_PHYSICAL, ADDRESS_FUNCTIONAL). */
+void charon_sscSetAddressingMode (uint32_t addressingMode);
+
+/** @brief Get current addressing mode. */
+uint32_t charon_sscGetAddressingMode (void);
+
+/** @brief Set active security level bitmask (SECURITY_LOCKED, SECURITY_LEVEL_1, SECURITY_LEVEL_2). */
+void charon_sscSetSecurityLevel (uint32_t securityLevel);
+
+/** @brief Get active security level bitmask. */
+uint32_t charon_sscGetSecurityLevel (void);
+
+/** @brief Reset security level to SECURITY_LOCKED. */
+void charon_sscResetSecurityLevel (void);
+
+/** @brief Set active encryption level mask. */
+void charon_sscSetEncryptionLevel (uint32_t encryptionLevel);
+
+/** @brief Get active encryption level mask. */
+uint32_t charon_sscGetEncryptionLevel (void);
 
 #endif 

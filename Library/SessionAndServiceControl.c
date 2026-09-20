@@ -66,6 +66,12 @@ static ComTimeoutLimits_t s_ttl =
 };
 /** Stores the System given Communication Socket */
 static ISocket_t s_systemComSocket = {NULL};
+/** Stores the Currently Active Addressing Mode */
+static uint32_t s_currentAddressingMode = ADDRESS_PHYSICAL;
+/** Stores the Currently Active Security Level bitmask */
+static uint32_t s_currentSecurityLevel = SECURITY_LOCKED;
+/** Stores the Currently Active Encryption Level */
+static uint32_t s_currentEncryptionLevel = 0u;
 
 /* Buffers *******************************************************************/
 
@@ -146,6 +152,9 @@ void charon_sscReset (void)
     s_diagnosticSessionTimestamp = 0u;
     s_ttl.p2Server = DEFAULT_P2_SERVER;
     s_ttl.p2StarServer = DEFAULT_P2_STAR_SERVER;
+	s_currentAddressingMode = ADDRESS_PHYSICAL;
+    s_currentSecurityLevel = SECURITY_LOCKED;
+    s_currentEncryptionLevel = 0u;
 }
 
 void charon_sscInit (ISocket_t sscComSocket)
@@ -253,8 +262,11 @@ static void processReceivedMessage (uint8_t const * const pBuffer, uint32_t leng
         case uds_responseCode_ServiceNotSupportedInActiveSession:
         {
             CHARON_WARNING("Wrong session for requested service, sending error message.");
-            /* Answer NRC and Send */
-            charon_sendNegativeResponse(uds_responseCode_ServiceNotSupportedInActiveSession, pServiceObj->sid);
+            /* Answer NRC and Send (suppressed in functional addressing per ISO 14229) */
+            if (s_currentAddressingMode != ADDRESS_FUNCTIONAL)
+            {
+                charon_sendNegativeResponse(uds_responseCode_ServiceNotSupportedInActiveSession, pServiceObj->sid);
+            }
             break;
         }
         case uds_responseCode_ServiceNotSupported:
@@ -268,8 +280,20 @@ static void processReceivedMessage (uint8_t const * const pBuffer, uint32_t leng
              * is not in the Enumeration.
              */
             castedSid = (uds_sid_t)pBuffer[0];  /** @todo  Suppress */
-            /* Send NRC */
-            charon_sendNegativeResponse(uds_responseCode_ServiceNotSupported, castedSid);
+            /* Send NRC (suppressed in functional addressing per ISO 14229) */
+            if (s_currentAddressingMode != ADDRESS_FUNCTIONAL)
+            {
+                charon_sendNegativeResponse(uds_responseCode_ServiceNotSupported, castedSid);
+            }
+            break;
+        }
+        case uds_responseCode_SecurityAccessDenied:
+        {
+            CHARON_WARNING("Security access denied for requested service, sending error message.");
+            if (s_currentAddressingMode != ADDRESS_FUNCTIONAL)
+            {
+                charon_sendNegativeResponse(uds_responseCode_SecurityAccessDenied, pServiceObj->sid);
+            }
             break;
         }
         case uds_responseCode_RequestCorrectlyReceived_ResponsePending:
@@ -348,6 +372,8 @@ void charon_sscSetSession (charon_sessionTypes_t sessionType, uint32_t timeoutP2
 
     /* Assign new Session Type */
     s_currentDiagnosticSession = sessionType;
+	/* Switching diagnostic session resets security level to SECURITY_LOCKED per ISO 14229-1 */
+    s_currentSecurityLevel = SECURITY_LOCKED;
 }
 
 charon_sessionTypes_t charon_sscGetSession (void)
@@ -360,6 +386,40 @@ void charon_sscTesterPresentHeartbeat (void)
     s_diagnosticSessionTimestamp = charon_interface_clock_getTime();
 }
 
+void charon_sscSetAddressingMode (uint32_t addressingMode)
+{
+    s_currentAddressingMode = addressingMode;
+}
+
+uint32_t charon_sscGetAddressingMode (void)
+{
+    return s_currentAddressingMode;
+}
+
+void charon_sscSetSecurityLevel (uint32_t securityLevel)
+{
+    s_currentSecurityLevel = securityLevel;
+}
+
+uint32_t charon_sscGetSecurityLevel (void)
+{
+    return s_currentSecurityLevel;
+}
+
+void charon_sscResetSecurityLevel (void)
+{
+    s_currentSecurityLevel = SECURITY_LOCKED;
+}
+
+void charon_sscSetEncryptionLevel (uint32_t encryptionLevel)
+{
+    s_currentEncryptionLevel = encryptionLevel;
+}
+
+uint32_t charon_sscGetEncryptionLevel (void)
+{
+    return s_currentEncryptionLevel;
+}
 
 /* Private Function **********************************************************/
 
@@ -375,6 +435,25 @@ static bool isServiceInSession (charon_sessionTypes_t currentSession, const char
     return retval;
 }
 
+static bool isServiceInAddress (uint32_t currentMode, const charon_serviceObject_t * pService)
+{
+    return ((pService->addressMask & currentMode) != 0u);
+}
+
+static bool isServiceInSecurity (uint32_t currentSecurity, const charon_serviceObject_t * pService)
+{
+    return ((pService->securityMask & currentSecurity) != 0u);
+}
+
+static bool isServiceInEncryption (uint32_t currentEnc, const charon_serviceObject_t * pService)
+{
+    if (pService->emcryptionMask == 0u)
+    {
+        return true;
+    }
+    return ((currentEnc & pService->emcryptionMask) == pService->emcryptionMask);
+}
+
 static void handleDiagnosticSession (void)
 {
     /* Check if Session Timed Out */
@@ -383,6 +462,7 @@ static void handleDiagnosticSession (void)
         CHARON_WARNING("Session timed out, activating default session.");
         /* terminate Session */
         s_currentDiagnosticSession = charon_sscType_timedOut;
+		s_currentSecurityLevel = SECURITY_LOCKED;
     }
 }
 
@@ -423,16 +503,30 @@ static uds_responseCode_t handleService (const charon_serviceObject_t * pExecuta
     /* Check if Service is supported */
     if (NULL != pExecutableService)
     {
-        /* Check if Service is Supported in Current Session */
-        if (isServiceInSession(s_currentDiagnosticSession, pExecutableService))
+        /* 1. Check if Service is Supported in Current Session */
+        if (!isServiceInSession(s_currentDiagnosticSession, pExecutableService))
         {
-            /* Execute Service */
-            retVal = pExecutableService->serviceRunable(pUdsMessage, length);
+            retVal = uds_responseCode_ServiceNotSupportedInActiveSession;
+        }
+        /* 2. Check Addressing Mode (Physical vs Functional) */
+        else if (!isServiceInAddress(s_currentAddressingMode, pExecutableService))
+        {
+            retVal = uds_responseCode_ServiceNotSupported;
+        }
+        /* 3. Check Security Access Level */
+        else if (!isServiceInSecurity(s_currentSecurityLevel, pExecutableService))
+        {
+            retVal = uds_responseCode_SecurityAccessDenied;
+        }
+        /* 4. Check Encryption Requirement */
+        else if (!isServiceInEncryption(s_currentEncryptionLevel, pExecutableService))
+        {
+            retVal = uds_responseCode_SecurityAccessDenied;
         }
         else
         {
-            /* Send Diag NRC */
-            retVal = uds_responseCode_ServiceNotSupportedInActiveSession;
+            /* Execute Service */
+            retVal = pExecutableService->serviceRunable(pUdsMessage, length);
         }
     }
     else

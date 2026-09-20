@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;..\SyntropicOS;..\flash;..\Library;..\TP</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;..\SyntropicOS;..\flash;..\Library;..\TP;..\Crypto</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -634,6 +634,21 @@
               <FileName>UploadDownloadFunctionalUnit.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Library\UploadDownloadFunctionalUnit.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Crypto</GroupName>
+          <Files>
+            <File>
+              <FileName>aes.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Crypto\aes.c</FilePath>
+            </File>
+            <File>
+              <FileName>aes_cmac.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Crypto\aes_cmac.c</FilePath>
             </File>
           </Files>
         </Group>

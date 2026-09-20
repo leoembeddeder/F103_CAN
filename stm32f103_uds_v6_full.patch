@@ -1,0 +1,1769 @@
+diff --git a/Library/Crypto/aes.c b/Library/Crypto/aes.c
+new file mode 100644
+index 0000000..9fa1bb6
+--- /dev/null
++++ b/Library/Crypto/aes.c
+@@ -0,0 +1,127 @@
++#include "aes.h"
++#include <stddef.h>
++
++static const uint8_t sbox[256] = {
++    0x63U, 0x7cU, 0x77U, 0x7bU, 0xf2U, 0x6bU, 0x6fU, 0xc5U, 0x30U, 0x01U, 0x67U, 0x2bU, 0xfeU,
++    0xd7U, 0xabU, 0x76U, 0xcaU, 0x82U, 0xc9U, 0x7dU, 0xfaU, 0x59U, 0x47U, 0xf0U, 0xadU, 0xd4U,
++    0xa2U, 0xafU, 0x9cU, 0xa4U, 0x72U, 0xc0U, 0xb7U, 0xfdU, 0x93U, 0x26U, 0x36U, 0x3fU, 0xf7U,
++    0xccU, 0x34U, 0xa5U, 0xe5U, 0xf1U, 0x71U, 0xd8U, 0x31U, 0x15U, 0x04U, 0xc7U, 0x23U, 0xc3U,
++    0x18U, 0x96U, 0x05U, 0x9aU, 0x07U, 0x12U, 0x80U, 0xe2U, 0xebU, 0x27U, 0xb2U, 0x75U, 0x09U,
++    0x83U, 0x2cU, 0x1aU, 0x1bU, 0x6eU, 0x5aU, 0xa0U, 0x52U, 0x3bU, 0xd6U, 0xb3U, 0x29U, 0xe3U,
++    0x2fU, 0x84U, 0x53U, 0xd1U, 0x00U, 0xedU, 0x20U, 0xfcU, 0xb1U, 0x5bU, 0x6aU, 0xcbU, 0xbeU,
++    0x39U, 0x4aU, 0x4cU, 0x58U, 0xcfU, 0xd0U, 0xefU, 0xaaU, 0xfbU, 0x43U, 0x4dU, 0x33U, 0x85U,
++    0x45U, 0xf9U, 0x02U, 0x7fU, 0x50U, 0x3cU, 0x9fU, 0xa8U, 0x51U, 0xa3U, 0x40U, 0x8fU, 0x92U,
++    0x9dU, 0x38U, 0xf5U, 0xbcU, 0xb6U, 0xdaU, 0x21U, 0x10U, 0xffU, 0xf3U, 0xd2U, 0xcdU, 0x0cU,
++    0x13U, 0xecU, 0x5fU, 0x97U, 0x44U, 0x17U, 0xc4U, 0xa7U, 0x7eU, 0x3dU, 0x64U, 0x5dU, 0x19U,
++    0x73U, 0x60U, 0x81U, 0x4fU, 0xdcU, 0x22U, 0x2aU, 0x90U, 0x88U, 0x46U, 0xeeU, 0xb8U, 0x14U,
++    0xdeU, 0x5eU, 0x0bU, 0xdbU, 0xe0U, 0x32U, 0x3aU, 0x0aU, 0x49U, 0x06U, 0x24U, 0x5cU, 0xc2U,
++    0xd3U, 0xacU, 0x62U, 0x91U, 0x95U, 0xe4U, 0x79U, 0xe7U, 0xc8U, 0x37U, 0x6dU, 0x8dU, 0xd5U,
++    0x4eU, 0xa9U, 0x6cU, 0x56U, 0xf4U, 0xeaU, 0x65U, 0x7aU, 0xaeU, 0x08U, 0xbaU, 0x78U, 0x25U,
++    0x2eU, 0x1cU, 0xa6U, 0xb4U, 0xc6U, 0xe8U, 0xddU, 0x74U, 0x1fU, 0x4bU, 0xbdU, 0x8bU, 0x8aU,
++    0x70U, 0x3eU, 0xb5U, 0x66U, 0x48U, 0x03U, 0xf6U, 0x0eU, 0x61U, 0x35U, 0x57U, 0xb9U, 0x86U,
++    0xc1U, 0x1dU, 0x9eU, 0xe1U, 0xf8U, 0x98U, 0x11U, 0x69U, 0xd9U, 0x8eU, 0x94U, 0x9bU, 0x1eU,
++    0x87U, 0xe9U, 0xceU, 0x55U, 0x28U, 0xdfU, 0x8cU, 0xa1U, 0x89U, 0x0dU, 0xbfU, 0xe6U, 0x42U,
++    0x68U, 0x41U, 0x99U, 0x2dU, 0x0fU, 0xb0U, 0x54U, 0xbbU, 0x16U};
++
++static uint8_t xtime(uint8_t value) {
++    uint32_t wide_value = (uint32_t)value;
++    return (uint8_t)((wide_value << 1U) ^ (((wide_value >> 7U) & 1U) * 0x1BU));
++}
++
++static void add_round_key(uint8_t state[16], const uint8_t *round_key) {
++    for (uint8_t index = 0U; index < 16U; ++index)
++        state[index] ^= round_key[index];
++}
++
++static void sub_bytes(uint8_t state[16]) {
++    for (uint8_t index = 0U; index < 16U; ++index)
++        state[index] = sbox[state[index]];
++}
++
++static void shift_rows(uint8_t state[16]) {
++    uint8_t copy[16];
++    for (uint8_t index = 0U; index < 16U; ++index)
++        copy[index] = state[index];
++    state[0] = copy[0];
++    state[1] = copy[5];
++    state[2] = copy[10];
++    state[3] = copy[15];
++    state[4] = copy[4];
++    state[5] = copy[9];
++    state[6] = copy[14];
++    state[7] = copy[3];
++    state[8] = copy[8];
++    state[9] = copy[13];
++    state[10] = copy[2];
++    state[11] = copy[7];
++    state[12] = copy[12];
++    state[13] = copy[1];
++    state[14] = copy[6];
++    state[15] = copy[11];
++}
++
++static void mix_columns(uint8_t state[16]) {
++    for (uint8_t column = 0U; column < 4U; ++column) {
++        uint8_t *value = &state[(size_t)column * 4U];
++        uint8_t sum = (uint8_t)(value[0] ^ value[1] ^ value[2] ^ value[3]);
++        uint8_t first = value[0];
++        value[0] = (uint8_t)(value[0] ^ (uint8_t)(sum ^ xtime((uint8_t)(value[0] ^ value[1]))));
++        value[1] = (uint8_t)(value[1] ^ (uint8_t)(sum ^ xtime((uint8_t)(value[1] ^ value[2]))));
++        value[2] = (uint8_t)(value[2] ^ (uint8_t)(sum ^ xtime((uint8_t)(value[2] ^ value[3]))));
++        value[3] = (uint8_t)(value[3] ^ (uint8_t)(sum ^ xtime((uint8_t)(value[3] ^ first))));
++    }
++}
++
++static uint8_t rcon(uint8_t round) {
++    uint8_t value = 1U;
++    for (uint8_t index = 1U; index < round; ++index)
++        value = xtime(value);
++    return value;
++}
++
++void aes128_init(Aes128Context *context, const uint8_t key[16]) {
++    if ((context == NULL) || (key == NULL))
++        return;
++    for (uint8_t index = 0U; index < 16U; ++index)
++        context->round_keys[index] = key[index];
++    for (uint8_t round = 1U; round <= 10U; ++round) {
++        uint8_t offset = (uint8_t)(round * 16U);
++        uint8_t previous = (uint8_t)((round - 1U) * 16U);
++        uint8_t word[4] = {context->round_keys[previous + 13U], context->round_keys[previous + 14U],
++                           context->round_keys[previous + 15U],
++                           context->round_keys[previous + 12U]};
++        word[0] = sbox[word[0]];
++        word[1] = sbox[word[1]];
++        word[2] = sbox[word[2]];
++        word[3] = sbox[word[3]];
++        word[0] ^= rcon(round);
++        for (uint8_t index = 0U; index < 4U; ++index)
++            context->round_keys[offset + index] =
++                (uint8_t)(context->round_keys[previous + index] ^ word[index]);
++        for (uint8_t index = 4U; index < 16U; ++index)
++            context->round_keys[offset + index] =
++                (uint8_t)(context->round_keys[previous + index] ^
++                          context->round_keys[(size_t)offset + (size_t)index - 4U]);
++    }
++}
++
++void aes128_encrypt_block(const Aes128Context *context, const uint8_t input[16],
++                          uint8_t output[16]) {
++    if ((context == NULL) || (input == NULL) || (output == NULL))
++        return;
++    uint8_t state[16];
++    for (uint8_t index = 0U; index < 16U; ++index)
++        state[index] = input[index];
++    add_round_key(state, context->round_keys);
++    for (uint8_t round = 1U; round < 10U; ++round) {
++        sub_bytes(state);
++        shift_rows(state);
++        mix_columns(state);
++        add_round_key(state, &context->round_keys[(size_t)round * 16U]);
++    }
++    sub_bytes(state);
++    shift_rows(state);
++    add_round_key(state, &context->round_keys[160U]);
++    for (uint8_t index = 0U; index < 16U; ++index)
++        output[index] = state[index];
++}
+diff --git a/Library/Crypto/aes.h b/Library/Crypto/aes.h
+new file mode 100644
+index 0000000..85153fa
+--- /dev/null
++++ b/Library/Crypto/aes.h
+@@ -0,0 +1,14 @@
++#ifndef CHARON_CRYPTO_AES_H
++#define CHARON_CRYPTO_AES_H
++
++#include <stdint.h>
++
++typedef struct {
++    uint8_t round_keys[176];
++} Aes128Context;
++
++void aes128_init(Aes128Context *context, const uint8_t key[16]);
++void aes128_encrypt_block(const Aes128Context *context, const uint8_t input[16],
++                          uint8_t output[16]);
++
++#endif /* CHARON_CRYPTO_AES_H */
+diff --git a/Library/Crypto/aes_cmac.c b/Library/Crypto/aes_cmac.c
+new file mode 100644
+index 0000000..5b8f693
+--- /dev/null
++++ b/Library/Crypto/aes_cmac.c
+@@ -0,0 +1,90 @@
++#include "aes_cmac.h"
++#include "aes.h"
++#include <string.h>
++
++static void secure_clear(void *data, size_t length) {
++    volatile uint8_t *bytes = (volatile uint8_t *)data;
++    while ((bytes != NULL) && (length-- != 0U))
++        *bytes++ = 0U;
++}
++
++static void xor_block(uint8_t destination[16], const uint8_t source[16]) {
++    for (uint8_t index = 0U; index < 16U; ++index)
++        destination[index] ^= source[index];
++}
++
++static void left_shift_block(uint8_t output[16], const uint8_t input[16]) {
++    uint8_t carry = 0U;
++    for (int index = 15; index >= 0; --index) {
++        uint8_t value = input[index];
++        output[index] = (uint8_t)((value << 1U) | carry);
++        carry = (uint8_t)((value >> 7U) & 1U);
++    }
++    if (carry != 0U)
++        output[15] ^= 0x87U;
++}
++
++static void generate_subkey(const Aes128Context *aes, uint8_t output[16], bool second) {
++    uint8_t zero[16] = {0U};
++    uint8_t intermediate[16];
++    aes128_encrypt_block(aes, zero, intermediate);
++    left_shift_block(output, intermediate);
++    if (second)
++        left_shift_block(output, output);
++    secure_clear(zero, sizeof(zero));
++    secure_clear(intermediate, sizeof(intermediate));
++}
++
++bool aes_cmac_128(const uint8_t key[AES_CMAC_128_KEY_SIZE], const uint8_t *message,
++                  size_t message_length, uint8_t mac[AES_CMAC_128_TAG_SIZE]) {
++    if ((key == NULL) || (mac == NULL) || ((message == NULL) && (message_length != 0U)))
++        return false;
++
++    Aes128Context aes;
++    uint8_t k1[16];
++    uint8_t k2[16];
++    uint8_t state[16] = {0U};
++    uint8_t block[16] = {0U};
++    uint8_t last[16] = {0U};
++    aes128_init(&aes, key);
++    generate_subkey(&aes, k1, false);
++    generate_subkey(&aes, k2, true);
++
++    size_t block_count = (message_length == 0U) ? 1U : ((message_length + 15U) / 16U);
++    size_t complete_count = block_count - 1U;
++    for (size_t index = 0U; index < complete_count; ++index) {
++        (void)memcpy(block, &message[index * 16U], 16U);
++        xor_block(block, state);
++        aes128_encrypt_block(&aes, block, state);
++    }
++
++    size_t last_offset = complete_count * 16U;
++    size_t remaining = (message_length > last_offset) ? message_length - last_offset : 0U;
++    if ((message_length != 0U) && (remaining == 16U)) {
++        (void)memcpy(last, &message[last_offset], 16U);
++        xor_block(last, k1);
++    } else {
++        if (remaining != 0U)
++            (void)memcpy(last, &message[last_offset], remaining);
++        last[remaining] = 0x80U;
++        xor_block(last, k2);
++    }
++    xor_block(last, state);
++    aes128_encrypt_block(&aes, last, mac);
++    secure_clear(&aes, sizeof(aes));
++    secure_clear(k1, sizeof(k1));
++    secure_clear(k2, sizeof(k2));
++    secure_clear(state, sizeof(state));
++    secure_clear(block, sizeof(block));
++    secure_clear(last, sizeof(last));
++    return true;
++}
++
++bool aes_cmac_constant_time_equal(const uint8_t left[16], const uint8_t right[16]) {
++    if ((left == NULL) || (right == NULL))
++        return false;
++    uint8_t difference = 0U;
++    for (uint8_t index = 0U; index < 16U; ++index)
++        difference |= (uint8_t)(left[index] ^ right[index]);
++    return difference == 0U;
++}
+diff --git a/Library/Crypto/aes_cmac.h b/Library/Crypto/aes_cmac.h
+new file mode 100644
+index 0000000..54ceb99
+--- /dev/null
++++ b/Library/Crypto/aes_cmac.h
+@@ -0,0 +1,16 @@
++#ifndef CHARON_CRYPTO_AES_CMAC_H
++#define CHARON_CRYPTO_AES_CMAC_H
++
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdint.h>
++
++#define AES_CMAC_128_KEY_SIZE 16U
++#define AES_CMAC_128_TAG_SIZE 16U
++
++bool aes_cmac_128(const uint8_t key[AES_CMAC_128_KEY_SIZE], const uint8_t *message,
++                  size_t message_length, uint8_t mac[AES_CMAC_128_TAG_SIZE]);
++
++bool aes_cmac_constant_time_equal(const uint8_t left[16], const uint8_t right[16]);
++
++#endif /* CHARON_CRYPTO_AES_CMAC_H */
+diff --git a/Library/DTC_LookupTable.c b/Library/DTC_LookupTable.c
+index e66baf6..fea1bcf 100644
+--- a/Library/DTC_LookupTable.c
++++ b/Library/DTC_LookupTable.c
+@@ -53,6 +53,9 @@ static const uint8_t DTCStatusAvailabilityMask =
+     DTC_Enable_warningIndicatorRequested_Status_Bit             << 7u 
+ );
+ 
++/** @brief ISO 14229-1 / AUTOSAR Dem fault detection debouncing counters (-128 to +127) */
++static int8_t s_faultCounters[AMOUNT_OF_DTC] = {0};
++
+ 
+ /* Private Function Definitions **********************************************/
+ 
+@@ -628,6 +631,7 @@ void charon_deleteDTC (uint8_t DTCHighByte, uint8_t DTCMiddleByte, uint8_t DTCLo
+     if (delAll)
+     {
+         memset(DTC_header,0x00,sizeof(DTC_header_t));
++        memset(s_faultCounters, 0, sizeof(s_faultCounters));
+         DTC_header->iniDone = NVM_SCHEMA_MAGIC;
+         charon_StoredDataTransmissionFunctionalUnit_CRC16_update();
+     }
+@@ -743,6 +747,11 @@ static void charon_deleteDTC_inNvm (uint16_t found, uint32_t aDTC, uint32_t aDTC
+ 
+     DTC_header->currentDTCCounter--;
+     DTC_header->deletedDTCCounter++;
++
++    if (found < AMOUNT_OF_DTC)
++    {
++        s_faultCounters[found] = 0;
++    }
+ }
+ 
+ 
+@@ -766,3 +775,360 @@ static bool charon_DTC_LookupTable_DTClookupTableValidCheck(uint32_t input, uint
+ }
+ 
+ 
++/* ===========================================================================
++ * AUTOSAR Dem / ISO 14229-1 Fault Debounce & Application Logic Handlers
++ * (Issue #71 & #66)
++ * =========================================================================== */
++
++static DTC_t* find_dtc_entry(uint32_t dtc_number, uint32_t *out_idx)
++{
++    uint8_t h = (uint8_t)((dtc_number >> 16) & 0xFFU);
++    uint8_t m = (uint8_t)((dtc_number >> 8) & 0xFFU);
++    uint8_t l = (uint8_t)(dtc_number & 0xFFU);
++
++    DTC_t *dtc_base = (DTC_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
++    DTC_header_t *hdr = (DTC_header_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
++    if (hdr == NULL || dtc_base == NULL)
++    {
++        return NULL;
++    }
++    for (uint32_t i = 0; i < hdr->totalDTCCounter && i < AMOUNT_OF_DTC; i++)
++    {
++        if (dtc_base[i].DTCHighByte == h &&
++            dtc_base[i].DTCMiddleByte == m &&
++            dtc_base[i].DTCLowByte == l)
++        {
++            if (out_idx != NULL)
++            {
++                *out_idx = i;
++            }
++            return &dtc_base[i];
++        }
++    }
++    return NULL;
++}
++
++static void init_default_snapshot(OBD_Global_Snapshot_Format *snap)
++{
++    if (snap != NULL)
++    {
++        snap->voltage = 120U; /* 12.0V default */
++        snap->global_power_mode = 0x03U; /* ON */
++        snap->st_global_snapshot_datatime.year = 26U;
++        snap->st_global_snapshot_datatime.month = 9U;
++        snap->st_global_snapshot_datatime.day = 20U;
++        snap->st_global_snapshot_datatime.hour = 12U;
++        snap->st_global_snapshot_datatime.minute = 0U;
++        snap->st_global_snapshot_datatime.second = 0U;
++    }
++}
++
++bool uds_dtc_app_report_event(uint32_t dtc_number, bool failed)
++{
++    uint32_t idx = 0;
++    DTC_t *dtc = find_dtc_entry(dtc_number, &idx);
++    if (dtc == NULL || idx >= AMOUNT_OF_DTC)
++    {
++        return false;
++    }
++
++    if (dtc->DTCSettingType == 0x02)
++    {
++        return true; /* Setting disabled: updates suppressed per ISO 14229-1 */
++    }
++
++    OBD_Extended_Data_Format ext_data;
++    memset(&ext_data, 0, sizeof(ext_data));
++    if (dtc->DTCExtendedDataAddress[0] != NULL && dtc->DTCExtendedDataLength[0] >= sizeof(OBD_Extended_Data_Format))
++    {
++        memcpy(&ext_data, dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, sizeof(OBD_Extended_Data_Format));
++    }
++
++    if (failed)
++    {
++        if (s_faultCounters[idx] <= (127 - 16))
++        {
++            s_faultCounters[idx] = (int8_t)(s_faultCounters[idx] + 16);
++        }
++        else
++        {
++            s_faultCounters[idx] = 127;
++        }
++
++        if (s_faultCounters[idx] > 0)
++        {
++            dtc->DTCStatusMask |= UDS_DTC_STATUS_PENDING;
++            if (ext_data.fault_pending_counter < 255U)
++            {
++                ext_data.fault_pending_counter++;
++            }
++        }
++
++        if (s_faultCounters[idx] >= 127)
++        {
++            uint8_t failed_mask = (uint8_t)(UDS_DTC_STATUS_TEST_FAILED |
++                                            UDS_DTC_STATUS_TEST_FAILED_THIS_CYCLE |
++                                            UDS_DTC_STATUS_PENDING |
++                                            UDS_DTC_STATUS_CONFIRMED |
++                                            UDS_DTC_STATUS_TEST_FAILED_SLC);
++            uint8_t completed_mask = (uint8_t)(UDS_DTC_STATUS_TEST_NOT_COMPLETED_SLC |
++                                               UDS_DTC_STATUS_TEST_NOT_COMPLETED_TOC);
++            s_faultCounters[idx] = 127;
++            dtc->DTCStatusMask |= failed_mask;
++            dtc->DTCStatusMask &= (uint8_t)~completed_mask;
++
++            if (ext_data.fault_occur_counter < 255U)
++            {
++                ext_data.fault_occur_counter++;
++            }
++            ext_data.ageing_counter = 0U;
++
++            if (dtc->DTCSnapshotAddress[0] == NULL)
++            {
++                dtc->DTCSnapshotAddress[0] = (DTC_SnapshotData_t *)charon_NvmDriver_getNvmAddress_for_Snapshot(idx);
++            }
++            if (dtc->DTCSnapshotAddress[0] != NULL && dtc->DTCSnapshotLength[0] == 0)
++            {
++                OBD_Global_Snapshot_Format snap;
++                init_default_snapshot(&snap);
++                dtc->DTCSnapshotRecordNumber[0] = 0x01U;
++                dtc->DTCSnapshotLength[0] = (uint16_t)sizeof(OBD_Global_Snapshot_Format);
++                dtc->NumberOfSavedSnapshots = 1U;
++                dtc->DTCSnapshotAddress[0]->DTCSnapshotDataRecordNumberOfIdentifiers = 0x01U;
++                memcpy(dtc->DTCSnapshotAddress[0]->DTCSnapshotDataPayload, &snap, sizeof(OBD_Global_Snapshot_Format));
++            }
++        }
++    }
++    else
++    {
++        if (s_faultCounters[idx] >= (-128 + 16))
++        {
++            s_faultCounters[idx] = (int8_t)(s_faultCounters[idx] - 16);
++        }
++        else
++        {
++            s_faultCounters[idx] = -128;
++        }
++
++        if (s_faultCounters[idx] <= -128)
++        {
++            uint8_t completed_mask = (uint8_t)(UDS_DTC_STATUS_TEST_NOT_COMPLETED_SLC |
++                                               UDS_DTC_STATUS_TEST_NOT_COMPLETED_TOC);
++            s_faultCounters[idx] = -128;
++            dtc->DTCStatusMask &= (uint8_t)~UDS_DTC_STATUS_TEST_FAILED;
++            dtc->DTCStatusMask &= (uint8_t)~completed_mask;
++
++            if (ext_data.ageing_counter < 255U)
++            {
++                ext_data.ageing_counter++;
++            }
++            if (ext_data.ageing_counter >= 40U)
++            {
++                dtc->DTCStatusMask &= (uint8_t)~UDS_DTC_STATUS_CONFIRMED;
++                if (ext_data.aged_counter < 255U)
++                {
++                    ext_data.aged_counter++;
++                }
++            }
++        }
++    }
++
++    dtc->statusOfDTC = dtc->DTCStatusMask;
++    dtc->DTCSeverityMaskRecordLow = dtc->DTCStatusMask;
++
++    if (dtc->DTCExtendedDataAddress[0] == NULL)
++    {
++        dtc->DTCExtendedDataAddress[0] = (DTC_ExtendedData_t *)charon_NvmDriver_getNvmAddress_for_ExtendedData(idx);
++    }
++    if (dtc->DTCExtendedDataAddress[0] != NULL)
++    {
++        dtc->DTCExtDataRecordNumber[0] = 0x01U;
++        dtc->DTCExtendedDataLength[0] = (uint16_t)sizeof(OBD_Extended_Data_Format);
++        dtc->NumberOfSavedExtendedData = 1U;
++        dtc->DTCExtendedDataAddress[0]->DTCExtendedDataRecordNumberOfIdentifiers = 0x01U;
++        memcpy(dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, &ext_data, sizeof(OBD_Extended_Data_Format));
++    }
++
++    (void)charon_NvmDriver_flush();
++    return true;
++}
++
++bool uds_dtc_app_set_fault(uint32_t dtc_number, uint8_t status)
++{
++    uint32_t idx = 0;
++    DTC_t *dtc = find_dtc_entry(dtc_number, &idx);
++    if (dtc == NULL || idx >= AMOUNT_OF_DTC)
++    {
++        return false;
++    }
++
++    dtc->DTCStatusMask = status;
++    dtc->statusOfDTC = status;
++    dtc->DTCSeverityMaskRecordLow = status;
++    s_faultCounters[idx] = ((status & UDS_DTC_STATUS_CONFIRMED) != 0U) ? 127 : 0;
++
++    OBD_Extended_Data_Format ext_data;
++    memset(&ext_data, 0, sizeof(ext_data));
++    if ((status & UDS_DTC_STATUS_CONFIRMED) != 0U)
++    {
++        ext_data.fault_occur_counter = 1U;
++    }
++    if ((status & UDS_DTC_STATUS_PENDING) != 0U)
++    {
++        ext_data.fault_pending_counter = 1U;
++    }
++    ext_data.ageing_counter = 0U;
++    ext_data.aged_counter = 0U;
++
++    if (dtc->DTCExtendedDataAddress[0] == NULL)
++    {
++        dtc->DTCExtendedDataAddress[0] = (DTC_ExtendedData_t *)charon_NvmDriver_getNvmAddress_for_ExtendedData(idx);
++    }
++    if (dtc->DTCExtendedDataAddress[0] != NULL)
++    {
++        dtc->DTCExtDataRecordNumber[0] = 0x01U;
++        dtc->DTCExtendedDataLength[0] = (uint16_t)sizeof(OBD_Extended_Data_Format);
++        dtc->NumberOfSavedExtendedData = 1U;
++        dtc->DTCExtendedDataAddress[0]->DTCExtendedDataRecordNumberOfIdentifiers = 0x01U;
++        memcpy(dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, &ext_data, sizeof(OBD_Extended_Data_Format));
++    }
++
++    if (((status & UDS_DTC_STATUS_CONFIRMED) != 0U))
++    {
++        if (dtc->DTCSnapshotAddress[0] == NULL)
++        {
++            dtc->DTCSnapshotAddress[0] = (DTC_SnapshotData_t *)charon_NvmDriver_getNvmAddress_for_Snapshot(idx);
++        }
++        if (dtc->DTCSnapshotAddress[0] != NULL)
++        {
++            OBD_Global_Snapshot_Format snap;
++            init_default_snapshot(&snap);
++            dtc->DTCSnapshotRecordNumber[0] = 0x01U;
++            dtc->DTCSnapshotLength[0] = (uint16_t)sizeof(OBD_Global_Snapshot_Format);
++            dtc->NumberOfSavedSnapshots = 1U;
++            dtc->DTCSnapshotAddress[0]->DTCSnapshotDataRecordNumberOfIdentifiers = 0x01U;
++            memcpy(dtc->DTCSnapshotAddress[0]->DTCSnapshotDataPayload, &snap, sizeof(OBD_Global_Snapshot_Format));
++        }
++    }
++
++    (void)charon_NvmDriver_flush();
++    return true;
++}
++
++bool uds_dtc_app_clear_fault(uint32_t dtc_number)
++{
++    uint32_t idx = 0;
++    DTC_t *dtc = find_dtc_entry(dtc_number, &idx);
++    if (dtc == NULL || idx >= AMOUNT_OF_DTC)
++    {
++        return false;
++    }
++
++    uint8_t cleared_status = (uint8_t)(UDS_DTC_STATUS_TEST_NOT_COMPLETED_SLC | UDS_DTC_STATUS_TEST_NOT_COMPLETED_TOC);
++    dtc->DTCStatusMask = cleared_status;
++    dtc->statusOfDTC = cleared_status;
++    dtc->DTCSeverityMaskRecordLow = cleared_status;
++    s_faultCounters[idx] = 0;
++
++    OBD_Extended_Data_Format ext_data;
++    memset(&ext_data, 0, sizeof(ext_data));
++    if (dtc->DTCExtendedDataAddress[0] != NULL)
++    {
++        dtc->DTCExtDataRecordNumber[0] = 0x01U;
++        dtc->DTCExtendedDataLength[0] = (uint16_t)sizeof(OBD_Extended_Data_Format);
++        dtc->NumberOfSavedExtendedData = 1U;
++        dtc->DTCExtendedDataAddress[0]->DTCExtendedDataRecordNumberOfIdentifiers = 0x01U;
++        memcpy(dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, &ext_data, sizeof(OBD_Extended_Data_Format));
++    }
++
++    (void)charon_NvmDriver_flush();
++    return true;
++}
++
++bool uds_dtc_app_set_global_snapshot(uint32_t dtc_number, const OBD_Global_Snapshot_Format *snapshot)
++{
++    if (snapshot == NULL)
++    {
++        return false;
++    }
++    uint32_t idx = 0;
++    DTC_t *dtc = find_dtc_entry(dtc_number, &idx);
++    if (dtc == NULL || idx >= AMOUNT_OF_DTC)
++    {
++        return false;
++    }
++    if (dtc->DTCSnapshotAddress[0] == NULL)
++    {
++        dtc->DTCSnapshotAddress[0] = (DTC_SnapshotData_t *)charon_NvmDriver_getNvmAddress_for_Snapshot(idx);
++    }
++    if (dtc->DTCSnapshotAddress[0] == NULL)
++    {
++        return false;
++    }
++    dtc->DTCSnapshotRecordNumber[0] = 0x01U;
++    dtc->DTCSnapshotLength[0] = (uint16_t)sizeof(OBD_Global_Snapshot_Format);
++    dtc->NumberOfSavedSnapshots = 1U;
++    dtc->DTCSnapshotAddress[0]->DTCSnapshotDataRecordNumberOfIdentifiers = 0x01U;
++    memcpy(dtc->DTCSnapshotAddress[0]->DTCSnapshotDataPayload, snapshot, sizeof(OBD_Global_Snapshot_Format));
++    (void)charon_NvmDriver_flush();
++    return true;
++}
++
++bool uds_dtc_app_get_global_snapshot(uint32_t dtc_number, OBD_Global_Snapshot_Format *snapshot)
++{
++    if (snapshot == NULL)
++    {
++        return false;
++    }
++    DTC_t *dtc = find_dtc_entry(dtc_number, NULL);
++    if (dtc == NULL || dtc->DTCSnapshotAddress[0] == NULL || dtc->DTCSnapshotLength[0] < sizeof(OBD_Global_Snapshot_Format))
++    {
++        return false;
++    }
++    memcpy(snapshot, dtc->DTCSnapshotAddress[0]->DTCSnapshotDataPayload, sizeof(OBD_Global_Snapshot_Format));
++    return true;
++}
++
++bool uds_dtc_app_set_extended_data(uint32_t dtc_number, const OBD_Extended_Data_Format *ext_data)
++{
++    if (ext_data == NULL)
++    {
++        return false;
++    }
++    uint32_t idx = 0;
++    DTC_t *dtc = find_dtc_entry(dtc_number, &idx);
++    if (dtc == NULL || idx >= AMOUNT_OF_DTC)
++    {
++        return false;
++    }
++    if (dtc->DTCExtendedDataAddress[0] == NULL)
++    {
++        dtc->DTCExtendedDataAddress[0] = (DTC_ExtendedData_t *)charon_NvmDriver_getNvmAddress_for_ExtendedData(idx);
++    }
++    if (dtc->DTCExtendedDataAddress[0] == NULL)
++    {
++        return false;
++    }
++    dtc->DTCExtDataRecordNumber[0] = 0x01U;
++    dtc->DTCExtendedDataLength[0] = (uint16_t)sizeof(OBD_Extended_Data_Format);
++    dtc->NumberOfSavedExtendedData = 1U;
++    dtc->DTCExtendedDataAddress[0]->DTCExtendedDataRecordNumberOfIdentifiers = 0x01U;
++    memcpy(dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, ext_data, sizeof(OBD_Extended_Data_Format));
++    (void)charon_NvmDriver_flush();
++    return true;
++}
++
++bool uds_dtc_app_get_extended_data(uint32_t dtc_number, OBD_Extended_Data_Format *ext_data)
++{
++    if (ext_data == NULL)
++    {
++        return false;
++    }
++    DTC_t *dtc = find_dtc_entry(dtc_number, NULL);
++    if (dtc == NULL || dtc->DTCExtendedDataAddress[0] == NULL || dtc->DTCExtendedDataLength[0] < sizeof(OBD_Extended_Data_Format))
++    {
++        return false;
++    }
++    memcpy(ext_data, dtc->DTCExtendedDataAddress[0]->DTCExtendedDataPayload, sizeof(OBD_Extended_Data_Format));
++    return true;
++}
+diff --git a/Library/DTC_LookupTable.h b/Library/DTC_LookupTable.h
+index 6c9b1bd..8135ed1 100644
+--- a/Library/DTC_LookupTable.h
++++ b/Library/DTC_LookupTable.h
+@@ -157,5 +157,92 @@ void charon_deleteDTC (uint8_t DTCHighByte, uint8_t DTCMiddleByte, uint8_t DTCLo
+ /** @brief Safety function for Nvm to not read non valid data. USER: NEEDS TO BE CALLED ONCE WHEN EVER THE NVM IS RESET! */
+ void charon_DTC_LookupTable_header_SET (void);
+ 
++/* ===========================================================================
++ * AUTOSAR Dem / ISO 14229-1 Fault Debounce & Application Logic Handlers
++ * (Issue #71 & #66)
++ * =========================================================================== */
++
++#define UDS_DTC_STATUS_TEST_FAILED                  (0x01U)
++#define UDS_DTC_STATUS_TEST_FAILED_THIS_CYCLE       (0x02U)
++#define UDS_DTC_STATUS_PENDING                      (0x04U)
++#define UDS_DTC_STATUS_CONFIRMED                    (0x08U)
++#define UDS_DTC_STATUS_TEST_NOT_COMPLETED_SLC       (0x10U)
++#define UDS_DTC_STATUS_TEST_FAILED_SLC              (0x20U)
++#define UDS_DTC_STATUS_TEST_NOT_COMPLETED_TOC       (0x40U)
++#define UDS_DTC_STATUS_WARNING_INDICATOR_REQ        (0x80U)
++#define UDS_DTC_STATUS_CLEARED                      (0x50U) /* 0x10 | 0x40 */
++
++/**
++ * @brief ISO 14229-1 / AUTOSAR Dem counter-based fault debouncing engine.
++ * Steps fault detection counter (+16 on failed up to +127, -16 on passed down to -128).
++ * Updates status bits, aging counter, aged counter, and commits to wear-leveled flash.
++ *
++ * @param dtc_number 24-bit DTC identifier (e.g. 0x010016, 0xD00616).
++ * @param failed     true if fault condition detected, false if test passed.
++ * @return true if DTC was found and processed, false otherwise.
++ */
++bool uds_dtc_app_report_event(uint32_t dtc_number, bool failed);
++
++/**
++ * @brief Directly sets the status byte and fault state of a DTC.
++ *
++ * @param dtc_number 24-bit DTC identifier.
++ * @param status     DTC status mask byte to set.
++ * @return true if successful, false otherwise.
++ */
++bool uds_dtc_app_set_fault(uint32_t dtc_number, uint8_t status);
++
++/**
++ * @brief Clears the fault state of a DTC, resetting status to cleared state (0x50).
++ *
++ * @param dtc_number 24-bit DTC identifier.
++ * @return true if successful, false otherwise.
++ */
++bool uds_dtc_app_clear_fault(uint32_t dtc_number);
++
++/**
++ * @brief Sets the global snapshot record for a specified DTC.
++ *
++ * @param dtc_number 24-bit DTC identifier.
++ * @param snapshot   Pointer to OBD_Global_Snapshot_Format structure.
++ * @return true if successful, false otherwise.
++ */
++bool uds_dtc_app_set_global_snapshot(uint32_t dtc_number, const OBD_Global_Snapshot_Format *snapshot);
++
++/**
++ * @brief Reads the global snapshot record of a specified DTC.
++ *
++ * @param dtc_number 24-bit DTC identifier.
++ * @param snapshot   Pointer to OBD_Global_Snapshot_Format buffer to receive data.
++ * @return true if successful, false otherwise.
++ */
++bool uds_dtc_app_get_global_snapshot(uint32_t dtc_number, OBD_Global_Snapshot_Format *snapshot);
++
++/**
++ * @brief Sets the extended data record (occurrence, pending, aged, ageing) for a specified DTC.
++ *
++ * @param dtc_number 24-bit DTC identifier.
++ * @param ext_data   Pointer to OBD_Extended_Data_Format structure.
++ * @return true if successful, false otherwise.
++ */
++bool uds_dtc_app_set_extended_data(uint32_t dtc_number, const OBD_Extended_Data_Format *ext_data);
++
++/**
++ * @brief Reads the extended data record of a specified DTC.
++ *
++ * @param dtc_number 24-bit DTC identifier.
++ * @param ext_data   Pointer to OBD_Extended_Data_Format buffer to receive data.
++ * @return true if successful, false otherwise.
++ */
++bool uds_dtc_app_get_extended_data(uint32_t dtc_number, OBD_Extended_Data_Format *ext_data);
++
++/* Charon naming aliases for convenience */
++#define charon_DTC_reportEvent                      uds_dtc_app_report_event
++#define charon_DTC_setFault                         uds_dtc_app_set_fault
++#define charon_DTC_clearFault                       uds_dtc_app_clear_fault
++#define charon_DTC_setGlobalSnapshot                uds_dtc_app_set_global_snapshot
++#define charon_DTC_getGlobalSnapshot                uds_dtc_app_get_global_snapshot
++#define charon_DTC_setExtendedData                  uds_dtc_app_set_extended_data
++#define charon_DTC_getExtendedData                  uds_dtc_app_get_extended_data
+ 
+ #endif 
+\ No newline at end of file
+diff --git a/Library/DiagnosticAndCommunicationManagementFunctionalUnit.c b/Library/DiagnosticAndCommunicationManagementFunctionalUnit.c
+index f73584d..13e1414 100644
+--- a/Library/DiagnosticAndCommunicationManagementFunctionalUnit.c
++++ b/Library/DiagnosticAndCommunicationManagementFunctionalUnit.c
+@@ -8,12 +8,22 @@
+ #include "negativeResponse.h"
+ #include "ServiceLookupTable.h"
+ #include "StoredDataTransmissionFunctionalUnit.h"
++#include "Crypto/aes.h"
++#include "Crypto/aes_cmac.h"
+ 
+ 
+ /* Imports *******************************************************************/
+ 
+ /* Macros ********************************************************************/
+ 
++#define SECURITY_LEVEL1_MASK_BYTE0 0xA5U
++#define SECURITY_LEVEL1_MASK_BYTE1 0x5AU
++#define SECURITY_LEVEL1_MASK_BYTE2 0xC3U
++#define SECURITY_LEVEL1_MASK_BYTE3 0x3CU
++
++#define SECURITY_MAX_FAILED_ATTEMPTS 3U
++#define SECURITY_LOCKOUT_DELAY_MS    10000U /* 10 seconds */
++
+ /* Types *********************************************************************/
+ uds_reset_t ecu_reset;
+ 
+@@ -64,25 +74,153 @@ static const DefaultSessionTimings_t defaultTimings[charon_sscType_amount] =
+ 
+ /* Variables *****************************************************************/
+ 
++static uint8_t s_masterKey[16] = {
++    0x2BU, 0x7EU, 0x15U, 0x16U, 0x28U, 0xAEU, 0xD2U, 0xA6U,
++    0xABU, 0xF7U, 0x15U, 0x88U, 0x09U, 0xCFU, 0x4FU, 0x3CU
++};
++
++static uint8_t s_level1Seed[4] = {0u};
++static bool s_level1SeedValid = false;
++
++static uint8_t s_level2Seed[16] = {0u};
++static bool s_level2SeedValid = false;
++
++static uint8_t s_failedAttemptCount = 0u;
++static uint32_t s_lockoutStartTime = 0u;
++static bool s_lockoutActive = false;
++
+ /* Private Function Definitions **********************************************/
+ 
++void charon_SecurityAccess_SetMasterKey(const uint8_t key[16])
++{
++    if (key != NULL)
++    {
++        (void)memcpy(s_masterKey, key, 16u);
++    }
++}
++
++void charon_SecurityAccess_InvalidateSeeds(void)
++{
++    s_level1SeedValid = false;
++    s_level2SeedValid = false;
++    (void)memset(s_level1Seed, 0, sizeof(s_level1Seed));
++    (void)memset(s_level2Seed, 0, sizeof(s_level2Seed));
++}
++
++static bool isSecurityLockedOut(void)
++{
++    if (s_lockoutActive)
++    {
++        if (charon_interface_clock_getTimeElapsed(s_lockoutStartTime) >= SECURITY_LOCKOUT_DELAY_MS)
++        {
++            s_lockoutActive = false;
++            s_failedAttemptCount = 0u;
++            return false;
++        }
++        return true;
++    }
++    return false;
++}
++
++static void generatePseudorandomBytes(uint8_t *pOutput, uint32_t length)
++{
++    static uint32_t s_seedCounter = 0x12345678u;
++    uint32_t now = charon_interface_clock_getTime();
++    s_seedCounter ^= (now + 0x9E3779B9u);
++
++    for (uint32_t i = 0u; i < length; ++i)
++    {
++        s_seedCounter = s_seedCounter * 1103515245u + 12345u;
++        pOutput[i] = (uint8_t)(s_seedCounter >> 16u) ^ (uint8_t)(now >> (i & 0x07u));
++    }
++    bool allZero = true;
++    for (uint32_t i = 0u; i < length; ++i)
++    {
++        if (pOutput[i] != 0u)
++        {
++            allZero = false;
++            break;
++        }
++    }
++    if (allZero)
++    {
++        pOutput[0] = 0x5Au;
++        pOutput[length - 1u] = 0xA5u;
++    }
++}
++
++static bool constantTimeEqual4(const uint8_t left[4], const uint8_t right[4])
++{
++    uint8_t diff = 0u;
++    for (uint8_t i = 0u; i < 4u; ++i)
++    {
++        diff |= (uint8_t)(left[i] ^ right[i]);
++    }
++    return (diff == 0u);
++}
++
++static bool isValidSessionTransition(charon_sessionTypes_t current, uint8_t target)
++{
++    if ((uint8_t)current == target)
++    {
++        return true;
++    }
++
++    switch (current)
++    {
++    case charon_sscType_default:
++        if ((target == (uint8_t)charon_sscType_extended) ||
++            (target == (uint8_t)charon_sscType_secured))
++        {
++            return true;
++        }
++        /* Direct transition Default -> Programming is forbidden (NRC 0x22) */
++        return false;
++
++    case charon_sscType_extended:
++        if ((target == (uint8_t)charon_sscType_default) ||
++            (target == (uint8_t)charon_sscType_programming) ||
++            (target == (uint8_t)charon_sscType_secured))
++        {
++            return true;
++        }
++        return false;
++
++    case charon_sscType_programming:
++        if (target == (uint8_t)charon_sscType_default)
++        {
++            return true;
++        }
++        /* Programming directly to Extended is forbidden */
++        return false;
++
++    case charon_sscType_secured:
++        if ((target == (uint8_t)charon_sscType_default) ||
++            (target == (uint8_t)charon_sscType_extended))
++        {
++            return true;
++        }
++        return false;
++
++    default:
++        return (target == (uint8_t)charon_sscType_default);
++    }
++}
++
+ /* Interfaces  ***************************************************************/
+ 
+ void charon_DiagnosticAndCommunicationManagementFunctionalUnit_reset (void)
+ {
+-
++    charon_SecurityAccess_InvalidateSeeds();
++    s_failedAttemptCount = 0u;
++    s_lockoutActive = false;
++    s_lockoutStartTime = 0u;
+ }
+ 
+ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_DiagnosticSessionControl (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
+ {
+     uds_responseCode_t result = uds_responseCode_PositiveResponse;
+-    PACKED_STRUCT(anonym)
+-    {
+-        uint8_t sid;
+-        uint8_t session;
+-        uint16_t p2;
+-        uint16_t p2star;
+-    } transmitBuffer;
++    uint8_t transmitBuffer[6];
+ 
+     if (receiveBufferSize != 2u)
+     {
+@@ -98,19 +236,28 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Dia
+             CHARON_WARNING("Session 0x%x unknown or invalid!", session);
+             result = uds_responseCode_SubfunctionNotSupported;
+         }
++        else if (!isValidSessionTransition(charon_sscGetSession(), session))
++        {
++            CHARON_WARNING("Invalid session transition from 0x%x to 0x%x!", (uint8_t)charon_sscGetSession(), session);
++            result = uds_responseCode_ConditionsNotCorrect;
++        }
+         else
+         {
+             CHARON_INFO("Changing Session to 0x%x.", session);
+ 
+             if (responseSuppress == 0u)
+             {
+-                transmitBuffer.sid = (uint8_t)uds_sid_DiagnosticSessionControl | (uint8_t)uds_sid_PositiveResponseMask;
+-                transmitBuffer.session = session;
+-                transmitBuffer.p2 =  (uint16_t)defaultTimings[session].p2;
+-                transmitBuffer.p2star = (uint16_t)(defaultTimings[session].p2star/10u);
+-                charon_sscTxMessage((uint8_t*)&transmitBuffer, sizeof(transmitBuffer));
++                transmitBuffer[0] = (uint8_t)uds_sid_DiagnosticSessionControl | (uint8_t)uds_sid_PositiveResponseMask;
++                transmitBuffer[1] = session;
++                transmitBuffer[2] = (uint8_t)(defaultTimings[session].p2 >> 8u);
++                transmitBuffer[3] = (uint8_t)(defaultTimings[session].p2 & 0xFFu);
++                transmitBuffer[4] = (uint8_t)((defaultTimings[session].p2star / 10u) >> 8u);
++                transmitBuffer[5] = (uint8_t)((defaultTimings[session].p2star / 10u) & 0xFFu);
++                charon_sscTxMessage(transmitBuffer, sizeof(transmitBuffer));
+             }
+             charon_sscSetSession((charon_sessionTypes_t)session, defaultTimings[session].p2, defaultTimings[session].p2star);
++            charon_SecurityAccess_InvalidateSeeds();
++            charon_sscResetSecurityLevel();
+         }
+     }
+     if (result != uds_responseCode_PositiveResponse)
+@@ -160,10 +307,210 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Ecu
+ 
+ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_SecurityAccess (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
+ {
+-    (void)receiveBuffer;
+-    (void)receiveBufferSize;
+-    CHARON_INFO("Security Access SID:0x27 Triggered");
+-    return uds_responseCode_ServiceNotSupported;
++    uds_responseCode_t result = uds_responseCode_PositiveResponse;
++
++    if ((receiveBuffer == NULL) || (receiveBufferSize < 2u))
++    {
++        CHARON_ERROR("Security Access invalid length.");
++        result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
++    }
++    else
++    {
++        uint8_t subfunction = receiveBuffer[1] & 0x7Fu;
++        uint8_t responseSuppress = receiveBuffer[1] & 0x80u;
++
++        if (isSecurityLockedOut())
++        {
++            CHARON_WARNING("Security Access locked out, delay not expired.");
++            result = uds_responseCode_RequiredTimeDelayNotExpired;
++        }
++        else
++        {
++            switch (subfunction)
++            {
++            case 0x01: /* Request Seed Level 1 */
++            {
++                if (receiveBufferSize != 2u)
++                {
++                    result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
++                }
++                else
++                {
++                    uint8_t txBuf[6];
++                    txBuf[0] = (uint8_t)uds_sid_SecurityAccess | (uint8_t)uds_sid_PositiveResponseMask;
++                    txBuf[1] = 0x01u;
++
++                    if ((charon_sscGetSecurityLevel() & SECURITY_LEVEL_1) != 0u)
++                    {
++                        /* Already unlocked: return 4 zero bytes */
++                        txBuf[2] = 0u;
++                        txBuf[3] = 0u;
++                        txBuf[4] = 0u;
++                        txBuf[5] = 0u;
++                        s_level1SeedValid = false;
++                    }
++                    else
++                    {
++                        generatePseudorandomBytes(s_level1Seed, 4u);
++                        s_level1SeedValid = true;
++                        (void)memcpy(&txBuf[2], s_level1Seed, 4u);
++                    }
++                    if (responseSuppress == 0u)
++                    {
++                        charon_sscTxMessage(txBuf, sizeof(txBuf));
++                    }
++                }
++                break;
++            }
++
++            case 0x02: /* Send Key Level 1 */
++            {
++                if (receiveBufferSize != 6u)
++                {
++                    result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
++                }
++                else if (!s_level1SeedValid)
++                {
++                    CHARON_WARNING("Security Level 1 sequence error.");
++                    result = uds_responseCode_RequestSequenceError;
++                }
++                else
++                {
++                    uint8_t expectedKey[4];
++                    expectedKey[0] = (uint8_t)(s_level1Seed[0] ^ SECURITY_LEVEL1_MASK_BYTE0);
++                    expectedKey[1] = (uint8_t)(s_level1Seed[1] ^ SECURITY_LEVEL1_MASK_BYTE1);
++                    expectedKey[2] = (uint8_t)(s_level1Seed[2] ^ SECURITY_LEVEL1_MASK_BYTE2);
++                    expectedKey[3] = (uint8_t)(s_level1Seed[3] ^ SECURITY_LEVEL1_MASK_BYTE3);
++                    s_level1SeedValid = false;
++
++                    if (constantTimeEqual4(&receiveBuffer[2], expectedKey))
++                    {
++                        CHARON_INFO("Security Level 1 Unlocked.");
++                        s_failedAttemptCount = 0u;
++                        charon_sscSetSecurityLevel(charon_sscGetSecurityLevel() | SECURITY_LEVEL_1);
++                        if (responseSuppress == 0u)
++                        {
++                            uint8_t txBuf[2] = {
++                                (uint8_t)uds_sid_SecurityAccess | (uint8_t)uds_sid_PositiveResponseMask,
++                                0x02u
++                            };
++                            charon_sscTxMessage(txBuf, sizeof(txBuf));
++                        }
++                    }
++                    else
++                    {
++                        s_failedAttemptCount++;
++                        CHARON_WARNING("Security Level 1 invalid key! Attempt %u/%u", s_failedAttemptCount, SECURITY_MAX_FAILED_ATTEMPTS);
++                        if (s_failedAttemptCount >= SECURITY_MAX_FAILED_ATTEMPTS)
++                        {
++                            s_lockoutActive = true;
++                            s_lockoutStartTime = charon_interface_clock_getTime();
++                            result = uds_responseCode_ExceededNumberOfAttempts;
++                        }
++                        else
++                        {
++                            result = uds_responseCode_InvalidKey;
++                        }
++                    }
++                }
++                break;
++            }
++
++            case 0x03: /* Request Seed Level 2 */
++            {
++                if (receiveBufferSize != 2u)
++                {
++                    result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
++                }
++                else
++                {
++                    uint8_t txBuf[18];
++                    txBuf[0] = (uint8_t)uds_sid_SecurityAccess | (uint8_t)uds_sid_PositiveResponseMask;
++                    txBuf[1] = 0x03u;
++
++                    if ((charon_sscGetSecurityLevel() & SECURITY_LEVEL_2) != 0u)
++                    {
++                        /* Already unlocked: return 16 zero bytes */
++                        (void)memset(&txBuf[2], 0, 16u);
++                        s_level2SeedValid = false;
++                    }
++                    else
++                    {
++                        generatePseudorandomBytes(s_level2Seed, 16u);
++                        s_level2SeedValid = true;
++                        (void)memcpy(&txBuf[2], s_level2Seed, 16u);
++                    }
++                    if (responseSuppress == 0u)
++                    {
++                        charon_sscTxMessage(txBuf, sizeof(txBuf));
++                    }
++                }
++                break;
++            }
++
++            case 0x04: /* Send Key Level 2 (AES-CMAC128) */
++            {
++                if (receiveBufferSize != 18u)
++                {
++                    result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
++                }
++                else if (!s_level2SeedValid)
++                {
++                    CHARON_WARNING("Security Level 2 sequence error.");
++                    result = uds_responseCode_RequestSequenceError;
++                }
++                else
++                {
++                    uint8_t expectedKey[16];
++                    bool cmacOk = aes_cmac_128(s_masterKey, s_level2Seed, 16u, expectedKey);
++                    s_level2SeedValid = false;
++
++                    if (cmacOk && aes_cmac_constant_time_equal(&receiveBuffer[2], expectedKey))
++                    {
++                        CHARON_INFO("Security Level 2 Unlocked.");
++                        s_failedAttemptCount = 0u;
++                        charon_sscSetSecurityLevel(charon_sscGetSecurityLevel() | SECURITY_LEVEL_2);
++                        if (responseSuppress == 0u)
++                        {
++                            uint8_t txBuf[2] = {
++                                (uint8_t)uds_sid_SecurityAccess | (uint8_t)uds_sid_PositiveResponseMask,
++                                0x04u
++                            };
++                            charon_sscTxMessage(txBuf, sizeof(txBuf));
++                        }
++                    }
++                    else
++                    {
++                        s_failedAttemptCount++;
++                        CHARON_WARNING("Security Level 2 invalid key! Attempt %u/%u", s_failedAttemptCount, SECURITY_MAX_FAILED_ATTEMPTS);
++                        if (s_failedAttemptCount >= SECURITY_MAX_FAILED_ATTEMPTS)
++                        {
++                            s_lockoutActive = true;
++                            s_lockoutStartTime = charon_interface_clock_getTime();
++                            result = uds_responseCode_ExceededNumberOfAttempts;
++                        }
++                        else
++                        {
++                            result = uds_responseCode_InvalidKey;
++                        }
++                    }
++                }
++                break;
++            }
++
++            default:
++                CHARON_WARNING("Unsupported Security Access subfunction: 0x%x", subfunction);
++                result = uds_responseCode_SubfunctionNotSupported;
++                break;
++            }
++        }
++    }
++
++    if (result != uds_responseCode_PositiveResponse)
++    {
++        charon_sendNegativeResponse(result, uds_sid_SecurityAccess);
++    }
++    return result;
+ }
+ 
+ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_CommunicationControl (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
+diff --git a/Library/DiagnosticAndCommunicationManagementFunctionalUnit.h b/Library/DiagnosticAndCommunicationManagementFunctionalUnit.h
+index 01beed4..fdccf5f 100644
+--- a/Library/DiagnosticAndCommunicationManagementFunctionalUnit.h
++++ b/Library/DiagnosticAndCommunicationManagementFunctionalUnit.h
+@@ -118,4 +118,10 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Res
+  */
+ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_LinkControl (const uint8_t * receiveBuffer, uint32_t receiveBufferSize);
+ 
++/** @brief Provision custom 16-byte Master Key for SecurityAccess Level 2 (AES-CMAC128). */
++void charon_SecurityAccess_SetMasterKey(const uint8_t key[16]);
++
++/** @brief Invalidate all active seeds and force re-authentication. */
++void charon_SecurityAccess_InvalidateSeeds(void);
++
+ #endif 
+\ No newline at end of file
+diff --git a/Library/NvmEmulator.h b/Library/NvmEmulator.h
+index e5bb734..420da91 100644
+--- a/Library/NvmEmulator.h
++++ b/Library/NvmEmulator.h
+@@ -8,7 +8,7 @@
+ #include "uds_types.h"
+ 
+ /* Constants *****************************************************************/
+-#define NVM_SCHEMA_MAGIC                                (0xDEADBEE4U)
++#define NVM_SCHEMA_MAGIC                                (0xDEADBEE5U)
+ 
+ /* Macros ********************************************************************/
+ 
+diff --git a/Library/RoutineFunctionalUnit.c b/Library/RoutineFunctionalUnit.c
+index 068b169..b932acb 100644
+--- a/Library/RoutineFunctionalUnit.c
++++ b/Library/RoutineFunctionalUnit.c
+@@ -2,23 +2,84 @@
+ #include "RoutineFunctionalUnit.h"
+ #include "negativeResponse.h"
+ #include "SessionAndServiceControl.h"
++#include <string.h>
++#include <stdbool.h>
+ 
++#if defined(STM32F103xE) || defined(STM32F1xx)
++#include "stm32f1xx_hal.h"
++#endif
+ 
+ /* Imports *******************************************************************/
+ 
+ /* Macros ********************************************************************/
+ 
++#define UDS_BL_MAGIC_UDSM 0x5544534DUL
++
+ /* Types *********************************************************************/
+ 
+ /* Variables *****************************************************************/
+ 
++static UdsBootloaderMetadata_t s_bootloaderMeta = {
++    .magic = UDS_BL_MAGIC_UDSM,
++    .version = 1u,
++    .image_size = 0u,
++    .crc32 = 0u,
++    .status = (uint8_t)UDS_BL_SLOT_CONFIRMED,
++    .boot_attempts = 0u,
++    .max_attempts = 3u,
++    .active_slot = 0u
++};
++
+ /* Private Function Definitions **********************************************/
+ 
++static uint32_t calculateCrc32(const uint8_t *pData, uint32_t length)
++{
++    uint32_t crc = 0xFFFFFFFFUL;
++    if (pData == NULL)
++    {
++        return 0u;
++    }
++    for (uint32_t i = 0u; i < length; ++i)
++    {
++        crc ^= pData[i];
++        for (uint8_t bit = 0u; bit < 8u; ++bit)
++        {
++            crc = (crc & 1u) ? ((crc >> 1u) ^ 0xEDB88320UL) : (crc >> 1u);
++        }
++    }
++    return (crc ^ 0xFFFFFFFFUL);
++}
++
++static bool eraseSlotB(void)
++{
++#if defined(HAL_FLASH_MODULE_ENABLED) || defined(STM32F103xE)
++    HAL_FLASH_Unlock();
++    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPERR);
++    FLASH_EraseInitTypeDef eraseInit;
++    eraseInit.TypeErase = FLASH_TYPEERASE_PAGES;
++    eraseInit.PageAddress = UDS_BL_F103_APP_SLOT_B_START;
++    eraseInit.NbPages = UDS_BL_F103_APP_SLOT_B_SIZE / 2048u; /* 120 pages */
++    uint32_t pageError = 0u;
++    HAL_StatusTypeDef status = HAL_FLASHEx_Erase(&eraseInit, &pageError);
++    HAL_FLASH_Lock();
++    return (status == HAL_OK);
++#else
++    return true;
++#endif
++}
++
+ /* Interfaces  ***************************************************************/
+ 
++const UdsBootloaderMetadata_t* charon_RoutineFunctionalUnit_GetMetadata (void)
++{
++    return &s_bootloaderMeta;
++}
++
+ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
+ {
+     uds_responseCode_t result = uds_responseCode_PositiveResponse;
++    uint8_t statusRecord = 0x00u;
++    bool hasStatusRecord = false;
+ 
+     if (receiveBufferSize < 4u)
+     {
+@@ -30,10 +91,126 @@ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t *
+     }
+     else
+     {
++        uint8_t subfunction = receiveBuffer[1];
+         uint16_t routineIdentifier = ((uint16_t)receiveBuffer[2] << 8) | receiveBuffer[3];
+-        if ( (routineIdentifier == 0xFF00u) && (receiveBuffer[1] == 1u) )
++
++        if (routineIdentifier == UDS_BL_ROUTINE_ERASE_MEMORY)
+         {
+-            charon_NvmDriver_erase();
++            if (subfunction == 0x01u) /* StartRoutine */
++            {
++                if (receiveBufferSize == 4u)
++                {
++                    /* Erase NVM parameter storage emulator */
++                    charon_NvmDriver_erase();
++                }
++                else if (receiveBufferSize >= 12u)
++                {
++                    /* Memory erase targeting flash slot */
++                    uint32_t eraseAddr = ((uint32_t)receiveBuffer[4] << 24) |
++                                         ((uint32_t)receiveBuffer[5] << 16) |
++                                         ((uint32_t)receiveBuffer[6] << 8)  |
++                                          (uint32_t)receiveBuffer[7];
++                    uint32_t eraseLen  = ((uint32_t)receiveBuffer[8] << 24) |
++                                         ((uint32_t)receiveBuffer[9] << 16) |
++                                         ((uint32_t)receiveBuffer[10] << 8) |
++                                          (uint32_t)receiveBuffer[11];
++
++                    if ((eraseAddr >= UDS_BL_F103_APP_SLOT_B_START) &&
++                        ((eraseAddr + eraseLen) <= (UDS_BL_F103_APP_SLOT_B_START + UDS_BL_F103_APP_SLOT_B_SIZE)))
++                    {
++                        if (!eraseSlotB())
++                        {
++                            result = uds_responseCode_GeneralProgrammingFailure;
++                        }
++                    }
++                    else
++                    {
++                        result = uds_responseCode_RequestOutOfRange;
++                    }
++                }
++                else
++                {
++                    result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
++                }
++            }
++            else
++            {
++                result = uds_responseCode_SubfunctionNotSupported;
++            }
++        }
++        else if (routineIdentifier == UDS_BL_ROUTINE_CHECK_MEMORY)
++        {
++            if (subfunction == 0x01u) /* StartRoutine */
++            {
++                uint32_t checkAddr = UDS_BL_F103_APP_SLOT_B_START;
++                uint32_t checkLen  = UDS_BL_F103_APP_SLOT_B_SIZE;
++                uint32_t expectedCrc = 0u;
++
++                if (receiveBufferSize == 16u)
++                {
++                    /* Format: 31 01 02 02 [Addr 4B] [Length 4B] [CRC32 4B] */
++                    checkAddr = ((uint32_t)receiveBuffer[4] << 24) |
++                                ((uint32_t)receiveBuffer[5] << 16) |
++                                ((uint32_t)receiveBuffer[6] << 8)  |
++                                 (uint32_t)receiveBuffer[7];
++                    checkLen  = ((uint32_t)receiveBuffer[8] << 24) |
++                                ((uint32_t)receiveBuffer[9] << 16) |
++                                ((uint32_t)receiveBuffer[10] << 8) |
++                                 (uint32_t)receiveBuffer[11];
++                    expectedCrc = ((uint32_t)receiveBuffer[12] << 24) |
++                                  ((uint32_t)receiveBuffer[13] << 16) |
++                                  ((uint32_t)receiveBuffer[14] << 8)  |
++                                   (uint32_t)receiveBuffer[15];
++                }
++                else if (receiveBufferSize == 8u)
++                {
++                    /* Format: 31 01 02 02 [CRC32 4B] defaulting to Slot B */
++                    expectedCrc = ((uint32_t)receiveBuffer[4] << 24) |
++                                  ((uint32_t)receiveBuffer[5] << 16) |
++                                  ((uint32_t)receiveBuffer[6] << 8)  |
++                                   (uint32_t)receiveBuffer[7];
++                }
++                else
++                {
++                    result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
++                }
++
++                if (result == uds_responseCode_PositiveResponse)
++                {
++                    if ((checkAddr < UDS_BL_F103_APP_SLOT_B_START) ||
++                        ((checkAddr + checkLen) > (UDS_BL_F103_APP_SLOT_B_START + UDS_BL_F103_APP_SLOT_B_SIZE)))
++                    {
++                        result = uds_responseCode_RequestOutOfRange;
++                    }
++                    else
++                    {
++                        uint32_t computedCrc = calculateCrc32((const uint8_t *)(uintptr_t)checkAddr, checkLen);
++                        hasStatusRecord = true;
++                        if (computedCrc == expectedCrc)
++                        {
++                            statusRecord = 0x00u; /* 0x00: Verification Successful */
++                            s_bootloaderMeta.crc32 = computedCrc;
++                            s_bootloaderMeta.image_size = checkLen;
++                            s_bootloaderMeta.status = (uint8_t)UDS_BL_SLOT_CANDIDATE;
++                            s_bootloaderMeta.active_slot = 1u; /* Stage candidate in Slot B */
++                        }
++                        else
++                        {
++                            statusRecord = 0x01u; /* 0x01: Verification Failed */
++                            s_bootloaderMeta.status = (uint8_t)UDS_BL_SLOT_INVALID;
++                        }
++                    }
++                }
++            }
++            else if (subfunction == 0x03u) /* RequestRoutineResults */
++            {
++                hasStatusRecord = true;
++                statusRecord = (s_bootloaderMeta.status == (uint8_t)UDS_BL_SLOT_CANDIDATE) ? 0x00u : 0x01u;
++            }
++            else
++            {
++                result = uds_responseCode_SubfunctionNotSupported;
++            }
+         }
+         else
+         {
+@@ -47,16 +224,27 @@ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t *
+     }
+     else
+     {
+-        uint8_t transmitBuffer[4] = {
++        if (hasStatusRecord)
++        {
++            uint8_t transmitBuffer[5] = {
++                receiveBuffer[0] | (uint8_t)uds_sid_PositiveResponseMask,
++                receiveBuffer[1],
++                receiveBuffer[2],
++                receiveBuffer[3],
++                statusRecord
++            };
++            charon_sscTxMessage(transmitBuffer, sizeof(transmitBuffer));
++        }
++        else
++        {
++            uint8_t transmitBuffer[4] = {
+                 receiveBuffer[0] | (uint8_t)uds_sid_PositiveResponseMask,
+                 receiveBuffer[1],
+                 receiveBuffer[2],
+                 receiveBuffer[3]
+-        };
+-        charon_sscTxMessage(transmitBuffer, sizeof(transmitBuffer));
++            };
++            charon_sscTxMessage(transmitBuffer, sizeof(transmitBuffer));
++        }
+     }
+     return result;
+ }
+-
+-
+-
+diff --git a/Library/RoutineFunctionalUnit.h b/Library/RoutineFunctionalUnit.h
+index 82d9e16..df22656 100644
+--- a/Library/RoutineFunctionalUnit.h
++++ b/Library/RoutineFunctionalUnit.h
+@@ -8,10 +8,42 @@
+ 
+ /* Constants *****************************************************************/
+ 
++#define UDS_BL_ROUTINE_ERASE_MEMORY     0xFF00U
++#define UDS_BL_ROUTINE_CHECK_MEMORY     0x0202U
++
++/* STM32F103 High-Density 512KB Flash Memory Map */
++#define UDS_BL_F103_BOOTLOADER_START    0x08000000UL
++#define UDS_BL_F103_BOOTLOADER_SIZE     0x00008000UL /* 32 KB (Pages 0-15) */
++#define UDS_BL_F103_APP_SLOT_A_START    0x08008000UL /* 240 KB (Pages 16-135) */
++#define UDS_BL_F103_APP_SLOT_A_SIZE     0x0003C000UL
++#define UDS_BL_F103_APP_SLOT_B_START    0x08044000UL /* 240 KB (Pages 136-251) */
++#define UDS_BL_F103_APP_SLOT_B_SIZE     0x0003C000UL
++#define UDS_BL_F103_NVM_METADATA_START  0x0807E000UL /* 8 KB (Pages 252-255) */
++#define UDS_BL_F103_NVM_METADATA_SIZE   0x00002000UL
++
+ /* Macros ********************************************************************/
+ 
+ /* Types *********************************************************************/
+ 
++typedef enum {
++    UDS_BL_SLOT_INVALID = 0,
++    UDS_BL_SLOT_CANDIDATE = 1,
++    UDS_BL_SLOT_ACTIVE = 2,
++    UDS_BL_SLOT_CONFIRMED = 3,
++    UDS_BL_SLOT_ROLLBACK = 4
++} UdsBootloaderSlotStatus;
++
++typedef struct __attribute__((packed)) {
++    uint32_t magic;        /* 0x5544534D ("UDSM") */
++    uint32_t version;      /* Monotonic firmware version */
++    uint32_t image_size;   /* Image size in bytes */
++    uint32_t crc32;        /* Transmission CRC-32 */
++    uint8_t  status;       /* UdsBootloaderSlotStatus */
++    uint8_t  boot_attempts;/* Attempt count */
++    uint8_t  max_attempts; /* Max attempts before rollback */
++    uint8_t  active_slot;  /* 0 = Slot A, 1 = Slot B */
++} UdsBootloaderMetadata_t;
++
+ /* Interfaces ****************************************************************/
+ 
+ /**
+@@ -24,4 +56,7 @@
+  */
+ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t * receiveBuffer, uint32_t receiveBufferSize);
+ 
++/** @brief Returns pointer to current active bootloader metadata. */
++const UdsBootloaderMetadata_t* charon_RoutineFunctionalUnit_GetMetadata (void);
++
+ #endif 
+\ No newline at end of file
+diff --git a/Library/SessionAndServiceControl.c b/Library/SessionAndServiceControl.c
+index 8471aaf..c6f9b7d 100644
+--- a/Library/SessionAndServiceControl.c
++++ b/Library/SessionAndServiceControl.c
+@@ -66,6 +66,12 @@ static ComTimeoutLimits_t s_ttl =
+ };
+ /** Stores the System given Communication Socket */
+ static ISocket_t s_systemComSocket = {NULL};
++/** Stores the Currently Active Addressing Mode */
++static uint32_t s_currentAddressingMode = ADDRESS_PHYSICAL;
++/** Stores the Currently Active Security Level bitmask */
++static uint32_t s_currentSecurityLevel = SECURITY_LOCKED;
++/** Stores the Currently Active Encryption Level */
++static uint32_t s_currentEncryptionLevel = 0u;
+ 
+ /* Buffers *******************************************************************/
+ 
+@@ -146,6 +152,9 @@ void charon_sscReset (void)
+     s_diagnosticSessionTimestamp = 0u;
+     s_ttl.p2Server = DEFAULT_P2_SERVER;
+     s_ttl.p2StarServer = DEFAULT_P2_STAR_SERVER;
++    s_currentAddressingMode = ADDRESS_PHYSICAL;
++    s_currentSecurityLevel = SECURITY_LOCKED;
++    s_currentEncryptionLevel = 0u;
+ }
+ 
+ void charon_sscInit (ISocket_t sscComSocket)
+@@ -253,8 +262,11 @@ static void processReceivedMessage (uint8_t const * const pBuffer, uint32_t leng
+         case uds_responseCode_ServiceNotSupportedInActiveSession:
+         {
+             CHARON_WARNING("Wrong session for requested service, sending error message.");
+-            /* Answer NRC and Send */
+-            charon_sendNegativeResponse(uds_responseCode_ServiceNotSupportedInActiveSession, pServiceObj->sid);
++            /* Answer NRC and Send (suppressed in functional addressing per ISO 14229) */
++            if (s_currentAddressingMode != ADDRESS_FUNCTIONAL)
++            {
++                charon_sendNegativeResponse(uds_responseCode_ServiceNotSupportedInActiveSession, pServiceObj->sid);
++            }
+             break;
+         }
+         case uds_responseCode_ServiceNotSupported:
+@@ -268,8 +280,20 @@ static void processReceivedMessage (uint8_t const * const pBuffer, uint32_t leng
+              * is not in the Enumeration.
+              */
+             castedSid = (uds_sid_t)pBuffer[0];  /** @todo  Suppress */
+-            /* Send NRC */
+-            charon_sendNegativeResponse(uds_responseCode_ServiceNotSupported, castedSid);
++            /* Send NRC (suppressed in functional addressing per ISO 14229) */
++            if (s_currentAddressingMode != ADDRESS_FUNCTIONAL)
++            {
++                charon_sendNegativeResponse(uds_responseCode_ServiceNotSupported, castedSid);
++            }
++            break;
++        }
++        case uds_responseCode_SecurityAccessDenied:
++        {
++            CHARON_WARNING("Security access denied for requested service, sending error message.");
++            if (s_currentAddressingMode != ADDRESS_FUNCTIONAL)
++            {
++                charon_sendNegativeResponse(uds_responseCode_SecurityAccessDenied, pServiceObj->sid);
++            }
+             break;
+         }
+         case uds_responseCode_RequestCorrectlyReceived_ResponsePending:
+@@ -348,6 +372,8 @@ void charon_sscSetSession (charon_sessionTypes_t sessionType, uint32_t timeoutP2
+ 
+     /* Assign new Session Type */
+     s_currentDiagnosticSession = sessionType;
++    /* Switching diagnostic session resets security level to SECURITY_LOCKED per ISO 14229-1 */
++    s_currentSecurityLevel = SECURITY_LOCKED;
+ }
+ 
+ charon_sessionTypes_t charon_sscGetSession (void)
+@@ -360,6 +386,41 @@ void charon_sscTesterPresentHeartbeat (void)
+     s_diagnosticSessionTimestamp = charon_interface_clock_getTime();
+ }
+ 
++void charon_sscSetAddressingMode (uint32_t addressingMode)
++{
++    s_currentAddressingMode = addressingMode;
++}
++
++uint32_t charon_sscGetAddressingMode (void)
++{
++    return s_currentAddressingMode;
++}
++
++void charon_sscSetSecurityLevel (uint32_t securityLevel)
++{
++    s_currentSecurityLevel = securityLevel;
++}
++
++uint32_t charon_sscGetSecurityLevel (void)
++{
++    return s_currentSecurityLevel;
++}
++
++void charon_sscResetSecurityLevel (void)
++{
++    s_currentSecurityLevel = SECURITY_LOCKED;
++}
++
++void charon_sscSetEncryptionLevel (uint32_t encryptionLevel)
++{
++    s_currentEncryptionLevel = encryptionLevel;
++}
++
++uint32_t charon_sscGetEncryptionLevel (void)
++{
++    return s_currentEncryptionLevel;
++}
++
+ 
+ /* Private Function **********************************************************/
+ 
+@@ -375,6 +436,25 @@ static bool isServiceInSession (charon_sessionTypes_t currentSession, const char
+     return retval;
+ }
+ 
++static bool isServiceInAddress (uint32_t currentMode, const charon_serviceObject_t * pService)
++{
++    return ((pService->addressMask & currentMode) != 0u);
++}
++
++static bool isServiceInSecurity (uint32_t currentSecurity, const charon_serviceObject_t * pService)
++{
++    return ((pService->securityMask & currentSecurity) != 0u);
++}
++
++static bool isServiceInEncryption (uint32_t currentEnc, const charon_serviceObject_t * pService)
++{
++    if (pService->emcryptionMask == 0u)
++    {
++        return true;
++    }
++    return ((currentEnc & pService->emcryptionMask) == pService->emcryptionMask);
++}
++
+ static void handleDiagnosticSession (void)
+ {
+     /* Check if Session Timed Out */
+@@ -383,6 +463,7 @@ static void handleDiagnosticSession (void)
+         CHARON_WARNING("Session timed out, activating default session.");
+         /* terminate Session */
+         s_currentDiagnosticSession = charon_sscType_timedOut;
++        s_currentSecurityLevel = SECURITY_LOCKED;
+     }
+ }
+ 
+@@ -423,16 +504,30 @@ static uds_responseCode_t handleService (const charon_serviceObject_t * pExecuta
+     /* Check if Service is supported */
+     if (NULL != pExecutableService)
+     {
+-        /* Check if Service is Supported in Current Session */
+-        if (isServiceInSession(s_currentDiagnosticSession, pExecutableService))
++        /* 1. Check if Service is Supported in Current Session */
++        if (!isServiceInSession(s_currentDiagnosticSession, pExecutableService))
+         {
+-            /* Execute Service */
+-            retVal = pExecutableService->serviceRunable(pUdsMessage, length);
++            retVal = uds_responseCode_ServiceNotSupportedInActiveSession;
++        }
++        /* 2. Check Addressing Mode (Physical vs Functional) */
++        else if (!isServiceInAddress(s_currentAddressingMode, pExecutableService))
++        {
++            retVal = uds_responseCode_ServiceNotSupported;
++        }
++        /* 3. Check Security Access Level */
++        else if (!isServiceInSecurity(s_currentSecurityLevel, pExecutableService))
++        {
++            retVal = uds_responseCode_SecurityAccessDenied;
++        }
++        /* 4. Check Encryption Requirement */
++        else if (!isServiceInEncryption(s_currentEncryptionLevel, pExecutableService))
++        {
++            retVal = uds_responseCode_SecurityAccessDenied;
+         }
+         else
+         {
+-            /* Send Diag NRC */
+-            retVal = uds_responseCode_ServiceNotSupportedInActiveSession;
++            /* Execute Service */
++            retVal = pExecutableService->serviceRunable(pUdsMessage, length);
+         }
+     }
+     else
+diff --git a/Library/SessionAndServiceControl.h b/Library/SessionAndServiceControl.h
+index ec8dc7d..7249179 100644
+--- a/Library/SessionAndServiceControl.h
++++ b/Library/SessionAndServiceControl.h
+@@ -69,5 +69,25 @@ void charon_sscTesterPresentHeartbeat(void);
+ 
+ void on_ecu_reset(uint8_t reset_type);
+ 
++/** @brief Set current addressing mode (ADDRESS_PHYSICAL, ADDRESS_FUNCTIONAL). */
++void charon_sscSetAddressingMode (uint32_t addressingMode);
++
++/** @brief Get current addressing mode. */
++uint32_t charon_sscGetAddressingMode (void);
++
++/** @brief Set active security level bitmask (SECURITY_LOCKED, SECURITY_LEVEL_1, SECURITY_LEVEL_2). */
++void charon_sscSetSecurityLevel (uint32_t securityLevel);
++
++/** @brief Get active security level bitmask. */
++uint32_t charon_sscGetSecurityLevel (void);
++
++/** @brief Reset security level to SECURITY_LOCKED. */
++void charon_sscResetSecurityLevel (void);
++
++/** @brief Set active encryption level mask. */
++void charon_sscSetEncryptionLevel (uint32_t encryptionLevel);
++
++/** @brief Get active encryption level mask. */
++uint32_t charon_sscGetEncryptionLevel (void);
+ 
+ #endif 
+\ No newline at end of file
+diff --git a/Library/StoredDataTransmissionFunctionalUnit.c b/Library/StoredDataTransmissionFunctionalUnit.c
+index 26ca592..99514b8 100644
+--- a/Library/StoredDataTransmissionFunctionalUnit.c
++++ b/Library/StoredDataTransmissionFunctionalUnit.c
+@@ -456,7 +456,7 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformatio
+     CHARON_INFO("Read DTC Information Service SID:0x19 Triggered\r\n");
+ 
+     // NVM needs to be setted on installation or CRC will pick up random values and may fail without real reason.
+-    if (DTC_header->iniDone != 0xDEADBEEF)
++    if (DTC_header->iniDone != NVM_SCHEMA_MAGIC)
+     {
+         charon_DTC_LookupTable_header_SET();
+     }

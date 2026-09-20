@@ -118,4 +118,10 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Res
  */
 uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_LinkControl (const uint8_t * receiveBuffer, uint32_t receiveBufferSize);
 
+/** @brief Provision custom 16-byte Master Key for SecurityAccess Level 2 (AES-CMAC128). */
+void charon_SecurityAccess_SetMasterKey(const uint8_t key[16]);
+
+/** @brief Invalidate all active seeds and force re-authentication. */
+void charon_SecurityAccess_InvalidateSeeds(void);
+
 #endif 
