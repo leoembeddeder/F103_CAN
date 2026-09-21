@@ -328,7 +328,7 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
             {
             case 0x01: /* Request Seed Level 1 */
             {
-                if (receiveBufferSize != 2u)
+                if (receiveBufferSize != 6u)
                 {
                     result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
                 }
@@ -416,7 +416,7 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
 
             case 0x03: /* Request Seed Level 2 */
             {
-                if (receiveBufferSize != 2u)
+                if (receiveBufferSize != 18u)
                 {
                     result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
                 }
