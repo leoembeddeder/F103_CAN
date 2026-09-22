@@ -101,7 +101,8 @@ DTC_t* charon_getDTCLookupByDTCNumber (uint8_t DTCHighByte, uint8_t DTCMiddleByt
     // Depending on the requested function different storage areas are needed. 
     if (userDefMemory)
     {
-        DTC = (DTC_t*)charon_NvmDriver_getNvmAddress(); /** @todo USER: Change where you want to safe this information and use MemorySelection! */
+        DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+        DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
         totalSavedDTC = charon_StoredDataTransmissionFunctionalUnit_get_total_userDefDTCCounter(MemorySelection);
     }
     else if (mirror)
@@ -132,7 +133,7 @@ DTC_t* charon_getDTCLookupByDTCNumber (uint8_t DTCHighByte, uint8_t DTCMiddleByt
 }
 
 
-DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, bool mirror)
+DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, bool mirror, bool userDefMemory, uint8_t MemorySelection)
 {
     DTC_t* pDTCEntry = NULL;
     uint8_t isStatusMask;
@@ -145,7 +146,13 @@ DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, boo
 
 
     // Depending on the requested function different storage areas are needed. 
-    if (mirror)
+    if (userDefMemory)
+    {
+        DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, header);
+        DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
+        countOfSavedDTC = charon_StoredDataTransmissionFunctionalUnit_get_total_userDefDTCCounter(MemorySelection);
+    }
+    else if (mirror)
     {
         DTC = (DTC_t*)charon_NvmDriver_getMirrorNvmAddress(0,header);
         countOfSavedDTC = charon_StoredDataTransmissionFunctionalUnit_get_total_mirrorDTCCounter();
@@ -165,7 +172,7 @@ DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, boo
         isStatusMask = (DTC[counter].DTCStatusMask & StatusMask);
         if(isStatusMask != 0u)
         {
-            if ((mirror) || (charon_DTC_LookupTable_DTClookupTableValidCheck(counter,(uint32_t)DTC_header)))
+            if ((userDefMemory) || (mirror) || (charon_DTC_LookupTable_DTClookupTableValidCheck(counter,(uint32_t)DTC_header)))
             {
                 pDTCEntry = &DTC[counter];
                 offsetCounter --;
@@ -200,7 +207,8 @@ uint32_t charon_getDTCCountByStatusMask (uint8_t StatusMask, bool mirror, bool u
     // Depending on the requested function different storage areas are needed. 
     if (userDefMemory)
     {
-        DTC = (DTC_t*)charon_NvmDriver_getNvmAddress(); /** @todo USER: Change where you want to safe this information and use MemorySelection! */
+        DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+        DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
         countOfSavedDTC = charon_StoredDataTransmissionFunctionalUnit_get_total_userDefDTCCounter(MemorySelection);
         currentSavedDTC = countOfSavedDTC;
     }

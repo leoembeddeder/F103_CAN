@@ -26,8 +26,26 @@ typedef enum uds_data_t_public
     uds_data_test_periodic1 = 0xF242,   /**< Test DataIdentifier for Debugging */
     uds_data_test_dynamic = 0xF301,     /**< Test DataIdentifier for Debugging */
 
+    uds_did_hib_spare_part_number       = 0xF181,
+    uds_did_boot_sw_identifier          = 0xF182,
+    uds_did_ecu_software_number         = 0xF183,
+    uds_did_ecu_app_software_number     = 0xF184,
+    uds_did_ecu_hardware_number         = 0xF185,
+    uds_did_active_diagnostic_session   = 0xF186,
+    uds_did_system_supplier_identifier  = 0xF18A,
+    uds_did_vin                         = 0xF190,
+
     uds_data_amount
 } uds_data_t;
+
+#define UDS_DID_HIB_SPARE_PART_NUMBER       0xF181U
+#define UDS_DID_BOOT_SW_IDENTIFIER          0xF182U
+#define UDS_DID_ECU_SOFTWARE_NUMBER         0xF183U
+#define UDS_DID_ECU_APP_SOFTWARE_NUMBER     0xF184U
+#define UDS_DID_ECU_HARDWARE_NUMBER         0xF185U
+#define UDS_DID_ACTIVE_DIAGNOSTIC_SESSION   0xF186U
+#define UDS_DID_SYSTEM_SUPPLIER_IDENTIFIER  0xF18AU
+#define UDS_DID_VIN                         0xF190U
 
 /**
  * @brief 

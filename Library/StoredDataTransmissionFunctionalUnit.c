@@ -92,7 +92,7 @@ static uds_responseCode_t NumberOfDTCByStatusMask (const uint8_t * receiveBuffer
  * 
  * @return uds_responseCode_t       
  */
-static uds_responseCode_t DTCByStatusMask (const uint8_t * receiveBuffer, uint32_t receiveBufferSize, bool mirror);
+static uds_responseCode_t DTCByStatusMask (const uint8_t * receiveBuffer, uint32_t receiveBufferSize, bool mirror, bool userDefMemory);
 
 /**
  * @brief Read DTC Information (SID 0x019) Subfunction 0x03 from ISO: 14229-1.
@@ -492,7 +492,8 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformatio
     {
         CHARON_INFO("Sub 0x02: reportDTCByStatusMask start.\r\n");
         bool mirror = false;
-        return DTCByStatusMask(receiveBuffer, receiveBufferSize, mirror);
+        bool userDefMemory = false;
+        return DTCByStatusMask(receiveBuffer, receiveBufferSize, mirror, userDefMemory);
     }
 
     case reportDTCSnapshotIdentification:                   //0x03   
@@ -574,7 +575,8 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformatio
     {
         CHARON_INFO("Sub 0x0F: reportMirrorMemoryDTCByStatusMask start.\r\n");
         bool mirror = true;
-        return DTCByStatusMask(receiveBuffer, receiveBufferSize, mirror);
+        bool userDefMemory = false;
+        return DTCByStatusMask(receiveBuffer, receiveBufferSize, mirror, userDefMemory);
     }
 
     case reportMirrorMemoryDTCExtDataRecordByDTCNumber:     //0x10    
@@ -628,7 +630,7 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformatio
         CHARON_INFO("Sub 0x17: reportUserDefMemoryDTCByStatusMask start.\r\n");
         bool userDefMemory = true;
         bool mirror = false;
-        return NumberOfDTCByStatusMask(receiveBuffer, receiveBufferSize, mirror, userDefMemory);
+        return DTCByStatusMask(receiveBuffer, receiveBufferSize, mirror, userDefMemory);
     }
 
     case reportUserDefMemoryDTCSnapshotRecordByDTCNumber:   //0x18
@@ -857,33 +859,48 @@ static uds_responseCode_t NumberOfDTCByStatusMask (const uint8_t * receiveBuffer
 }
 
 
-static uds_responseCode_t DTCByStatusMask (const uint8_t * receiveBuffer, uint32_t receiveBufferSize, bool mirror)
+static uds_responseCode_t DTCByStatusMask (const uint8_t * receiveBuffer, uint32_t receiveBufferSize, bool mirror, bool userDefMemory)
 {
     uint8_t StatusMask = receiveBuffer[2];
+    uint8_t memorySelection = 0u;
+    if (userDefMemory)
+    {
+        memorySelection = receiveBuffer[3];
+    }
     DTC_t *matchedDTC = NULL;
     static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
     uint32_t length = 3u;
-    uint16_t countOfMatchedDTC = charon_getDTCCountByStatusMask(StatusMask, mirror, false, 0x00);
+    uint16_t countOfMatchedDTC = charon_getDTCCountByStatusMask(StatusMask, mirror, userDefMemory, memorySelection);
     uint8_t lengthOfDTC = 3u;
 
 
     // Depending on calling request, different data storage is used and so different response are send back.
     s_buffer[0] = (uds_sid_ReadDtcInformation | (uint8_t)uds_sid_PositiveResponseMask);
-    if (mirror)
+    if (userDefMemory)
+    {
+        s_buffer[1] = reportUserDefMemoryDTCByStatusMask;
+        s_buffer[2] = memorySelection;
+        s_buffer[3] = charon_getDTCStatusAvailabilityMask();
+        length = 4u;
+    }
+    else if (mirror)
     {
         s_buffer[1] = reportMirrorMemoryDTCByStatusMask;
         matchedDTC = (DTC_t*)charon_NvmDriver_getMirrorNvmAddress(0,false);
+        s_buffer[2] = charon_getDTCStatusAvailabilityMask();
+        length = 3u;
     }
     else
     {
         s_buffer[1] = reportDTCByStatusMask;
         matchedDTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0,false);
+        s_buffer[2] = charon_getDTCStatusAvailabilityMask();
+        length = 3u;
     }
-    s_buffer[2] = charon_getDTCStatusAvailabilityMask();
 
 
     // Builds the response buffer out of found valid DTCs.
-    for(uint32_t i = 0u; ((i < countOfMatchedDTC) && (matchedDTC != NULL)); i++)
+    for(uint32_t i = 0u; i < countOfMatchedDTC; i++)
     {
         // Check if the new input will fit into the buffer.
         if((length + 4u) > MAX_TX_BUFFER_SIZE)
@@ -893,7 +910,7 @@ static uds_responseCode_t DTCByStatusMask (const uint8_t * receiveBuffer, uint32
             return uds_responseCode_ResponseTooLong;
         }
 
-        matchedDTC = charon_getDTCLookupByStatusMask(StatusMask,(i+1), mirror);
+        matchedDTC = charon_getDTCLookupByStatusMask(StatusMask,(i+1), mirror, userDefMemory, memorySelection);
         if(matchedDTC != NULL)
         {
             memcpy(&s_buffer[length], &matchedDTC->DTCHighByte , lengthOfDTC);
@@ -1018,10 +1035,13 @@ static uds_responseCode_t DTCSnapshotRecordByDTCNumber (const uint8_t * receiveB
     if (userDefMemory)
     {
         s_buffer[1] = reportUserDefMemoryDTCSnapshotRecordByDTCNumber;
+        s_buffer[2] = memorySelection;
+        length = 3u;
     }
     else
     {
         s_buffer[1] = reportDTCSnapshotRecordByDTCNumber;
+        length = 2u;
     }
 
 
@@ -1209,14 +1229,18 @@ static uds_responseCode_t DTCExtDataRecordByDTCNumber (const uint8_t * receiveBu
     if (userDefMemory)
     {
         s_buffer[1] = reportUserDefMemoryDTCExtDataRecordByDTCNumber;
+        s_buffer[2] = memorySelection;
+        length = 3u;
     }
     else if (mirror)
     {
         s_buffer[1] = reportMirrorMemoryDTCExtDataRecordByDTCNumber;
+        length = 2u;
     }
     else
     {
         s_buffer[1] = reportDTCExtDataRecordByDTCNumber;
+        length = 2u;
     }
 
     matchedDTC = charon_getDTCLookupByDTCNumber(DTCMaskRecordhigh, DTCMaskRecordmid, DTCMaskRecordlow, mirror, userDefMemory, memorySelection);
@@ -1608,15 +1632,89 @@ static uds_responseCode_t EmissionsOBDDTCByStatusMask (const uint8_t * receiveBu
 
 static uds_responseCode_t DTCFaultDetectionCounter (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
 {
-    CHARON_ERROR("Subfunction not Supported.");
-    return uds_responseCode_SubfunctionNotSupported;
+    (void)receiveBuffer;
+    (void)receiveBufferSize;
+    static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
+    uint32_t length = 2u;
+    uint8_t lengthOfDTC = 3u;
+
+    s_buffer[0] = (uds_sid_ReadDtcInformation | (uint8_t)uds_sid_PositiveResponseMask);
+    s_buffer[1] = reportDTCFaultDetectionCounter;
+
+    DTC_t *DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    DTC_header_t *DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
+    uint32_t countOfSavedDTC = DTC_header->totalDTCCounter;
+
+    uint8_t index;
+    uint8_t number;
+
+    for (uint32_t i = 0; i < countOfSavedDTC; i++)
+    {
+        LOOKUP_CALC(i, index, number);
+        index = (uint8_t)DTC_header->nvmDTCLookupTable[index];
+        number = (0x01 << number);
+
+        if ((index & number) > 0x00)
+        {
+            if ((length + lengthOfDTC + 1u) > MAX_TX_BUFFER_SIZE)
+            {
+                charon_sendNegativeResponse(uds_responseCode_ResponseTooLong, uds_sid_ReadDtcInformation);
+                return uds_responseCode_ResponseTooLong;
+            }
+            memcpy(&s_buffer[length], &DTC[i].DTCHighByte, lengthOfDTC);
+            length += lengthOfDTC;
+            s_buffer[length++] = 0x00u;
+        }
+    }
+
+    charon_sscTxMessage(s_buffer, length);
+    return uds_responseCode_PositiveResponse;
 }
 
 
 static uds_responseCode_t DTCWithPermanentStatus (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
 {
-    CHARON_ERROR("Subfunction not Supported.");
-    return uds_responseCode_SubfunctionNotSupported;
+    (void)receiveBuffer;
+    (void)receiveBufferSize;
+    static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
+    uint32_t length = 3u;
+    uint8_t lengthOfDTC = 3u;
+
+    s_buffer[0] = (uds_sid_ReadDtcInformation | (uint8_t)uds_sid_PositiveResponseMask);
+    s_buffer[1] = reportDTCWithPermanentStatus;
+    s_buffer[2] = charon_getDTCStatusAvailabilityMask();
+
+    DTC_t *DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    DTC_header_t *DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
+    uint32_t countOfSavedDTC = DTC_header->totalDTCCounter;
+
+    uint8_t index;
+    uint8_t number;
+
+    for (uint32_t i = 0; i < countOfSavedDTC; i++)
+    {
+        LOOKUP_CALC(i, index, number);
+        index = (uint8_t)DTC_header->nvmDTCLookupTable[index];
+        number = (0x01 << number);
+
+        if ((index & number) > 0x00)
+        {
+            if ((DTC[i].statusOfDTC & 0x08u) != 0u)
+            {
+                if ((length + lengthOfDTC + 1u) > MAX_TX_BUFFER_SIZE)
+                {
+                    charon_sendNegativeResponse(uds_responseCode_ResponseTooLong, uds_sid_ReadDtcInformation);
+                    return uds_responseCode_ResponseTooLong;
+                }
+                memcpy(&s_buffer[length], &DTC[i].DTCHighByte, lengthOfDTC);
+                length += lengthOfDTC;
+                s_buffer[length++] = DTC[i].statusOfDTC;
+            }
+        }
+    }
+
+    charon_sscTxMessage(s_buffer, length);
+    return uds_responseCode_PositiveResponse;
 }
 
 
@@ -1701,13 +1799,15 @@ static uds_responseCode_t WWHOBDDTCByMaskRecord (const uint8_t * receiveBuffer, 
     uint8_t severityMask = (receiveBuffer != NULL) ? receiveBuffer[4] : 0xFFu;
 
     static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
-    uint32_t length = 4u;
+    uint32_t length = 6u;
     uint8_t lengthOfDTC = 3u;
 
     s_buffer[0] = (uds_sid_ReadDtcInformation | (uint8_t)uds_sid_PositiveResponseMask);
     s_buffer[1] = reportWWHOBDDTCByMaskRecord;
     s_buffer[2] = functionalGroupIdentifier;
     s_buffer[3] = charon_getDTCStatusAvailabilityMask();
+    s_buffer[4] = 0xE0u; /* DTCSeverityAvailabilityMask */
+    s_buffer[5] = DTC_Format_Identifier;
 
     DTC_t *DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
     DTC_header_t *DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);

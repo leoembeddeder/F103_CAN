@@ -454,6 +454,11 @@ bool charon_NvmDriver_checkAddressRange(uint32_t address, uint32_t length)
 
 uds_responseCode_t charon_NvmDriver_write(uint32_t address, const uint8_t* data, uint32_t size)
 {
+    if ((address >= 0x20000000u) && ((address + size) <= 0x20010000u))
+    {
+        memcpy((void*)address, data, size);
+        return uds_responseCode_PositiveResponse;
+    }
 	 if (!charon_NvmDriver_checkAddressRange(address, size))
 	 {
 		 return uds_responseCode_RequestOutOfRange;
@@ -464,10 +469,19 @@ uds_responseCode_t charon_NvmDriver_write(uint32_t address, const uint8_t* data,
 
 void charon_NvmDriver_read (uint32_t address, uint8_t* data, uint32_t size)
 {
-	if (charon_NvmDriver_checkAddressRange(address, size))
-	{
-	 memcpy(data, &NvmEmulator_MemorySpace[address], size);
-	}
+    if ((address >= STM32F103_FLASH_BASE) && ((address + size) <= (STM32F103_FLASH_BASE + (256u * STM32F103_PAGE_SIZE))))
+    {
+        syn_port_flash_read(address, data, size);
+    }
+    else if (charon_NvmDriver_checkAddressRange(address, size))
+    {
+        memcpy(data, &NvmEmulator_MemorySpace[address], size);
+    }
+    else if ((address >= 0x08000000u && address < 0x08080000u) ||
+             (address >= 0x20000000u && address < 0x20010000u))
+    {
+        memcpy(data, (const void*)address, size);
+    }
 }
 
 void charon_NvmDriver_erase (void)

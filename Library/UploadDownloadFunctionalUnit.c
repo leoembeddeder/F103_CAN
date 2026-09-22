@@ -1,4 +1,5 @@
 #include "NvmEmulator.h"
+#include "flash.h"
 #include "interface_debug.h"
 #include "UploadDownloadFunctionalUnit.h"
 #include "SessionAndServiceControl.h"
@@ -119,11 +120,28 @@ uds_responseCode_t charon_UploadDownloadFunctionalUnit_TransferData (const uint8
     {
         if (s_transferDirection == transfer_download)
         {
-            result = charon_NvmDriver_write(s_currentMemoryAddress, receivedMessage->data, receiveBufferSize - 2u);
+            uint32_t chunkLen = receiveBufferSize - 2u;
+            if ((s_currentMemoryAddress >= STM32F103_FLASH_BASE) && 
+                ((s_currentMemoryAddress + chunkLen) <= (STM32F103_FLASH_BASE + (256u * STM32F103_PAGE_SIZE))))
+            {
+                if (syn_port_flash_write(s_currentMemoryAddress, receivedMessage->data, chunkLen) == SYN_OK)
+                {
+                    result = uds_responseCode_PositiveResponse;
+                }
+                else
+                {
+                    result = uds_responseCode_GeneralProgrammingFailure;
+                }
+            }
+            else
+            {
+                result = charon_NvmDriver_write(s_currentMemoryAddress, receivedMessage->data, chunkLen);
+            }
+
             if (result == uds_responseCode_PositiveResponse)
             {
-                s_currentMemoryAddress += receiveBufferSize - 2u;
-                s_remainingMemoryLength -= receiveBufferSize - 2u;
+                s_currentMemoryAddress += chunkLen;
+                s_remainingMemoryLength -= chunkLen;
                 s_nextSequenceCounter++;
 
                 uint8_t transmitBuffer[2] = {
@@ -134,8 +152,7 @@ uds_responseCode_t charon_UploadDownloadFunctionalUnit_TransferData (const uint8
             }
             else
             {
-                CHARON_ERROR("NVM driver reported error while writing to flash.");
-                // negative response is sent at the end of the function, nothing to do here.
+                CHARON_ERROR("Flash/NVM driver reported error while writing.");
             }
         }
         else
@@ -146,9 +163,18 @@ uds_responseCode_t charon_UploadDownloadFunctionalUnit_TransferData (const uint8
             {
                 transmitBufferSize = s_remainingMemoryLength + 2u;
             }
-            charon_NvmDriver_read(s_currentMemoryAddress, &(transmitBuffer[2]), transmitBufferSize - 2u);
-            s_currentMemoryAddress += transmitBufferSize - 2u;
-            s_remainingMemoryLength -= transmitBufferSize - 2u;
+            uint32_t readLen = transmitBufferSize - 2u;
+            if ((s_currentMemoryAddress >= STM32F103_FLASH_BASE) && 
+                ((s_currentMemoryAddress + readLen) <= (STM32F103_FLASH_BASE + (256u * STM32F103_PAGE_SIZE))))
+            {
+                syn_port_flash_read(s_currentMemoryAddress, &(transmitBuffer[2]), readLen);
+            }
+            else
+            {
+                charon_NvmDriver_read(s_currentMemoryAddress, &(transmitBuffer[2]), readLen);
+            }
+            s_currentMemoryAddress += readLen;
+            s_remainingMemoryLength -= readLen;
             s_nextSequenceCounter++;
 
             transmitBuffer[0] = (uint8_t)uds_sid_TransferData | (uint8_t)uds_sid_PositiveResponseMask;
@@ -294,7 +320,18 @@ static uds_responseCode_t requestTransfer(TransferDirection_t direction, const u
         }
         CHARON_INFO("Transfer Requested, address 0x%x, length 0x%x, direction %s.", memoryAddress, memoryLength, direction == transfer_download ? "download" : "upload");
 
-        if ( false == charon_NvmDriver_checkAddressRange(memoryAddress, memoryLength) )
+        bool isValidRange = false;
+        if ((memoryAddress >= STM32F103_FLASH_BASE) && 
+            ((memoryAddress + memoryLength) <= (STM32F103_FLASH_BASE + (256u * STM32F103_PAGE_SIZE))))
+        {
+            isValidRange = true;
+        }
+        else if (charon_NvmDriver_checkAddressRange(memoryAddress, memoryLength))
+        {
+            isValidRange = true;
+        }
+
+        if (!isValidRange)
         {
             CHARON_ERROR("Requested memory is out of range.");
             result = uds_responseCode_RequestOutOfRange;

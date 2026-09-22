@@ -65,7 +65,7 @@ DTC_t* charon_getDTCLookupByDTCNumber (uint8_t DTCHighByte, uint8_t DTCMiddleByt
  * @param mirror            Only used if a mirror subfunction was requested by the user.
  * @return DTC_t*           Pointer to the DTC requested address.
  */
-DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, bool mirror);
+DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, bool mirror, bool userDefMemory, uint8_t MemorySelection);
 
 /**
  * @brief Searches the NVM for all matching DTC and will return the amount.

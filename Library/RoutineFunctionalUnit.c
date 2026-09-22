@@ -100,8 +100,11 @@ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t * 
             {
                 if (receiveBufferSize == 4u)
                 {
-                    /* Erase NVM parameter storage emulator */
-                    charon_NvmDriver_erase();
+                    /* Erase Candidate Firmware Slot B partition directly in Flash */
+                    if (!eraseSlotB())
+                    {
+                        result = uds_responseCode_GeneralProgrammingFailure;
+                    }
                 }
                 else if (receiveBufferSize >= 12u)
                 {

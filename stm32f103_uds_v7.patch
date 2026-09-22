@@ -1,0 +1,772 @@
+diff --git a/Library/DTC_LookupTable.c b/Library/DTC_LookupTable.c
+index fea1bcf..89be2ce 100644
+--- a/Library/DTC_LookupTable.c
++++ b/Library/DTC_LookupTable.c
+@@ -101,7 +101,8 @@ DTC_t* charon_getDTCLookupByDTCNumber (uint8_t DTCHighByte, uint8_t DTCMiddleByt
+     // Depending on the requested function different storage areas are needed. 
+     if (userDefMemory)
+     {
+-        DTC = (DTC_t*)charon_NvmDriver_getNvmAddress(); /** @todo USER: Change where you want to safe this information and use MemorySelection! */
++        DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
++        DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
+         totalSavedDTC = charon_StoredDataTransmissionFunctionalUnit_get_total_userDefDTCCounter(MemorySelection);
+     }
+     else if (mirror)
+@@ -132,7 +133,7 @@ DTC_t* charon_getDTCLookupByDTCNumber (uint8_t DTCHighByte, uint8_t DTCMiddleByt
+ }
+ 
+ 
+-DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, bool mirror)
++DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, bool mirror, bool userDefMemory, uint8_t MemorySelection)
+ {
+     DTC_t* pDTCEntry = NULL;
+     uint8_t isStatusMask;
+@@ -145,7 +146,13 @@ DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, boo
+ 
+ 
+     // Depending on the requested function different storage areas are needed. 
+-    if (mirror)
++    if (userDefMemory)
++    {
++        DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, header);
++        DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
++        countOfSavedDTC = charon_StoredDataTransmissionFunctionalUnit_get_total_userDefDTCCounter(MemorySelection);
++    }
++    else if (mirror)
+     {
+         DTC = (DTC_t*)charon_NvmDriver_getMirrorNvmAddress(0,header);
+         countOfSavedDTC = charon_StoredDataTransmissionFunctionalUnit_get_total_mirrorDTCCounter();
+@@ -165,7 +172,7 @@ DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, boo
+         isStatusMask = (DTC[counter].DTCStatusMask & StatusMask);
+         if(isStatusMask != 0u)
+         {
+-            if ((mirror) || (charon_DTC_LookupTable_DTClookupTableValidCheck(counter,(uint32_t)DTC_header)))
++            if ((userDefMemory) || (mirror) || (charon_DTC_LookupTable_DTClookupTableValidCheck(counter,(uint32_t)DTC_header)))
+             {
+                 pDTCEntry = &DTC[counter];
+                 offsetCounter --;
+@@ -200,7 +207,8 @@ uint32_t charon_getDTCCountByStatusMask (uint8_t StatusMask, bool mirror, bool u
+     // Depending on the requested function different storage areas are needed. 
+     if (userDefMemory)
+     {
+-        DTC = (DTC_t*)charon_NvmDriver_getNvmAddress(); /** @todo USER: Change where you want to safe this information and use MemorySelection! */
++        DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
++        DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
+         countOfSavedDTC = charon_StoredDataTransmissionFunctionalUnit_get_total_userDefDTCCounter(MemorySelection);
+         currentSavedDTC = countOfSavedDTC;
+     }
+diff --git a/Library/DTC_LookupTable.h b/Library/DTC_LookupTable.h
+index 8135ed1..e5187ae 100644
+--- a/Library/DTC_LookupTable.h
++++ b/Library/DTC_LookupTable.h
+@@ -65,7 +65,7 @@ DTC_t* charon_getDTCLookupByDTCNumber (uint8_t DTCHighByte, uint8_t DTCMiddleByt
+  * @param mirror            Only used if a mirror subfunction was requested by the user.
+  * @return DTC_t*           Pointer to the DTC requested address.
+  */
+-DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, bool mirror);
++DTC_t* charon_getDTCLookupByStatusMask (uint8_t StatusMask, uint16_t offset, bool mirror, bool userDefMemory, uint8_t MemorySelection);
+ 
+ /**
+  * @brief Searches the NVM for all matching DTC and will return the amount.
+diff --git a/Library/DataLookupTable.c b/Library/DataLookupTable.c
+index 9d7f066..e75a3c2 100644
+--- a/Library/DataLookupTable.c
++++ b/Library/DataLookupTable.c
+@@ -8,18 +8,41 @@
+ 
+ /* Constants *****************************************************************/
+ 
++/* Static storage buffers for DIDs */
++static uint8_t s_did_test_did[10]          = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A};
++static uint8_t s_did_test_did2[10]         = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA};
++static uint8_t s_did_test_periodic[10]     = {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A};
++static uint8_t s_did_test_periodic1[10]    = {0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A};
++static uint8_t s_did_test_dynamic[10]      = {0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A};
++static uint8_t s_did_f181_spare_part[16]   = "STM32F103HD-PART";
++static uint8_t s_did_f182_boot_sw[16]      = "BOOT-AB-CRC32-V1";
++static uint8_t s_did_f183_ecu_sw[16]       = "SW-CHARON-02.01 ";
++static uint8_t s_did_f184_app_sw[16]       = "APP-FW-V2.1.000 ";
++static uint8_t s_did_f185_ecu_hw[16]       = "HW-STM32F103RC-1";
++static uint8_t s_did_f186_session[1]       = {0x01};
++static uint8_t s_did_f18a_supplier[16]     = "LEOEMBEDDED-SYS ";
++static uint8_t s_did_f190_vin[17]          = "1HGCR2F83HA000001";
++
+ /**
+  * @brief the lookup table for the Data Identifiers to store and handle all the needed Data
+  * @ref charon_dataIdentifierObject_t
+  */
+ static charon_dataIdentifierObject_t charonDIDLookupTable[] =
+ {
+-    /* Data Identifier */           /* Allowed Sessions */                                                           /* length */   /* Start Address of Data */      /* Has Scaling Data */      /* Scaling Data Length */       /* Scaling Data Address */  /* DID is Read only*/      /* DynamicallyDefineDID */
+-    {uds_data_test_did,             (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      10u,         0x100000,                        true,                       10,                             0x00000000,                 false,                     false},
+-    {uds_data_test_did2,            (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      10u,         0x200000,                        false,                      10,                             0x00000000,                 true,                      false},
+-    {uds_data_test_periodic,        (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      10u,         0x150000,                        false,                      10,                             0x00000000,                 false,                     false},
+-    {uds_data_test_periodic1,       (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      10u,         0x160000,                        false,                      10,                             0x00000000,                 false,                     false},
+-    {uds_data_test_dynamic,         (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      10u,         0x140000,                        false,                      10,                             0x00000000,                 false,                     true},
++    /* Data Identifier */               /* Allowed Sessions */                                                           /* length */   /* Start Address of Data */         /* Has Scaling Data */      /* Scaling Data Length */       /* Scaling Data Address */  /* DID is Read only*/      /* DynamicallyDefineDID */
++    {uds_data_test_did,                 (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      10u,         (uint32_t)&s_did_test_did[0],          false,                      0,                              0x00000000,                 false,                     false},
++    {uds_data_test_did2,                (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      10u,         (uint32_t)&s_did_test_did2[0],         false,                      0,                              0x00000000,                 true,                      false},
++    {uds_data_test_periodic,            (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      10u,         (uint32_t)&s_did_test_periodic[0],     false,                      0,                              0x00000000,                 false,                     false},
++    {uds_data_test_periodic1,           (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      10u,         (uint32_t)&s_did_test_periodic1[0],    false,                      0,                              0x00000000,                 false,                     false},
++    {uds_data_test_dynamic,             (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      10u,         (uint32_t)&s_did_test_dynamic[0],      false,                      0,                              0x00000000,                 false,                     true},
++    {uds_did_hib_spare_part_number,     (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      16u,         (uint32_t)&s_did_f181_spare_part[0],   false,                      0,                              0x00000000,                 true,                      false},
++    {uds_did_boot_sw_identifier,        (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      16u,         (uint32_t)&s_did_f182_boot_sw[0],      false,                      0,                              0x00000000,                 true,                      false},
++    {uds_did_ecu_software_number,       (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      16u,         (uint32_t)&s_did_f183_ecu_sw[0],       false,                      0,                              0x00000000,                 true,                      false},
++    {uds_did_ecu_app_software_number,   (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      16u,         (uint32_t)&s_did_f184_app_sw[0],       false,                      0,                              0x00000000,                 true,                      false},
++    {uds_did_ecu_hardware_number,       (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      16u,         (uint32_t)&s_did_f185_ecu_hw[0],       false,                      0,                              0x00000000,                 true,                      false},
++    {uds_did_active_diagnostic_session, (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      1u,          (uint32_t)&s_did_f186_session[0],      false,                      0,                              0x00000000,                 true,                      false},
++    {uds_did_system_supplier_identifier,(SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      16u,         (uint32_t)&s_did_f18a_supplier[0],     false,                      0,                              0x00000000,                 true,                      false},
++    {uds_did_vin,                       (SESSION_DEFAULT | SESSION_PROGRAMMING | SESSION_EXTENDED | SESSION_SECURED),      17u,         (uint32_t)&s_did_f190_vin[0],          false,                      0,                              0x00000000,                 false,                     false},
+ };
+ 
+ 
+@@ -35,30 +58,24 @@ static charon_dataIdentifierObject_t charonDIDLookupTable[] =
+ 
+ void charonDIDLookUpInit (void)
+ {
+-    for(uint32_t counter = 0; counter < ARRAY_SIZE(charonDIDLookupTable); counter ++)
+-    {
+-        charon_dataIdentifierObject_t * pTableEntryBase = &charonDIDLookupTable[counter];
+-        charon_dataIdentifierObject_t * pTableEntry = &charonDIDLookupTable[counter + 1];
+-        if(pTableEntryBase->lengthOfData == 0u)
+-        {
+-            pTableEntry->addressOfData = pTableEntryBase->addressOfData + MAX_VARIABLE_DATA_LENGTH;
+-        }
+-        else
+-        {
+-            pTableEntry->addressOfData = pTableEntryBase->addressOfData + pTableEntryBase->lengthOfData;
+-        }
+-    }  
++    /* DIDs have statically assigned RAM data pointers */
+ }
+ 
+ charon_dataIdentifierObject_t* charon_getDataLookupTableByDID (uint16_t DID )
+ {
+     charon_dataIdentifierObject_t* pDidEntry = NULL;
+ 
++    if (DID == uds_did_active_diagnostic_session)
++    {
++        s_did_f186_session[0] = (uint8_t)charon_sscGetSession();
++    }
++
+     for(uint32_t i=0; i < ARRAY_SIZE(charonDIDLookupTable); i++)
+     {
+         if(DID == charonDIDLookupTable[i].DID)
+         {
+             pDidEntry = &charonDIDLookupTable[i];
++            break;
+         }
+     }
+     return pDidEntry;        
+diff --git a/Library/DataLookupTable.h b/Library/DataLookupTable.h
+index faf6256..460fd94 100644
+--- a/Library/DataLookupTable.h
++++ b/Library/DataLookupTable.h
+@@ -26,9 +26,27 @@ typedef enum uds_data_t_public
+     uds_data_test_periodic1 = 0xF242,   /**< Test DataIdentifier for Debugging */
+     uds_data_test_dynamic = 0xF301,     /**< Test DataIdentifier for Debugging */
+ 
++    uds_did_hib_spare_part_number       = 0xF181,
++    uds_did_boot_sw_identifier          = 0xF182,
++    uds_did_ecu_software_number         = 0xF183,
++    uds_did_ecu_app_software_number     = 0xF184,
++    uds_did_ecu_hardware_number         = 0xF185,
++    uds_did_active_diagnostic_session   = 0xF186,
++    uds_did_system_supplier_identifier  = 0xF18A,
++    uds_did_vin                         = 0xF190,
++
+     uds_data_amount
+ } uds_data_t;
+ 
++#define UDS_DID_HIB_SPARE_PART_NUMBER       0xF181U
++#define UDS_DID_BOOT_SW_IDENTIFIER          0xF182U
++#define UDS_DID_ECU_SOFTWARE_NUMBER         0xF183U
++#define UDS_DID_ECU_APP_SOFTWARE_NUMBER     0xF184U
++#define UDS_DID_ECU_HARDWARE_NUMBER         0xF185U
++#define UDS_DID_ACTIVE_DIAGNOSTIC_SESSION   0xF186U
++#define UDS_DID_SYSTEM_SUPPLIER_IDENTIFIER  0xF18AU
++#define UDS_DID_VIN                         0xF190U
++
+ /**
+  * @brief 
+  * The Charon Data IDentifier Object struct contains the Information for the Given Data Identifier.
+diff --git a/Library/DiagnosticAndCommunicationManagementFunctionalUnit.c b/Library/DiagnosticAndCommunicationManagementFunctionalUnit.c
+index 8f55c17..138cddb 100644
+--- a/Library/DiagnosticAndCommunicationManagementFunctionalUnit.c
++++ b/Library/DiagnosticAndCommunicationManagementFunctionalUnit.c
+@@ -204,6 +204,22 @@ static bool isValidSessionTransition(charon_sessionTypes_t current, uint8_t targ
+     }
+ }
+ 
++/* CommunicationControl (0x28) state flags */
++static bool s_comControl_normal_rx_enabled = true;
++static bool s_comControl_normal_tx_enabled = true;
++static bool s_comControl_nm_rx_enabled     = true;
++static bool s_comControl_nm_tx_enabled     = true;
++
++bool charon_DiagnosticAndCommunicationManagementFunctionalUnit_isNormalTxEnabled(void)
++{
++    return s_comControl_normal_tx_enabled;
++}
++
++bool charon_DiagnosticAndCommunicationManagementFunctionalUnit_isNormalRxEnabled(void)
++{
++    return s_comControl_normal_rx_enabled;
++}
++
+ /* Interfaces  ***************************************************************/
+ 
+ void charon_DiagnosticAndCommunicationManagementFunctionalUnit_reset (void)
+@@ -212,6 +228,10 @@ void charon_DiagnosticAndCommunicationManagementFunctionalUnit_reset (void)
+     s_failedAttemptCount = 0u;
+     s_lockoutActive = false;
+     s_lockoutStartTime = 0u;
++    s_comControl_normal_rx_enabled = true;
++    s_comControl_normal_tx_enabled = true;
++    s_comControl_nm_rx_enabled     = true;
++    s_comControl_nm_tx_enabled     = true;
+ }
+ 
+ 
+@@ -328,7 +348,7 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
+             {
+             case 0x01: /* Request Seed Level 1 */
+             {
+-                if (receiveBufferSize != 6u)
++                if ((receiveBufferSize != 2u) && (receiveBufferSize != 6u))
+                 {
+                     result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+                 }
+@@ -349,7 +369,14 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
+                     }
+                     else
+                     {
++#if defined(DEBUG_FIXED_SECURITY_SEED) && (DEBUG_FIXED_SECURITY_SEED == 1)
++                        s_level1Seed[0] = 0x11u;
++                        s_level1Seed[1] = 0x22u;
++                        s_level1Seed[2] = 0x33u;
++                        s_level1Seed[3] = 0x44u;
++#else
+                         generatePseudorandomBytes(s_level1Seed, 4u);
++#endif
+                         s_level1SeedValid = true;
+                         (void)memcpy(&txBuf[2], s_level1Seed, 4u);
+                     }
+@@ -416,7 +443,7 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
+ 
+             case 0x03: /* Request Seed Level 2 */
+             {
+-                if (receiveBufferSize != 18u)
++                if ((receiveBufferSize != 2u) && (receiveBufferSize != 18u))
+                 {
+                     result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+                 }
+@@ -434,7 +461,14 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
+                     }
+                     else
+                     {
++#if defined(DEBUG_FIXED_SECURITY_SEED) && (DEBUG_FIXED_SECURITY_SEED == 1)
++                        for (uint8_t i = 0u; i < 16u; ++i)
++                        {
++                            s_level2Seed[i] = (uint8_t)(i + 1u);
++                        }
++#else
+                         generatePseudorandomBytes(s_level2Seed, 16u);
++#endif
+                         s_level2SeedValid = true;
+                         (void)memcpy(&txBuf[2], s_level2Seed, 16u);
+                     }
+@@ -513,10 +547,74 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
+ 
+ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_CommunicationControl (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
+ {
+-    (void)receiveBuffer;
+-    (void)receiveBufferSize;
+-    CHARON_INFO("Com Control Service SID:0x28 Triggered");
+-    return uds_responseCode_ServiceNotSupported;
++    uds_responseCode_t result = uds_responseCode_PositiveResponse;
++
++    if ((receiveBuffer == NULL) || (receiveBufferSize < 3u))
++    {
++        CHARON_ERROR("CommunicationControl: invalid message length.");
++        result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
++    }
++    else
++    {
++        uint8_t subfunction = receiveBuffer[1] & 0x7Fu;
++        uint8_t responseSuppress = receiveBuffer[1] & 0x80u;
++        uint8_t communicationType = receiveBuffer[2];
++        uint8_t commTypeSub = communicationType & 0x03u;
++
++        if (subfunction > 0x03u)
++        {
++            CHARON_ERROR("CommunicationControl: subfunction 0x%02X not supported.", subfunction);
++            result = uds_responseCode_SubfunctionNotSupported;
++        }
++        else if (commTypeSub == 0u)
++        {
++            CHARON_ERROR("CommunicationControl: communicationType 0x%02X out of range.", communicationType);
++            result = uds_responseCode_RequestOutOfRange;
++        }
++        else
++        {
++            bool applyNormal = (commTypeSub == 0x01u) || (commTypeSub == 0x03u);
++            bool applyNm     = (commTypeSub == 0x02u) || (commTypeSub == 0x03u);
++
++            switch (subfunction)
++            {
++            case 0x00: /* enableRxAndTx */
++                if (applyNormal) { s_comControl_normal_rx_enabled = true; s_comControl_normal_tx_enabled = true; }
++                if (applyNm)     { s_comControl_nm_rx_enabled = true;     s_comControl_nm_tx_enabled = true; }
++                break;
++            case 0x01: /* enableRxAndDisableTx */
++                if (applyNormal) { s_comControl_normal_rx_enabled = true; s_comControl_normal_tx_enabled = false; }
++                if (applyNm)     { s_comControl_nm_rx_enabled = true;     s_comControl_nm_tx_enabled = false; }
++                break;
++            case 0x02: /* disableRxAndEnableTx */
++                if (applyNormal) { s_comControl_normal_rx_enabled = false; s_comControl_normal_tx_enabled = true; }
++                if (applyNm)     { s_comControl_nm_rx_enabled = false;     s_comControl_nm_tx_enabled = true; }
++                break;
++            case 0x03: /* disableRxAndTx */
++                if (applyNormal) { s_comControl_normal_rx_enabled = false; s_comControl_normal_tx_enabled = false; }
++                if (applyNm)     { s_comControl_nm_rx_enabled = false;     s_comControl_nm_tx_enabled = false; }
++                break;
++            default:
++                break;
++            }
++
++            CHARON_INFO("CommunicationControl: subfunction 0x%02X applied (type=0x%02X).", subfunction, communicationType);
++            if (responseSuppress == 0u)
++            {
++                uint8_t transmitBuffer[2] = {
++                    (uint8_t)uds_sid_CommunicationControl | (uint8_t)uds_sid_PositiveResponseMask,
++                    (uint8_t)(receiveBuffer[1] & 0x7Fu)
++                };
++                charon_sscTxMessage(transmitBuffer, sizeof(transmitBuffer));
++            }
++        }
++    }
++
++    if (result != uds_responseCode_PositiveResponse)
++    {
++        charon_sendNegativeResponse(result, uds_sid_CommunicationControl);
++    }
++    return result;
+ }
+ 
+ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_TesterPresent (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
+diff --git a/Library/NvmEmulator.c b/Library/NvmEmulator.c
+index 4d43b8e..3413cd0 100644
+--- a/Library/NvmEmulator.c
++++ b/Library/NvmEmulator.c
+@@ -454,6 +454,11 @@ bool charon_NvmDriver_checkAddressRange(uint32_t address, uint32_t length)
+ 
+ uds_responseCode_t charon_NvmDriver_write(uint32_t address, const uint8_t* data, uint32_t size)
+ {
++    if ((address >= 0x20000000u) && ((address + size) <= 0x20010000u))
++    {
++        memcpy((void*)address, data, size);
++        return uds_responseCode_PositiveResponse;
++    }
+ 	 if (!charon_NvmDriver_checkAddressRange(address, size))
+ 	 {
+ 		 return uds_responseCode_RequestOutOfRange;
+@@ -464,10 +469,19 @@ uds_responseCode_t charon_NvmDriver_write(uint32_t address, const uint8_t* data,
+ 
+ void charon_NvmDriver_read (uint32_t address, uint8_t* data, uint32_t size)
+ {
+-	if (charon_NvmDriver_checkAddressRange(address, size))
+-	{
+-	 memcpy(data, &NvmEmulator_MemorySpace[address], size);
+-	}
++    if ((address >= STM32F103_FLASH_BASE) && ((address + size) <= (STM32F103_FLASH_BASE + (256u * STM32F103_PAGE_SIZE))))
++    {
++        syn_port_flash_read(address, data, size);
++    }
++    else if (charon_NvmDriver_checkAddressRange(address, size))
++    {
++        memcpy(data, &NvmEmulator_MemorySpace[address], size);
++    }
++    else if ((address >= 0x08000000u && address < 0x08080000u) ||
++             (address >= 0x20000000u && address < 0x20010000u))
++    {
++        memcpy(data, (const void*)address, size);
++    }
+ }
+ 
+ void charon_NvmDriver_erase (void)
+diff --git a/Library/RoutineFunctionalUnit.c b/Library/RoutineFunctionalUnit.c
+index fb64e27..ddf2fdb 100644
+--- a/Library/RoutineFunctionalUnit.c
++++ b/Library/RoutineFunctionalUnit.c
+@@ -100,8 +100,11 @@ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t *
+             {
+                 if (receiveBufferSize == 4u)
+                 {
+-                    /* Erase NVM parameter storage emulator */
+-                    charon_NvmDriver_erase();
++                    /* Erase Candidate Firmware Slot B partition directly in Flash */
++                    if (!eraseSlotB())
++                    {
++                        result = uds_responseCode_GeneralProgrammingFailure;
++                    }
+                 }
+                 else if (receiveBufferSize >= 12u)
+                 {
+diff --git a/Library/StoredDataTransmissionFunctionalUnit.c b/Library/StoredDataTransmissionFunctionalUnit.c
+index 99514b8..3ef75a6 100644
+--- a/Library/StoredDataTransmissionFunctionalUnit.c
++++ b/Library/StoredDataTransmissionFunctionalUnit.c
+@@ -92,7 +92,7 @@ static uds_responseCode_t NumberOfDTCByStatusMask (const uint8_t * receiveBuffer
+  * 
+  * @return uds_responseCode_t       
+  */
+-static uds_responseCode_t DTCByStatusMask (const uint8_t * receiveBuffer, uint32_t receiveBufferSize, bool mirror);
++static uds_responseCode_t DTCByStatusMask (const uint8_t * receiveBuffer, uint32_t receiveBufferSize, bool mirror, bool userDefMemory);
+ 
+ /**
+  * @brief Read DTC Information (SID 0x019) Subfunction 0x03 from ISO: 14229-1.
+@@ -492,7 +492,8 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformatio
+     {
+         CHARON_INFO("Sub 0x02: reportDTCByStatusMask start.\r\n");
+         bool mirror = false;
+-        return DTCByStatusMask(receiveBuffer, receiveBufferSize, mirror);
++        bool userDefMemory = false;
++        return DTCByStatusMask(receiveBuffer, receiveBufferSize, mirror, userDefMemory);
+     }
+ 
+     case reportDTCSnapshotIdentification:                   //0x03   
+@@ -574,7 +575,8 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformatio
+     {
+         CHARON_INFO("Sub 0x0F: reportMirrorMemoryDTCByStatusMask start.\r\n");
+         bool mirror = true;
+-        return DTCByStatusMask(receiveBuffer, receiveBufferSize, mirror);
++        bool userDefMemory = false;
++        return DTCByStatusMask(receiveBuffer, receiveBufferSize, mirror, userDefMemory);
+     }
+ 
+     case reportMirrorMemoryDTCExtDataRecordByDTCNumber:     //0x10    
+@@ -628,7 +630,7 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformatio
+         CHARON_INFO("Sub 0x17: reportUserDefMemoryDTCByStatusMask start.\r\n");
+         bool userDefMemory = true;
+         bool mirror = false;
+-        return NumberOfDTCByStatusMask(receiveBuffer, receiveBufferSize, mirror, userDefMemory);
++        return DTCByStatusMask(receiveBuffer, receiveBufferSize, mirror, userDefMemory);
+     }
+ 
+     case reportUserDefMemoryDTCSnapshotRecordByDTCNumber:   //0x18
+@@ -857,33 +859,48 @@ static uds_responseCode_t NumberOfDTCByStatusMask (const uint8_t * receiveBuffer
+ }
+ 
+ 
+-static uds_responseCode_t DTCByStatusMask (const uint8_t * receiveBuffer, uint32_t receiveBufferSize, bool mirror)
++static uds_responseCode_t DTCByStatusMask (const uint8_t * receiveBuffer, uint32_t receiveBufferSize, bool mirror, bool userDefMemory)
+ {
+     uint8_t StatusMask = receiveBuffer[2];
++    uint8_t memorySelection = 0u;
++    if (userDefMemory)
++    {
++        memorySelection = receiveBuffer[3];
++    }
+     DTC_t *matchedDTC = NULL;
+     static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
+     uint32_t length = 3u;
+-    uint16_t countOfMatchedDTC = charon_getDTCCountByStatusMask(StatusMask, mirror, false, 0x00);
++    uint16_t countOfMatchedDTC = charon_getDTCCountByStatusMask(StatusMask, mirror, userDefMemory, memorySelection);
+     uint8_t lengthOfDTC = 3u;
+ 
+ 
+     // Depending on calling request, different data storage is used and so different response are send back.
+     s_buffer[0] = (uds_sid_ReadDtcInformation | (uint8_t)uds_sid_PositiveResponseMask);
+-    if (mirror)
++    if (userDefMemory)
++    {
++        s_buffer[1] = reportUserDefMemoryDTCByStatusMask;
++        s_buffer[2] = memorySelection;
++        s_buffer[3] = charon_getDTCStatusAvailabilityMask();
++        length = 4u;
++    }
++    else if (mirror)
+     {
+         s_buffer[1] = reportMirrorMemoryDTCByStatusMask;
+         matchedDTC = (DTC_t*)charon_NvmDriver_getMirrorNvmAddress(0,false);
++        s_buffer[2] = charon_getDTCStatusAvailabilityMask();
++        length = 3u;
+     }
+     else
+     {
+         s_buffer[1] = reportDTCByStatusMask;
+         matchedDTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0,false);
++        s_buffer[2] = charon_getDTCStatusAvailabilityMask();
++        length = 3u;
+     }
+-    s_buffer[2] = charon_getDTCStatusAvailabilityMask();
+ 
+ 
+     // Builds the response buffer out of found valid DTCs.
+-    for(uint32_t i = 0u; ((i < countOfMatchedDTC) && (matchedDTC != NULL)); i++)
++    for(uint32_t i = 0u; i < countOfMatchedDTC; i++)
+     {
+         // Check if the new input will fit into the buffer.
+         if((length + 4u) > MAX_TX_BUFFER_SIZE)
+@@ -893,7 +910,7 @@ static uds_responseCode_t DTCByStatusMask (const uint8_t * receiveBuffer, uint32
+             return uds_responseCode_ResponseTooLong;
+         }
+ 
+-        matchedDTC = charon_getDTCLookupByStatusMask(StatusMask,(i+1), mirror);
++        matchedDTC = charon_getDTCLookupByStatusMask(StatusMask,(i+1), mirror, userDefMemory, memorySelection);
+         if(matchedDTC != NULL)
+         {
+             memcpy(&s_buffer[length], &matchedDTC->DTCHighByte , lengthOfDTC);
+@@ -1018,10 +1035,13 @@ static uds_responseCode_t DTCSnapshotRecordByDTCNumber (const uint8_t * receiveB
+     if (userDefMemory)
+     {
+         s_buffer[1] = reportUserDefMemoryDTCSnapshotRecordByDTCNumber;
++        s_buffer[2] = memorySelection;
++        length = 3u;
+     }
+     else
+     {
+         s_buffer[1] = reportDTCSnapshotRecordByDTCNumber;
++        length = 2u;
+     }
+ 
+ 
+@@ -1209,14 +1229,18 @@ static uds_responseCode_t DTCExtDataRecordByDTCNumber (const uint8_t * receiveBu
+     if (userDefMemory)
+     {
+         s_buffer[1] = reportUserDefMemoryDTCExtDataRecordByDTCNumber;
++        s_buffer[2] = memorySelection;
++        length = 3u;
+     }
+     else if (mirror)
+     {
+         s_buffer[1] = reportMirrorMemoryDTCExtDataRecordByDTCNumber;
++        length = 2u;
+     }
+     else
+     {
+         s_buffer[1] = reportDTCExtDataRecordByDTCNumber;
++        length = 2u;
+     }
+ 
+     matchedDTC = charon_getDTCLookupByDTCNumber(DTCMaskRecordhigh, DTCMaskRecordmid, DTCMaskRecordlow, mirror, userDefMemory, memorySelection);
+@@ -1608,15 +1632,89 @@ static uds_responseCode_t EmissionsOBDDTCByStatusMask (const uint8_t * receiveBu
+ 
+ static uds_responseCode_t DTCFaultDetectionCounter (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
+ {
+-    CHARON_ERROR("Subfunction not Supported.");
+-    return uds_responseCode_SubfunctionNotSupported;
++    (void)receiveBuffer;
++    (void)receiveBufferSize;
++    static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
++    uint32_t length = 2u;
++    uint8_t lengthOfDTC = 3u;
++
++    s_buffer[0] = (uds_sid_ReadDtcInformation | (uint8_t)uds_sid_PositiveResponseMask);
++    s_buffer[1] = reportDTCFaultDetectionCounter;
++
++    DTC_t *DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
++    DTC_header_t *DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
++    uint32_t countOfSavedDTC = DTC_header->totalDTCCounter;
++
++    uint8_t index;
++    uint8_t number;
++
++    for (uint32_t i = 0; i < countOfSavedDTC; i++)
++    {
++        LOOKUP_CALC(i, index, number);
++        index = (uint8_t)DTC_header->nvmDTCLookupTable[index];
++        number = (0x01 << number);
++
++        if ((index & number) > 0x00)
++        {
++            if ((length + lengthOfDTC + 1u) > MAX_TX_BUFFER_SIZE)
++            {
++                charon_sendNegativeResponse(uds_responseCode_ResponseTooLong, uds_sid_ReadDtcInformation);
++                return uds_responseCode_ResponseTooLong;
++            }
++            memcpy(&s_buffer[length], &DTC[i].DTCHighByte, lengthOfDTC);
++            length += lengthOfDTC;
++            s_buffer[length++] = 0x00u;
++        }
++    }
++
++    charon_sscTxMessage(s_buffer, length);
++    return uds_responseCode_PositiveResponse;
+ }
+ 
+ 
+ static uds_responseCode_t DTCWithPermanentStatus (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
+ {
+-    CHARON_ERROR("Subfunction not Supported.");
+-    return uds_responseCode_SubfunctionNotSupported;
++    (void)receiveBuffer;
++    (void)receiveBufferSize;
++    static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
++    uint32_t length = 3u;
++    uint8_t lengthOfDTC = 3u;
++
++    s_buffer[0] = (uds_sid_ReadDtcInformation | (uint8_t)uds_sid_PositiveResponseMask);
++    s_buffer[1] = reportDTCWithPermanentStatus;
++    s_buffer[2] = charon_getDTCStatusAvailabilityMask();
++
++    DTC_t *DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
++    DTC_header_t *DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
++    uint32_t countOfSavedDTC = DTC_header->totalDTCCounter;
++
++    uint8_t index;
++    uint8_t number;
++
++    for (uint32_t i = 0; i < countOfSavedDTC; i++)
++    {
++        LOOKUP_CALC(i, index, number);
++        index = (uint8_t)DTC_header->nvmDTCLookupTable[index];
++        number = (0x01 << number);
++
++        if ((index & number) > 0x00)
++        {
++            if ((DTC[i].statusOfDTC & 0x08u) != 0u)
++            {
++                if ((length + lengthOfDTC + 1u) > MAX_TX_BUFFER_SIZE)
++                {
++                    charon_sendNegativeResponse(uds_responseCode_ResponseTooLong, uds_sid_ReadDtcInformation);
++                    return uds_responseCode_ResponseTooLong;
++                }
++                memcpy(&s_buffer[length], &DTC[i].DTCHighByte, lengthOfDTC);
++                length += lengthOfDTC;
++                s_buffer[length++] = DTC[i].statusOfDTC;
++            }
++        }
++    }
++
++    charon_sscTxMessage(s_buffer, length);
++    return uds_responseCode_PositiveResponse;
+ }
+ 
+ 
+@@ -1701,13 +1799,15 @@ static uds_responseCode_t WWHOBDDTCByMaskRecord (const uint8_t * receiveBuffer,
+     uint8_t severityMask = (receiveBuffer != NULL) ? receiveBuffer[4] : 0xFFu;
+ 
+     static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
+-    uint32_t length = 4u;
++    uint32_t length = 6u;
+     uint8_t lengthOfDTC = 3u;
+ 
+     s_buffer[0] = (uds_sid_ReadDtcInformation | (uint8_t)uds_sid_PositiveResponseMask);
+     s_buffer[1] = reportWWHOBDDTCByMaskRecord;
+     s_buffer[2] = functionalGroupIdentifier;
+     s_buffer[3] = charon_getDTCStatusAvailabilityMask();
++    s_buffer[4] = 0xE0u; /* DTCSeverityAvailabilityMask */
++    s_buffer[5] = DTC_Format_Identifier;
+ 
+     DTC_t *DTC = (DTC_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+     DTC_header_t *DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
+diff --git a/Library/UploadDownloadFunctionalUnit.c b/Library/UploadDownloadFunctionalUnit.c
+index 22b422a..3834a4a 100644
+--- a/Library/UploadDownloadFunctionalUnit.c
++++ b/Library/UploadDownloadFunctionalUnit.c
+@@ -1,4 +1,5 @@
+ #include "NvmEmulator.h"
++#include "flash.h"
+ #include "interface_debug.h"
+ #include "UploadDownloadFunctionalUnit.h"
+ #include "SessionAndServiceControl.h"
+@@ -119,11 +120,28 @@ uds_responseCode_t charon_UploadDownloadFunctionalUnit_TransferData (const uint8
+     {
+         if (s_transferDirection == transfer_download)
+         {
+-            result = charon_NvmDriver_write(s_currentMemoryAddress, receivedMessage->data, receiveBufferSize - 2u);
++            uint32_t chunkLen = receiveBufferSize - 2u;
++            if ((s_currentMemoryAddress >= STM32F103_FLASH_BASE) && 
++                ((s_currentMemoryAddress + chunkLen) <= (STM32F103_FLASH_BASE + (256u * STM32F103_PAGE_SIZE))))
++            {
++                if (syn_port_flash_write(s_currentMemoryAddress, receivedMessage->data, chunkLen) == SYN_OK)
++                {
++                    result = uds_responseCode_PositiveResponse;
++                }
++                else
++                {
++                    result = uds_responseCode_GeneralProgrammingFailure;
++                }
++            }
++            else
++            {
++                result = charon_NvmDriver_write(s_currentMemoryAddress, receivedMessage->data, chunkLen);
++            }
++
+             if (result == uds_responseCode_PositiveResponse)
+             {
+-                s_currentMemoryAddress += receiveBufferSize - 2u;
+-                s_remainingMemoryLength -= receiveBufferSize - 2u;
++                s_currentMemoryAddress += chunkLen;
++                s_remainingMemoryLength -= chunkLen;
+                 s_nextSequenceCounter++;
+ 
+                 uint8_t transmitBuffer[2] = {
+@@ -134,8 +152,7 @@ uds_responseCode_t charon_UploadDownloadFunctionalUnit_TransferData (const uint8
+             }
+             else
+             {
+-                CHARON_ERROR("NVM driver reported error while writing to flash.");
+-                // negative response is sent at the end of the function, nothing to do here.
++                CHARON_ERROR("Flash/NVM driver reported error while writing.");
+             }
+         }
+         else
+@@ -146,9 +163,18 @@ uds_responseCode_t charon_UploadDownloadFunctionalUnit_TransferData (const uint8
+             {
+                 transmitBufferSize = s_remainingMemoryLength + 2u;
+             }
+-            charon_NvmDriver_read(s_currentMemoryAddress, &(transmitBuffer[2]), transmitBufferSize - 2u);
+-            s_currentMemoryAddress += transmitBufferSize - 2u;
+-            s_remainingMemoryLength -= transmitBufferSize - 2u;
++            uint32_t readLen = transmitBufferSize - 2u;
++            if ((s_currentMemoryAddress >= STM32F103_FLASH_BASE) && 
++                ((s_currentMemoryAddress + readLen) <= (STM32F103_FLASH_BASE + (256u * STM32F103_PAGE_SIZE))))
++            {
++                syn_port_flash_read(s_currentMemoryAddress, &(transmitBuffer[2]), readLen);
++            }
++            else
++            {
++                charon_NvmDriver_read(s_currentMemoryAddress, &(transmitBuffer[2]), readLen);
++            }
++            s_currentMemoryAddress += readLen;
++            s_remainingMemoryLength -= readLen;
+             s_nextSequenceCounter++;
+ 
+             transmitBuffer[0] = (uint8_t)uds_sid_TransferData | (uint8_t)uds_sid_PositiveResponseMask;
+@@ -294,7 +320,18 @@ static uds_responseCode_t requestTransfer(TransferDirection_t direction, const u
+         }
+         CHARON_INFO("Transfer Requested, address 0x%x, length 0x%x, direction %s.", memoryAddress, memoryLength, direction == transfer_download ? "download" : "upload");
+ 
+-        if ( false == charon_NvmDriver_checkAddressRange(memoryAddress, memoryLength) )
++        bool isValidRange = false;
++        if ((memoryAddress >= STM32F103_FLASH_BASE) && 
++            ((memoryAddress + memoryLength) <= (STM32F103_FLASH_BASE + (256u * STM32F103_PAGE_SIZE))))
++        {
++            isValidRange = true;
++        }
++        else if (charon_NvmDriver_checkAddressRange(memoryAddress, memoryLength))
++        {
++            isValidRange = true;
++        }
++
++        if (!isValidRange)
+         {
+             CHARON_ERROR("Requested memory is out of range.");
+             result = uds_responseCode_RequestOutOfRange;
+diff --git a/Library/uds_config.h b/Library/uds_config.h
+index f753120..3a4e292 100644
+--- a/Library/uds_config.h
++++ b/Library/uds_config.h
+@@ -18,6 +18,9 @@
+ /** @brief Macro to switch comfortably on or off debug option for nvm. */
+ #define CHARON_CONFIG_OBD_SUPPORT 0
+ 
++/** @brief Enable deterministic fixed seed for SecurityAccess (0x27) debugging in PCAN-View. */
++#define DEBUG_FIXED_SECURITY_SEED                       1
++
+ 
+ /** @brief For DTC Nvm size, NVm config may be changed depending on targets memory.*/
+ #define AMOUNT_OF_DTC                                   ((uint16_t)12u)

@@ -18,6 +18,9 @@
 /** @brief Macro to switch comfortably on or off debug option for nvm. */
 #define CHARON_CONFIG_OBD_SUPPORT 0
 
+/** @brief Enable deterministic fixed seed for SecurityAccess (0x27) debugging in PCAN-View. */
+#define DEBUG_FIXED_SECURITY_SEED                       1
+
 
 /** @brief For DTC Nvm size, NVm config may be changed depending on targets memory.*/
 #define AMOUNT_OF_DTC                                   ((uint16_t)12u)

@@ -204,6 +204,22 @@ static bool isValidSessionTransition(charon_sessionTypes_t current, uint8_t targ
     }
 }
 
+/* CommunicationControl (0x28) state flags */
+static bool s_comControl_normal_rx_enabled = true;
+static bool s_comControl_normal_tx_enabled = true;
+static bool s_comControl_nm_rx_enabled     = true;
+static bool s_comControl_nm_tx_enabled     = true;
+
+bool charon_DiagnosticAndCommunicationManagementFunctionalUnit_isNormalTxEnabled(void)
+{
+    return s_comControl_normal_tx_enabled;
+}
+
+bool charon_DiagnosticAndCommunicationManagementFunctionalUnit_isNormalRxEnabled(void)
+{
+    return s_comControl_normal_rx_enabled;
+}
+
 /* Interfaces  ***************************************************************/
 
 void charon_DiagnosticAndCommunicationManagementFunctionalUnit_reset (void)
@@ -212,6 +228,10 @@ void charon_DiagnosticAndCommunicationManagementFunctionalUnit_reset (void)
     s_failedAttemptCount = 0u;
     s_lockoutActive = false;
     s_lockoutStartTime = 0u;
+    s_comControl_normal_rx_enabled = true;
+    s_comControl_normal_tx_enabled = true;
+    s_comControl_nm_rx_enabled     = true;
+    s_comControl_nm_tx_enabled     = true;
 }
 
 
@@ -328,7 +348,7 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
             {
             case 0x01: /* Request Seed Level 1 */
             {
-                if (receiveBufferSize != 6u)
+                if ((receiveBufferSize != 2u) && (receiveBufferSize != 6u))
                 {
                     result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
                 }
@@ -349,7 +369,14 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
                     }
                     else
                     {
+#if defined(DEBUG_FIXED_SECURITY_SEED) && (DEBUG_FIXED_SECURITY_SEED == 1)
+                        s_level1Seed[0] = 0x11u;
+                        s_level1Seed[1] = 0x22u;
+                        s_level1Seed[2] = 0x33u;
+                        s_level1Seed[3] = 0x44u;
+#else
                         generatePseudorandomBytes(s_level1Seed, 4u);
+#endif
                         s_level1SeedValid = true;
                         (void)memcpy(&txBuf[2], s_level1Seed, 4u);
                     }
@@ -416,7 +443,7 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
 
             case 0x03: /* Request Seed Level 2 */
             {
-                if (receiveBufferSize != 18u)
+                if ((receiveBufferSize != 2u) && (receiveBufferSize != 18u))
                 {
                     result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
                 }
@@ -434,7 +461,14 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
                     }
                     else
                     {
+#if defined(DEBUG_FIXED_SECURITY_SEED) && (DEBUG_FIXED_SECURITY_SEED == 1)
+                        for (uint8_t i = 0u; i < 16u; ++i)
+                        {
+                            s_level2Seed[i] = (uint8_t)(i + 1u);
+                        }
+#else
                         generatePseudorandomBytes(s_level2Seed, 16u);
+#endif
                         s_level2SeedValid = true;
                         (void)memcpy(&txBuf[2], s_level2Seed, 16u);
                     }
@@ -513,10 +547,74 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
 
 uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_CommunicationControl (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
 {
-    (void)receiveBuffer;
-    (void)receiveBufferSize;
-    CHARON_INFO("Com Control Service SID:0x28 Triggered");
-    return uds_responseCode_ServiceNotSupported;
+    uds_responseCode_t result = uds_responseCode_PositiveResponse;
+
+    if ((receiveBuffer == NULL) || (receiveBufferSize < 3u))
+    {
+        CHARON_ERROR("CommunicationControl: invalid message length.");
+        result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+    }
+    else
+    {
+        uint8_t subfunction = receiveBuffer[1] & 0x7Fu;
+        uint8_t responseSuppress = receiveBuffer[1] & 0x80u;
+        uint8_t communicationType = receiveBuffer[2];
+        uint8_t commTypeSub = communicationType & 0x03u;
+
+        if (subfunction > 0x03u)
+        {
+            CHARON_ERROR("CommunicationControl: subfunction 0x%02X not supported.", subfunction);
+            result = uds_responseCode_SubfunctionNotSupported;
+        }
+        else if (commTypeSub == 0u)
+        {
+            CHARON_ERROR("CommunicationControl: communicationType 0x%02X out of range.", communicationType);
+            result = uds_responseCode_RequestOutOfRange;
+        }
+        else
+        {
+            bool applyNormal = (commTypeSub == 0x01u) || (commTypeSub == 0x03u);
+            bool applyNm     = (commTypeSub == 0x02u) || (commTypeSub == 0x03u);
+
+            switch (subfunction)
+            {
+            case 0x00: /* enableRxAndTx */
+                if (applyNormal) { s_comControl_normal_rx_enabled = true; s_comControl_normal_tx_enabled = true; }
+                if (applyNm)     { s_comControl_nm_rx_enabled = true;     s_comControl_nm_tx_enabled = true; }
+                break;
+            case 0x01: /* enableRxAndDisableTx */
+                if (applyNormal) { s_comControl_normal_rx_enabled = true; s_comControl_normal_tx_enabled = false; }
+                if (applyNm)     { s_comControl_nm_rx_enabled = true;     s_comControl_nm_tx_enabled = false; }
+                break;
+            case 0x02: /* disableRxAndEnableTx */
+                if (applyNormal) { s_comControl_normal_rx_enabled = false; s_comControl_normal_tx_enabled = true; }
+                if (applyNm)     { s_comControl_nm_rx_enabled = false;     s_comControl_nm_tx_enabled = true; }
+                break;
+            case 0x03: /* disableRxAndTx */
+                if (applyNormal) { s_comControl_normal_rx_enabled = false; s_comControl_normal_tx_enabled = false; }
+                if (applyNm)     { s_comControl_nm_rx_enabled = false;     s_comControl_nm_tx_enabled = false; }
+                break;
+            default:
+                break;
+            }
+
+            CHARON_INFO("CommunicationControl: subfunction 0x%02X applied (type=0x%02X).", subfunction, communicationType);
+            if (responseSuppress == 0u)
+            {
+                uint8_t transmitBuffer[2] = {
+                    (uint8_t)uds_sid_CommunicationControl | (uint8_t)uds_sid_PositiveResponseMask,
+                    (uint8_t)(receiveBuffer[1] & 0x7Fu)
+                };
+                charon_sscTxMessage(transmitBuffer, sizeof(transmitBuffer));
+            }
+        }
+    }
+
+    if (result != uds_responseCode_PositiveResponse)
+    {
+        charon_sendNegativeResponse(result, uds_sid_CommunicationControl);
+    }
+    return result;
 }
 
 uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_TesterPresent (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
