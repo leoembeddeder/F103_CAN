@@ -234,6 +234,7 @@ IO_Ctrl_Object_t *findMaskObject(IO_DID_List_Entry_t *did_object, uint16_t posit
         {
             return &currentHead->ioObject;
         }
+        currentHead = currentHead->next;
     }
     return NULL;
 }

@@ -253,7 +253,7 @@ static void processReceivedMessage (uint8_t const * const pBuffer, uint32_t leng
 
     /* Is a Service Pending, do not execute any other Requests except for Tester Present */
     if((NULL == s_currentlyPendingService)
-            || (pServiceObj->sid == uds_sid_TesterPresent))
+            || ((pServiceObj != NULL) && (pServiceObj->sid == uds_sid_TesterPresent)))
     {
         retVal = handleService(pServiceObj, pBuffer, length);
         /* Check Return Value of Service Execution and Act accordingly */

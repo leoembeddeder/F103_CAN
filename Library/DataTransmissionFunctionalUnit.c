@@ -514,11 +514,11 @@ uds_responseCode_t charon_DataTransmissionFunctionalUnit_WriteDataByIdentifier (
     uint16_t sanityCounter = 0u;
     charon_dataIdentifierObject_t* didLookupData;
     static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
-    uint8_t couldDataBeWritten[MAX_TX_BUFFER_SIZE] = {0}; // no random value for check
+    static uint8_t couldDataBeWritten[MAX_TX_BUFFER_SIZE]; // no random value for check
 
     if(!lengthAndFormatCheck(minLength, 0, receiveBufferSize))  
     {
-        charon_sendNegativeResponse(uds_responseCode_IncorrectMessageLengthOrInvalidFormat, uds_sid_ReadDataByPeriodicIdentifier);
+        charon_sendNegativeResponse(uds_responseCode_IncorrectMessageLengthOrInvalidFormat, uds_sid_WriteDataByIdentifier);
         return uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
     }
 

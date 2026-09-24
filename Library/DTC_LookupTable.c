@@ -325,7 +325,7 @@ uds_responseCode_t charon_getDTCLookup_reportAllDataRecords (const uint8_t * rec
     DTC_header_t *DTC_header = (DTC_header_t*)charon_NvmDriver_getNvmAddress_for_DTC(0,true);
     uint32_t countOfSavedDTC = DTC_header->totalDTCCounter;
     uint16_t countOfSavedRecords = DTC_header->totalDataRecordCounter;
-    uint8_t buffer[MAX_TX_BUFFER_SIZE];
+    static uint8_t buffer[MAX_TX_BUFFER_SIZE];
     uint32_t length = 2u;
     uint8_t lengthOfDTC = 3u;
     uint8_t counter = 0u;

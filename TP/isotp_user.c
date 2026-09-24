@@ -1,5 +1,6 @@
 #include "isotp_user.h"
 #include "isotp_defines.h"
+#include "isotp_socket.h"
 #include "can.h"
 
 
@@ -26,7 +27,11 @@ int isotp_user_send_can(const uint32_t arbitration_id, const uint8_t* data, cons
     (void)arg;
 #endif
 
-    CAN_TX(arbitration_id , data , size);
+    if (CAN_TX(arbitration_id, (uint8_t*)data, size) != HAL_OK)
+    {
+        TpRecordCanTxError();
+        return ISOTP_RET_ERROR;
+    }
 
     return ISOTP_RET_OK;
 }

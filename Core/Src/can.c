@@ -143,7 +143,7 @@ void CAN_Handler_Init(void)
 }
 
 
-void CAN_TX(uint32_t ID , uint8_t* data , uint8_t len)
+HAL_StatusTypeDef CAN_TX(uint32_t ID, uint8_t* data, uint8_t len)
 {
 	CAN_TxHeaderTypeDef pHeader = {0};
 	pHeader.IDE = CAN_ID_STD;
@@ -151,18 +151,24 @@ void CAN_TX(uint32_t ID , uint8_t* data , uint8_t len)
 	pHeader.StdId = ID;
 	pHeader.RTR = CAN_RTR_DATA;
 
-	uint32_t pTxMailbox ;
-	volatile uint8_t l_freelevel = 0;
-	/*Then get the message using HAL_CAN_GetRxMessage().*/
-	l_freelevel = HAL_CAN_GetTxMailboxesFreeLevel(&hcan);
-	if(l_freelevel)
+	uint32_t pTxMailbox;
+	uint32_t timeout = 50000U;
+
+	/* Wait until at least one mailbox becomes free */
+	while ((HAL_CAN_GetTxMailboxesFreeLevel(&hcan) == 0U) && (--timeout > 0U))
 	{
-		if(HAL_CAN_AddTxMessage(&hcan, &pHeader, data, &pTxMailbox) != HAL_OK)
+		__NOP();
+	}
+
+	if (HAL_CAN_GetTxMailboxesFreeLevel(&hcan) > 0U)
+	{
+		if (HAL_CAN_AddTxMessage(&hcan, &pHeader, data, &pTxMailbox) == HAL_OK)
 		{
-			 Error_Handler();
+			return HAL_OK;
 		}
 	}
 
+	return HAL_BUSY;
 }
 
 

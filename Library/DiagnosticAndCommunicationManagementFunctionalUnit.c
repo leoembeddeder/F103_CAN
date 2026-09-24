@@ -320,7 +320,7 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Ecu
     }
 
     CHARON_INFO("ECU Reset Service SID:0x11 Triggered");
-    return uds_responseCode_ServiceNotSupported;
+    return uds_responseCode_PositiveResponse;
 }
 
 uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_SecurityAccess (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)

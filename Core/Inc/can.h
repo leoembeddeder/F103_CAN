@@ -43,7 +43,7 @@ void MX_CAN_Init(void);
 /* USER CODE BEGIN Prototypes */
 void CAN_Handler_Init(void);
 
-void CAN_TX(uint32_t ID , uint8_t* data , uint8_t len);
+HAL_StatusTypeDef CAN_TX(uint32_t ID, uint8_t* data, uint8_t len);
 
 /* USER CODE END Prototypes */
 

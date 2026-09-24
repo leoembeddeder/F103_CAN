@@ -157,7 +157,7 @@ uds_responseCode_t charon_UploadDownloadFunctionalUnit_TransferData (const uint8
         }
         else
         {
-            uint8_t transmitBuffer[UDS_MAX_OUTPUT_FRAME_SIZE];
+            static uint8_t transmitBuffer[UDS_MAX_OUTPUT_FRAME_SIZE];
             uint32_t transmitBufferSize = sizeof(transmitBuffer);
             if (s_remainingMemoryLength < (transmitBufferSize - 2u) )
             {

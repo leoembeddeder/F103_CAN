@@ -167,7 +167,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
     if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, data) == HAL_OK)
     {
-        if(RX_ID == rxHeader.StdId )
+        if ((rxHeader.StdId == RX_ID) || (rxHeader.StdId == 0x7DFu))
         {
 			(void)enqueueCanFrame(rxHeader.StdId, data, (uint8_t)rxHeader.DLC);
 		}
