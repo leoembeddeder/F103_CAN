@@ -2,113 +2,118 @@
 #include "RoutineFunctionalUnit.h"
 #include "negativeResponse.h"
 #include "SessionAndServiceControl.h"
+#include "ota_metadata_mgr.h"
+#include "ota_crc32.h"
 #include <string.h>
 #include <stdbool.h>
 
-#if defined(STM32F103xE) || defined(STM32F1xx)
+#if defined(STM32F103xE) || defined(STM32F1xx) || defined(USE_HAL_DRIVER)
 #include "stm32f1xx_hal.h"
 #endif
 
 /* Imports *******************************************************************/
 
-/* Macros ********************************************************************/
-
-#define UDS_BL_MAGIC_UDSM 0x5544534DUL
-
-/* Types *********************************************************************/
-
 /* Variables *****************************************************************/
 
-static UdsBootloaderMetadata_t s_bootloaderMeta = {
-    .magic = UDS_BL_MAGIC_UDSM,
-    .version = 1u,
-    .image_size = 0u,
-    .crc32 = 0u,
-    .status = (uint8_t)UDS_BL_SLOT_CONFIRMED,
-    .boot_attempts = 0u,
-    .max_attempts = 3u,
-    .active_slot = 0u
-};
+static metadata_t s_cachedMeta;
+static bool s_metaLoaded = false;
 
 /* Private Function Definitions **********************************************/
 
-static uint32_t calculateCrc32(const uint8_t *pData, uint32_t length)
+static bool eraseSlot(uint8_t slot_id)
 {
-    uint32_t crc = 0xFFFFFFFFUL;
-    if (pData == NULL)
+    if (slot_id > SLOT_B)
     {
-        return 0u;
+        return false;
     }
-    for (uint32_t i = 0u; i < length; ++i)
-    {
-        crc ^= pData[i];
-        for (uint8_t bit = 0u; bit < 8u; ++bit)
-        {
-            crc = (crc & 1u) ? ((crc >> 1u) ^ 0xEDB88320UL) : (crc >> 1u);
-        }
-    }
-    return (crc ^ 0xFFFFFFFFUL);
-}
 
-static bool eraseSlotB(void)
-{
-#if defined(HAL_FLASH_MODULE_ENABLED) || defined(STM32F103xE)
+    uint32_t slot_addr = SLOT_ADDR(slot_id);
+    uint32_t nb_pages  = SLOT_SIZE / FLASH_PAGE_SIZE_F103; /* 105 pages */
+
+#if defined(HAL_FLASH_MODULE_ENABLED) || defined(STM32F103xE) || defined(STM32F1xx)
     HAL_FLASH_Unlock();
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPERR);
+
     FLASH_EraseInitTypeDef eraseInit;
-    eraseInit.TypeErase = FLASH_TYPEERASE_PAGES;
-    eraseInit.PageAddress = UDS_BL_F103_APP_SLOT_B_START;
-    eraseInit.NbPages = UDS_BL_F103_APP_SLOT_B_SIZE / 2048u; /* 120 pages */
+    memset(&eraseInit, 0, sizeof(eraseInit));
+    eraseInit.TypeErase   = FLASH_TYPEERASE_PAGES;
+    eraseInit.PageAddress = slot_addr;
+    eraseInit.NbPages     = nb_pages;
+
     uint32_t pageError = 0u;
     HAL_StatusTypeDef status = HAL_FLASHEx_Erase(&eraseInit, &pageError);
     HAL_FLASH_Lock();
-    return (status == HAL_OK);
-#else
-    return true;
+
+    if (status != HAL_OK)
+    {
+        return false;
+    }
 #endif
+
+    /* Mark target slot IN_PROGRESS in metadata */
+    metadata_t meta;
+    if (ota_metadata_read(&meta) != META_OK)
+    {
+        (void)ota_metadata_init_default(&meta);
+    }
+    meta.slot[slot_id].state = STATE_IN_PROGRESS;
+    meta.slot[slot_id].size  = 0U;
+    (void)ota_metadata_write(&meta);
+
+    return true;
 }
 
 /* Interfaces  ***************************************************************/
 
-const UdsBootloaderMetadata_t* charon_RoutineFunctionalUnit_GetMetadata (void)
+const metadata_t* charon_RoutineFunctionalUnit_GetMetadata (void)
 {
-    return &s_bootloaderMeta;
+    if (!s_metaLoaded)
+    {
+        if (ota_metadata_read(&s_cachedMeta) != META_OK)
+        {
+            (void)ota_metadata_init_default(&s_cachedMeta);
+        }
+        s_metaLoaded = true;
+    }
+    return &s_cachedMeta;
 }
 
 uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
 {
     uds_responseCode_t result = uds_responseCode_PositiveResponse;
-	uint8_t statusRecord = 0x00u;
+    uint8_t statusRecord = 0x00u;
     bool hasStatusRecord = false;
-	
+
     if (receiveBufferSize < 4u)
     {
         result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
     }
-    else if ( (receiveBuffer[1] == 0u) || (receiveBuffer[1] > 3u) )
+    else if ((receiveBuffer[1] == 0u) || (receiveBuffer[1] > 3u))
     {
         result = uds_responseCode_SubfunctionNotSupported;
     }
     else
     {
-    	uint8_t subfunction = receiveBuffer[1];
+        uint8_t subfunction = receiveBuffer[1];
         uint16_t routineIdentifier = ((uint16_t)receiveBuffer[2] << 8) | receiveBuffer[3];
 
-		if (routineIdentifier == UDS_BL_ROUTINE_ERASE_MEMORY)
+        if (routineIdentifier == UDS_BL_ROUTINE_ERASE_MEMORY)
         {
             if (subfunction == 0x01u) /* StartRoutine */
             {
+                uint8_t target_slot = ota_metadata_get_target_slot();
+
                 if (receiveBufferSize == 4u)
                 {
-                    /* Erase Candidate Firmware Slot B partition directly in Flash */
-                    if (!eraseSlotB())
+                    /* Erase inactive target slot (Slot A or Slot B) */
+                    if (!eraseSlot(target_slot))
                     {
                         result = uds_responseCode_GeneralProgrammingFailure;
                     }
                 }
                 else if (receiveBufferSize >= 12u)
                 {
-                    /* Memory erase targeting flash slot */
+                    /* Specific erase address supplied */
                     uint32_t eraseAddr = ((uint32_t)receiveBuffer[4] << 24) |
                                          ((uint32_t)receiveBuffer[5] << 16) |
                                          ((uint32_t)receiveBuffer[6] << 8)  |
@@ -118,10 +123,18 @@ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t * 
                                          ((uint32_t)receiveBuffer[10] << 8) |
                                           (uint32_t)receiveBuffer[11];
 
-                    if ((eraseAddr >= UDS_BL_F103_APP_SLOT_B_START) &&
-                        ((eraseAddr + eraseLen) <= (UDS_BL_F103_APP_SLOT_B_START + UDS_BL_F103_APP_SLOT_B_SIZE)))
+                    if ((eraseAddr == SLOT_A_ADDR) && (eraseLen <= SLOT_SIZE))
                     {
-                        if (!eraseSlotB())
+                        target_slot = SLOT_A;
+                        if (!eraseSlot(target_slot))
+                        {
+                            result = uds_responseCode_GeneralProgrammingFailure;
+                        }
+                    }
+                    else if ((eraseAddr == SLOT_B_ADDR) && (eraseLen <= SLOT_SIZE))
+                    {
+                        target_slot = SLOT_B;
+                        if (!eraseSlot(target_slot))
                         {
                             result = uds_responseCode_GeneralProgrammingFailure;
                         }
@@ -145,8 +158,9 @@ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t * 
         {
             if (subfunction == 0x01u) /* StartRoutine */
             {
-                uint32_t checkAddr = UDS_BL_F103_APP_SLOT_B_START;
-                uint32_t checkLen  = UDS_BL_F103_APP_SLOT_B_SIZE;
+                uint8_t target_slot = ota_metadata_get_target_slot();
+                uint32_t checkAddr = SLOT_ADDR(target_slot);
+                uint32_t checkLen  = SLOT_SIZE;
                 uint32_t expectedCrc = 0u;
 
                 if (receiveBufferSize == 16u)
@@ -164,10 +178,19 @@ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t * 
                                   ((uint32_t)receiveBuffer[13] << 16) |
                                   ((uint32_t)receiveBuffer[14] << 8)  |
                                    (uint32_t)receiveBuffer[15];
+
+                    if (checkAddr == SLOT_A_ADDR)
+                    {
+                        target_slot = SLOT_A;
+                    }
+                    else if (checkAddr == SLOT_B_ADDR)
+                    {
+                        target_slot = SLOT_B;
+                    }
                 }
                 else if (receiveBufferSize == 8u)
                 {
-                    /* Format: 31 01 02 02 [CRC32 4B] defaulting to Slot B */
+                    /* Format: 31 01 02 02 [CRC32 4B] */
                     expectedCrc = ((uint32_t)receiveBuffer[4] << 24) |
                                   ((uint32_t)receiveBuffer[5] << 16) |
                                   ((uint32_t)receiveBuffer[6] << 8)  |
@@ -180,27 +203,25 @@ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t * 
 
                 if (result == uds_responseCode_PositiveResponse)
                 {
-                    if ((checkAddr < UDS_BL_F103_APP_SLOT_B_START) ||
-                        ((checkAddr + checkLen) > (UDS_BL_F103_APP_SLOT_B_START + UDS_BL_F103_APP_SLOT_B_SIZE)))
+                    if ((checkAddr != SLOT_A_ADDR && checkAddr != SLOT_B_ADDR) ||
+                        (checkLen == 0u) || (checkLen > SLOT_SIZE))
                     {
                         result = uds_responseCode_RequestOutOfRange;
                     }
                     else
                     {
-                        uint32_t computedCrc = calculateCrc32((const uint8_t *)(uintptr_t)checkAddr, checkLen);
+                        uint32_t computedCrc = ota_crc32_compute((const void *)(uintptr_t)checkAddr, checkLen);
                         hasStatusRecord = true;
                         if (computedCrc == expectedCrc)
                         {
                             statusRecord = 0x00u; /* 0x00: Verification Successful */
-                            s_bootloaderMeta.crc32 = computedCrc;
-                            s_bootloaderMeta.image_size = checkLen;
-                            s_bootloaderMeta.status = (uint8_t)UDS_BL_SLOT_CANDIDATE;
-                            s_bootloaderMeta.active_slot = 1u; /* Stage candidate in Slot B */
+                            /* Update ping-pong metadata: set target slot as candidate in TESTING state */
+                            (void)ota_metadata_set_candidate(target_slot, checkLen, computedCrc, 1U);
+                            (void)ota_metadata_read(&s_cachedMeta);
                         }
                         else
                         {
                             statusRecord = 0x01u; /* 0x01: Verification Failed */
-                            s_bootloaderMeta.status = (uint8_t)UDS_BL_SLOT_INVALID;
                         }
                     }
                 }
@@ -208,7 +229,16 @@ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t * 
             else if (subfunction == 0x03u) /* RequestRoutineResults */
             {
                 hasStatusRecord = true;
-                statusRecord = (s_bootloaderMeta.status == (uint8_t)UDS_BL_SLOT_CANDIDATE) ? 0x00u : 0x01u;
+                metadata_t meta;
+                if (ota_metadata_read(&meta) == META_OK)
+                {
+                    uint8_t target = ota_metadata_get_target_slot();
+                    statusRecord = (meta.slot[target].state == STATE_TESTING) ? 0x00u : 0x01u;
+                }
+                else
+                {
+                    statusRecord = 0x01u;
+                }
             }
             else
             {
@@ -245,12 +275,9 @@ uds_responseCode_t charon_RoutineFunctionalUnit_RoutineControl (const uint8_t * 
                 receiveBuffer[1],
                 receiveBuffer[2],
                 receiveBuffer[3]
-		};
-		charon_sscTxMessage(transmitBuffer, sizeof(transmitBuffer));
-		}
+            };
+            charon_sscTxMessage(transmitBuffer, sizeof(transmitBuffer));
+        }
     }
     return result;
 }
-
-
-

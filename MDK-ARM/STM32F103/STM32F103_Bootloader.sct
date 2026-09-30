@@ -1,0 +1,15 @@
+; *************************************************************
+; *** Keil uVision Scatter-Loading File: Bootloader (64 KB) ***
+; *************************************************************
+
+LR_IROM1 0x08000000 0x00010000  {    ; 64 KB Bootloader Flash (Pages 0 - 31)
+  ER_IROM1 0x08000000 0x00010000  {  ; Execution address
+   *.o (RESET, +First)
+   *(InRoot$$Sections)
+   .ANY (+RO)
+   .ANY (+XO)
+  }
+  RW_IRAM1 0x20000000 0x0000FFF8  {  ; 64 KB RAM - 8 bytes reserved for boot flag
+   .ANY (+RW +ZI)
+  }
+}

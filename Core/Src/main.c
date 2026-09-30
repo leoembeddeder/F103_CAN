@@ -29,6 +29,8 @@
 #include "uds.h"
 #include "isotp_socket.h"
 #include "NvmEmulator.h"
+#include "ota_app_client.h"
+#include "ota_metadata.h"
 
 
 /* USER CODE END Includes */
@@ -102,6 +104,7 @@ int main(void)
   isotp_socket_init();
   charon_init(isotp_socket);
   charon_NvmDriver_init(); /* Load persistent DTCs from Flash */
+  ota_app_confirm_startup(); /* Confirm self-boot in A/B metadata (transitions TESTING -> VALID) */
   
   //printf("stm32 can test\r\n");
 

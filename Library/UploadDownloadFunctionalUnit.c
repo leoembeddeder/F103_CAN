@@ -4,6 +4,8 @@
 #include "UploadDownloadFunctionalUnit.h"
 #include "SessionAndServiceControl.h"
 #include "negativeResponse.h"
+#include "ota_metadata.h"
+#include "ota_metadata_mgr.h"
 
 
 /* Imports *******************************************************************/
@@ -321,14 +323,35 @@ static uds_responseCode_t requestTransfer(TransferDirection_t direction, const u
         CHARON_INFO("Transfer Requested, address 0x%x, length 0x%x, direction %s.", memoryAddress, memoryLength, direction == transfer_download ? "download" : "upload");
 
         bool isValidRange = false;
-        if ((memoryAddress >= STM32F103_FLASH_BASE) && 
-            ((memoryAddress + memoryLength) <= (STM32F103_FLASH_BASE + (256u * STM32F103_PAGE_SIZE))))
+        if (direction == transfer_download)
         {
-            isValidRange = true;
+            /* Firmware downloads strictly restricted to Slot A or Slot B */
+            if ((memoryAddress >= SLOT_A_ADDR) && 
+                ((memoryAddress + memoryLength) <= (SLOT_A_ADDR + SLOT_SIZE)))
+            {
+                isValidRange = true;
+            }
+            else if ((memoryAddress >= SLOT_B_ADDR) && 
+                     ((memoryAddress + memoryLength) <= (SLOT_B_ADDR + SLOT_SIZE)))
+            {
+                isValidRange = true;
+            }
+            else if (charon_NvmDriver_checkAddressRange(memoryAddress, memoryLength))
+            {
+                isValidRange = true;
+            }
         }
-        else if (charon_NvmDriver_checkAddressRange(memoryAddress, memoryLength))
+        else
         {
-            isValidRange = true;
+            if ((memoryAddress >= STM32F103_FLASH_BASE) && 
+                ((memoryAddress + memoryLength) <= (STM32F103_FLASH_BASE + (256u * STM32F103_PAGE_SIZE))))
+            {
+                isValidRange = true;
+            }
+            else if (charon_NvmDriver_checkAddressRange(memoryAddress, memoryLength))
+            {
+                isValidRange = true;
+            }
         }
 
         if (!isValidRange)

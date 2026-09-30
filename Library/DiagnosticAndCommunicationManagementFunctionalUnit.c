@@ -10,6 +10,7 @@
 #include "StoredDataTransmissionFunctionalUnit.h"
 #include "aes.h"
 #include "aes_cmac.h"
+#include "ota_boot_request.h"
 
 
 /* Imports *******************************************************************/
@@ -274,6 +275,10 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Dia
                 charon_sscTxMessage(transmitBuffer, sizeof(transmitBuffer));
             }
             charon_sscSetSession((charon_sessionTypes_t)session, defaultTimings[session].p2, defaultTimings[session].p2star);
+            if ((charon_sessionTypes_t)session == charon_sscType_programming)
+            {
+                ota_boot_request_set();
+            }
 			charon_SecurityAccess_InvalidateSeeds();
             charon_sscResetSecurityLevel();
         }

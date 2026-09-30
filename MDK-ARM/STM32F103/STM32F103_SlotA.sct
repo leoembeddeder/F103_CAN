@@ -1,0 +1,15 @@
+; *************************************************************
+; *** Keil uVision Scatter-Loading File: Application Slot A  ***
+; *************************************************************
+
+LR_IROM1 0x08010000 0x00034800  {    ; 210 KB Slot A Flash (Pages 32 - 136)
+  ER_IROM1 0x08010000 0x00034800  {  ; Execution address
+   *.o (RESET, +First)
+   *(InRoot$$Sections)
+   .ANY (+RO)
+   .ANY (+XO)
+  }
+  RW_IRAM1 0x20000000 0x0000FFF8  {  ; 64 KB RAM - 8 bytes reserved for boot flag
+   .ANY (+RW +ZI)
+  }
+}

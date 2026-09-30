@@ -12,8 +12,9 @@
 #define STM32F103_FLASH_BASE      0x08000000U
 #define STM32F103_PAGE_SIZE       0x00000800U       /* FLASH Page Size, 2 KBytes */
 
-/* Safe parameter region at top of flash */
-#define FLASH_PARAM_START (STM32F103_FLASH_BASE + (256U - 4U) * STM32F103_PAGE_SIZE) /* 0x0807E000 */
+/* Safe DTC / NVM parameter storage region at top of flash (24 KB, Pages 244-255) */
+#define FLASH_PARAM_START         0x0807A000U
+#define FLASH_PARAM_SIZE          (24U * 1024U)
 
 
 

@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;..\SyntropicOS;..\flash;..\Library;..\TP;..\Crypto</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;..\SyntropicOS;..\flash;..\Library;..\TP;..\Crypto;..\Shared\Inc;..\Bootloader\Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -649,6 +649,41 @@
               <FileName>aes_cmac.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Crypto\aes_cmac.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Shared</GroupName>
+          <Files>
+            <File>
+              <FileName>ota_crc32.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Shared\Src\ota_crc32.c</FilePath>
+            </File>
+            <File>
+              <FileName>ota_metadata_mgr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Shared\Src\ota_metadata_mgr.c</FilePath>
+            </File>
+            <File>
+              <FileName>ota_app_client.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Shared\Src\ota_app_client.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Bootloader</GroupName>
+          <Files>
+            <File>
+              <FileName>bootloader_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Bootloader\Src\bootloader_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>bootloader_jump.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Bootloader\Src\bootloader_jump.c</FilePath>
             </File>
           </Files>
         </Group>
