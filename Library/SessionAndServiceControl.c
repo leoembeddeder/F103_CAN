@@ -223,6 +223,8 @@ void charon_sscCyclic (void)
 	}
 
     charon_DataTransmissionFunctionalUnit_SendPeriodic(); /** @todo ends in an circle dependence, needs task fix in future*/
+    extern void charon_roe_cyclic(void);
+    charon_roe_cyclic();
 }
 
 void charon_sscRcvMessage (void)
@@ -325,8 +327,62 @@ static void processReceivedMessage (uint8_t const * const pBuffer, uint32_t leng
     }
 }
 
+static bool s_isCapturingTx = false;
+static uint8_t s_capturedTxBuffer[256];
+static uint32_t s_capturedTxLength = 0;
+
+void charon_sscStartTxCapture(void)
+{
+    s_isCapturingTx = true;
+    s_capturedTxLength = 0;
+}
+
+uint32_t charon_sscStopTxCapture(uint8_t *dest, uint32_t maxLen)
+{
+    s_isCapturingTx = false;
+    uint32_t len = s_capturedTxLength;
+    if (len > maxLen) len = maxLen;
+    if (dest != NULL && len > 0)
+    {
+        memcpy(dest, s_capturedTxBuffer, len);
+    }
+    s_capturedTxLength = 0;
+    return len;
+}
+
+uint32_t charon_sscGetP2Server(void)
+{
+    return s_ttl.p2Server;
+}
+
+uint32_t charon_sscGetP2StarServer(void)
+{
+    return s_ttl.p2StarServer;
+}
+
+void charon_sscSetTimingParameters(uint32_t p2Server, uint32_t p2StarServer)
+{
+    s_ttl.p2Server = p2Server;
+    s_ttl.p2StarServer = p2StarServer;
+}
+
 void charon_sscTxMessage (uint8_t const * const pBuffer, uint32_t length)
 {
+    if (s_isCapturingTx)
+    {
+        if (pBuffer != NULL && length > 0)
+        {
+            uint32_t copyLen = length;
+            if (copyLen > sizeof(s_capturedTxBuffer))
+            {
+                copyLen = sizeof(s_capturedTxBuffer);
+            }
+            memcpy(s_capturedTxBuffer, pBuffer, copyLen);
+            s_capturedTxLength = copyLen;
+        }
+        return;
+    }
+
     /* Check if a Request is pending */
     if(NULL != s_currentlyPendingService)
     {

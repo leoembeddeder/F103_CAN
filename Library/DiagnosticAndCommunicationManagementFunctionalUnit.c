@@ -11,6 +11,8 @@
 #include "aes.h"
 #include "aes_cmac.h"
 #include "ota_boot_request.h"
+#include "uds_config.h"
+#include "can.h"
 
 
 /* Imports *******************************************************************/
@@ -657,18 +659,186 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Tes
 
 uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_AccessTimingParameter (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
 {
-    (void)receiveBuffer;
-    (void)receiveBufferSize;
     CHARON_INFO("Access Timing Parameter Service SID:0x83 Triggered");
-    return uds_responseCode_ServiceNotSupported;
+
+    if ((receiveBuffer == NULL) || (receiveBufferSize < 2u))
+    {
+        charon_sendNegativeResponse(uds_responseCode_IncorrectMessageLengthOrInvalidFormat, uds_sid_AccessTimingParameter);
+        return uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+    }
+
+    uint8_t subfunction = receiveBuffer[1] & 0x7Fu;
+    bool suppressResponse = (receiveBuffer[1] & 0x80u) != 0u;
+    uds_responseCode_t result = uds_responseCode_PositiveResponse;
+    uint8_t txBuffer[6];
+    uint32_t txLength = 0u;
+
+    switch (subfunction)
+    {
+    case 0x01: /* readExtendedTimingParameterSet */
+    {
+        if (receiveBufferSize != 2u)
+        {
+            result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+            break;
+        }
+        /* P2Server_max = 50ms (0x0032), P2*Server_max = 5000ms in 10ms units = 500 (0x01F4) */
+        txBuffer[0] = (uint8_t)uds_sid_AccessTimingParameter | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = subfunction;
+        txBuffer[2] = 0x00u;
+        txBuffer[3] = 0x32u;
+        txBuffer[4] = 0x01u;
+        txBuffer[5] = 0xF4u;
+        txLength = 6u;
+        break;
+    }
+    case 0x02: /* setTimingParametersToDefaultValues */
+    {
+        if (receiveBufferSize != 2u)
+        {
+            result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+            break;
+        }
+        charon_sscSetTimingParameters(50u, 5000u);
+        txBuffer[0] = (uint8_t)uds_sid_AccessTimingParameter | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = subfunction;
+        txLength = 2u;
+        break;
+    }
+    case 0x03: /* readCurrentlyActiveTimingParameters */
+    {
+        if (receiveBufferSize != 2u)
+        {
+            result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+            break;
+        }
+        uint32_t curP2 = charon_sscGetP2Server();
+        uint32_t curP2Star = charon_sscGetP2StarServer() / 10u;
+        txBuffer[0] = (uint8_t)uds_sid_AccessTimingParameter | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = subfunction;
+        txBuffer[2] = (uint8_t)((curP2 >> 8) & 0xFFu);
+        txBuffer[3] = (uint8_t)(curP2 & 0xFFu);
+        txBuffer[4] = (uint8_t)((curP2Star >> 8) & 0xFFu);
+        txBuffer[5] = (uint8_t)(curP2Star & 0xFFu);
+        txLength = 6u;
+        break;
+    }
+    case 0x04: /* setTimingParametersToGivenValues */
+    {
+        if (receiveBufferSize != 6u)
+        {
+            result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+            break;
+        }
+        uint32_t newP2 = ((uint32_t)receiveBuffer[2] << 8) | receiveBuffer[3];
+        uint32_t newP2Star = (((uint32_t)receiveBuffer[4] << 8) | receiveBuffer[5]) * 10u;
+        if ((newP2 < 5u) || (newP2Star < 100u))
+        {
+            result = uds_responseCode_RequestOutOfRange;
+            break;
+        }
+        charon_sscSetTimingParameters(newP2, newP2Star);
+        txBuffer[0] = (uint8_t)uds_sid_AccessTimingParameter | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = subfunction;
+        txBuffer[2] = receiveBuffer[2];
+        txBuffer[3] = receiveBuffer[3];
+        txBuffer[4] = receiveBuffer[4];
+        txBuffer[5] = receiveBuffer[5];
+        txLength = 6u;
+        break;
+    }
+    default:
+        result = uds_responseCode_SubfunctionNotSupported;
+        break;
+    }
+
+    if (result != uds_responseCode_PositiveResponse)
+    {
+        charon_sendNegativeResponse(result, uds_sid_AccessTimingParameter);
+    }
+    else if (!suppressResponse && (txLength > 0u))
+    {
+        charon_sscTxMessage(txBuffer, txLength);
+    }
+    return result;
 }
+
+static const uint8_t s_securedDataKey[16] = UDS_SECURED_DATA_AES_KEY;
 
 uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_SecuredDataTransmission (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
 {
-    (void)receiveBuffer;
-    (void)receiveBufferSize;
     CHARON_INFO("Secured Data Transmission Service SID:0x84 Triggered");
-    return uds_responseCode_ServiceNotSupported;
+
+    /* Format: [0x84, subfunction (1), CMAC_Tag (16), inner_apdu (N >= 1)] */
+    if ((receiveBuffer == NULL) || (receiveBufferSize < 19u))
+    {
+        charon_sendNegativeResponse(uds_responseCode_IncorrectMessageLengthOrInvalidFormat, uds_sid_SecuredDataTransmission);
+        return uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+    }
+
+    uint8_t subfunction = receiveBuffer[1] & 0x7Fu;
+    bool suppressResponse = (receiveBuffer[1] & 0x80u) != 0u;
+
+    if ((subfunction != 0x01u) && (subfunction != 0x02u))
+    {
+        charon_sendNegativeResponse(uds_responseCode_SubfunctionNotSupported, uds_sid_SecuredDataTransmission);
+        return uds_responseCode_SubfunctionNotSupported;
+    }
+
+    const uint8_t *rxTag = &receiveBuffer[2];
+    const uint8_t *innerMsg = &receiveBuffer[18];
+    uint32_t innerLen = receiveBufferSize - 18u;
+
+    /* Verify CMAC-128 tag */
+    uint8_t calcTag[16];
+    if (!aes_cmac_128(s_securedDataKey, innerMsg, innerLen, calcTag) ||
+        !aes_cmac_constant_time_equal(rxTag, calcTag))
+    {
+        CHARON_ERROR("SecuredDataTransmission: CMAC verification failed!");
+        charon_sendNegativeResponse(uds_responseCode_InvalidKey, uds_sid_SecuredDataTransmission);
+        return uds_responseCode_InvalidKey;
+    }
+
+    /* Dispatch inner service */
+    uint8_t innerSid = innerMsg[0];
+    charon_serviceObject_t *pInnerService = charon_ServiceLookupTable_getServiceObject(innerSid);
+    if ((pInnerService == NULL) || (pInnerService->pServiceFunction == NULL))
+    {
+        CHARON_ERROR("SecuredDataTransmission: inner SID 0x%02X not supported", innerSid);
+        charon_sendNegativeResponse(uds_responseCode_ServiceNotSupported, uds_sid_SecuredDataTransmission);
+        return uds_responseCode_ServiceNotSupported;
+    }
+
+    /* Capture inner service response */
+    charon_sscStartTxCapture();
+    uds_responseCode_t innerRet = pInnerService->pServiceFunction(innerMsg, innerLen);
+    uint8_t capturedResp[256];
+    uint32_t capturedLen = charon_sscStopTxCapture(capturedResp, sizeof(capturedResp));
+
+    if ((innerRet != uds_responseCode_PositiveResponse) && (capturedLen == 0u))
+    {
+        /* Generate negative response payload if inner service didn't send one */
+        capturedResp[0] = 0x7Fu;
+        capturedResp[1] = innerSid;
+        capturedResp[2] = (uint8_t)innerRet;
+        capturedLen = 3u;
+    }
+
+    if (!suppressResponse && (capturedLen > 0u))
+    {
+        /* Compute MAC on inner response */
+        uint8_t respTag[16];
+        aes_cmac_128(s_securedDataKey, capturedResp, capturedLen, respTag);
+
+        uint8_t outerResp[256 + 18];
+        outerResp[0] = (uint8_t)uds_sid_SecuredDataTransmission | (uint8_t)uds_sid_PositiveResponseMask;
+        outerResp[1] = subfunction;
+        memcpy(&outerResp[2], respTag, 16u);
+        memcpy(&outerResp[18], capturedResp, capturedLen);
+        charon_sscTxMessage(outerResp, 18u + capturedLen);
+    }
+
+    return uds_responseCode_PositiveResponse;
 }
 
 uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_ControlDtcSetting (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
@@ -724,19 +894,293 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Con
     return uds_responseCode_PositiveResponse;
 }
 
+typedef struct {
+    bool active;
+    uint8_t eventType;
+    uint8_t eventWindowTime;
+    uint8_t dtcStatusMask;
+    uint16_t dataIdentifier;
+    uint32_t lastDtcCount;
+    uint8_t serviceRecordLen;
+    uint8_t serviceRecord[8];
+} ROE_State_t;
+
+static ROE_State_t s_roe = {0};
+
 uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_ResponseOnEvent (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
 {
-    (void)receiveBuffer;
-    (void)receiveBufferSize;
     CHARON_INFO("Response On Event Service SID:0x86 Triggered");
-    return uds_responseCode_ServiceNotSupported;
+
+    if ((receiveBuffer == NULL) || (receiveBufferSize < 2u))
+    {
+        charon_sendNegativeResponse(uds_responseCode_IncorrectMessageLengthOrInvalidFormat, uds_sid_ResponseOnEvent);
+        return uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+    }
+
+    uint8_t subfunction = receiveBuffer[1] & 0x7Fu;
+    bool suppressResponse = (receiveBuffer[1] & 0x80u) != 0u;
+    uds_responseCode_t result = uds_responseCode_PositiveResponse;
+    uint8_t txBuffer[8];
+    uint32_t txLength = 0u;
+
+    switch (subfunction)
+    {
+    case 0x00: /* stopResponseOnEvent */
+    {
+        s_roe.active = false;
+        txBuffer[0] = (uint8_t)uds_sid_ResponseOnEvent | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = subfunction;
+        txBuffer[2] = s_roe.eventType;
+        txLength = 3u;
+        break;
+    }
+    case 0x01: /* onDTCStatusChange */
+    {
+        if (receiveBufferSize < 4u)
+        {
+            result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+            break;
+        }
+        s_roe.eventType = 0x01u;
+        s_roe.eventWindowTime = receiveBuffer[2];
+        s_roe.dtcStatusMask = receiveBuffer[3];
+        s_roe.lastDtcCount = charon_getDTCCountByStatusMask(s_roe.dtcStatusMask, false, false, 0u);
+        s_roe.serviceRecordLen = 0u;
+        if (receiveBufferSize > 4u)
+        {
+            uint32_t recLen = receiveBufferSize - 4u;
+            if (recLen > sizeof(s_roe.serviceRecord)) recLen = sizeof(s_roe.serviceRecord);
+            memcpy(s_roe.serviceRecord, &receiveBuffer[4], recLen);
+            s_roe.serviceRecordLen = (uint8_t)recLen;
+        }
+        s_roe.active = true;
+
+        txBuffer[0] = (uint8_t)uds_sid_ResponseOnEvent | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = subfunction;
+        txBuffer[2] = 0x01u; /* numberOfActivatedEvents */
+        txBuffer[3] = s_roe.eventType;
+        txBuffer[4] = s_roe.eventWindowTime;
+        txBuffer[5] = s_roe.dtcStatusMask;
+        txLength = 6u;
+        break;
+    }
+    case 0x03: /* onChangeOfDataIdentifier */
+    {
+        if (receiveBufferSize < 5u)
+        {
+            result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+            break;
+        }
+        s_roe.eventType = 0x03u;
+        s_roe.eventWindowTime = receiveBuffer[2];
+        s_roe.dataIdentifier = ((uint16_t)receiveBuffer[3] << 8) | receiveBuffer[4];
+        s_roe.serviceRecordLen = 0u;
+        if (receiveBufferSize > 5u)
+        {
+            uint32_t recLen = receiveBufferSize - 5u;
+            if (recLen > sizeof(s_roe.serviceRecord)) recLen = sizeof(s_roe.serviceRecord);
+            memcpy(s_roe.serviceRecord, &receiveBuffer[5], recLen);
+            s_roe.serviceRecordLen = (uint8_t)recLen;
+        }
+        s_roe.active = true;
+
+        txBuffer[0] = (uint8_t)uds_sid_ResponseOnEvent | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = subfunction;
+        txBuffer[2] = 0x01u; /* numberOfActivatedEvents */
+        txBuffer[3] = s_roe.eventType;
+        txBuffer[4] = s_roe.eventWindowTime;
+        txBuffer[5] = (uint8_t)((s_roe.dataIdentifier >> 8) & 0xFFu);
+        txBuffer[6] = (uint8_t)(s_roe.dataIdentifier & 0xFFu);
+        txLength = 7u;
+        break;
+    }
+    case 0x04: /* reportActivatedEvents */
+    {
+        txBuffer[0] = (uint8_t)uds_sid_ResponseOnEvent | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = subfunction;
+        if (s_roe.active)
+        {
+            txBuffer[2] = 0x01u;
+            txBuffer[3] = s_roe.eventType;
+            txBuffer[4] = s_roe.eventWindowTime;
+            txLength = 5u;
+        }
+        else
+        {
+            txBuffer[2] = 0x00u;
+            txLength = 3u;
+        }
+        break;
+    }
+    case 0x05: /* startResponseOnEvent */
+    {
+        s_roe.active = true;
+        txBuffer[0] = (uint8_t)uds_sid_ResponseOnEvent | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = subfunction;
+        txBuffer[2] = s_roe.eventType;
+        txLength = 3u;
+        break;
+    }
+    case 0x06: /* clearResponseOnEvent */
+    {
+        memset(&s_roe, 0, sizeof(s_roe));
+        txBuffer[0] = (uint8_t)uds_sid_ResponseOnEvent | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = subfunction;
+        txLength = 2u;
+        break;
+    }
+    default:
+        result = uds_responseCode_SubfunctionNotSupported;
+        break;
+    }
+
+    if (result != uds_responseCode_PositiveResponse)
+    {
+        charon_sendNegativeResponse(result, uds_sid_ResponseOnEvent);
+    }
+    else if (!suppressResponse && (txLength > 0u))
+    {
+        charon_sscTxMessage(txBuffer, txLength);
+    }
+    return result;
 }
+
+void charon_roe_cyclic(void)
+{
+    if (!s_roe.active)
+    {
+        return;
+    }
+
+    if (s_roe.eventType == 0x01u) /* onDTCStatusChange */
+    {
+        uint32_t currentCount = charon_getDTCCountByStatusMask(s_roe.dtcStatusMask, false, false, 0u);
+        if (currentCount != s_roe.lastDtcCount)
+        {
+            s_roe.lastDtcCount = currentCount;
+            /* Dispatch ReadDTCInformation report */
+            uint8_t roeMsg[3] = { (uint8_t)uds_sid_ReadDtcInformation, 0x02u, s_roe.dtcStatusMask };
+            charon_StoredDataTransmissionFunctionalUnit_ReadDtcInformation(roeMsg, sizeof(roeMsg));
+        }
+    }
+}
+
+static bool s_linkControlVerified = false;
+static uint32_t s_verifiedBaudrate = 500000U;
 
 uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_LinkControl (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
 {
-    (void)receiveBuffer;
-    (void)receiveBufferSize;
     CHARON_INFO("Link Control Service SID:0x87 Triggered");
-    return uds_responseCode_ServiceNotSupported;
+
+    if ((receiveBuffer == NULL) || (receiveBufferSize < 2u))
+    {
+        charon_sendNegativeResponse(uds_responseCode_IncorrectMessageLengthOrInvalidFormat, uds_sid_LinkControl);
+        return uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+    }
+
+    uint8_t subfunction = receiveBuffer[1] & 0x7Fu;
+    bool suppressResponse = (receiveBuffer[1] & 0x80u) != 0u;
+    uds_responseCode_t result = uds_responseCode_PositiveResponse;
+    uint8_t txBuffer[5];
+    uint32_t txLength = 0u;
+
+    switch (subfunction)
+    {
+    case 0x01: /* verifyBaudrateTransitionWithFixedBaudrate */
+    {
+        if (receiveBufferSize != 3u)
+        {
+            result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+            break;
+        }
+        uint8_t baudId = receiveBuffer[2];
+        uint32_t targetBaud = 0u;
+        switch (baudId)
+        {
+        case 0x01: targetBaud = 125000U; break;
+        case 0x02: targetBaud = 250000U; break;
+        case 0x03: targetBaud = 500000U; break;
+        case 0x04: targetBaud = 1000000U; break;
+        default:
+            result = uds_responseCode_RequestOutOfRange;
+            break;
+        }
+        if (result == uds_responseCode_PositiveResponse)
+        {
+            s_verifiedBaudrate = targetBaud;
+            s_linkControlVerified = true;
+            txBuffer[0] = (uint8_t)uds_sid_LinkControl | (uint8_t)uds_sid_PositiveResponseMask;
+            txBuffer[1] = subfunction;
+            txBuffer[2] = baudId;
+            txLength = 3u;
+        }
+        break;
+    }
+    case 0x02: /* verifyBaudrateTransitionWithSpecificBaudrate */
+    {
+        if (receiveBufferSize != 5u)
+        {
+            result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+            break;
+        }
+        uint32_t targetBaud = ((uint32_t)receiveBuffer[2] << 16) |
+                              ((uint32_t)receiveBuffer[3] << 8)  |
+                              (uint32_t)receiveBuffer[4];
+        if ((targetBaud == 125000U) || (targetBaud == 250000U) ||
+            (targetBaud == 500000U) || (targetBaud == 1000000U))
+        {
+            s_verifiedBaudrate = targetBaud;
+            s_linkControlVerified = true;
+            txBuffer[0] = (uint8_t)uds_sid_LinkControl | (uint8_t)uds_sid_PositiveResponseMask;
+            txBuffer[1] = subfunction;
+            txBuffer[2] = receiveBuffer[2];
+            txBuffer[3] = receiveBuffer[3];
+            txBuffer[4] = receiveBuffer[4];
+            txLength = 5u;
+        }
+        else
+        {
+            result = uds_responseCode_RequestOutOfRange;
+        }
+        break;
+    }
+    case 0x03: /* transitionBaudrate */
+    {
+        if (receiveBufferSize != 2u)
+        {
+            result = uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+            break;
+        }
+        if (!s_linkControlVerified)
+        {
+            result = uds_responseCode_RequestSequenceError;
+            break;
+        }
+        txBuffer[0] = (uint8_t)uds_sid_LinkControl | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = subfunction;
+        txLength = 2u;
+
+        if (!suppressResponse)
+        {
+            charon_sscTxMessage(txBuffer, txLength);
+        }
+        can_set_baudrate(s_verifiedBaudrate);
+        s_linkControlVerified = false;
+        return uds_responseCode_PositiveResponse;
+    }
+    default:
+        result = uds_responseCode_SubfunctionNotSupported;
+        break;
+    }
+
+    if (result != uds_responseCode_PositiveResponse)
+    {
+        charon_sendNegativeResponse(result, uds_sid_LinkControl);
+    }
+    else if (!suppressResponse && (txLength > 0u))
+    {
+        charon_sscTxMessage(txBuffer, txLength);
+    }
+    return result;
 }
 

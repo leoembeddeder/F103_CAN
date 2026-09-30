@@ -6,6 +6,8 @@
 #include "negativeResponse.h"
 #include "ota_metadata.h"
 #include "ota_metadata_mgr.h"
+#include "DTC_LookupTable.h"
+#include <string.h>
 
 
 /* Imports *******************************************************************/
@@ -166,7 +168,11 @@ uds_responseCode_t charon_UploadDownloadFunctionalUnit_TransferData (const uint8
                 transmitBufferSize = s_remainingMemoryLength + 2u;
             }
             uint32_t readLen = transmitBufferSize - 2u;
-            if ((s_currentMemoryAddress >= STM32F103_FLASH_BASE) && 
+            if ((s_currentMemoryAddress >= 0x20000000U) && (s_currentMemoryAddress < 0x20010000U))
+            {
+                memcpy(&(transmitBuffer[2]), (const void *)(uintptr_t)s_currentMemoryAddress, readLen);
+            }
+            else if ((s_currentMemoryAddress >= STM32F103_FLASH_BASE) && 
                 ((s_currentMemoryAddress + readLen) <= (STM32F103_FLASH_BASE + (256u * STM32F103_PAGE_SIZE))))
             {
                 syn_port_flash_read(s_currentMemoryAddress, &(transmitBuffer[2]), readLen);
@@ -229,12 +235,162 @@ uds_responseCode_t charon_UploadDownloadFunctionalUnit_RequestTransferExit (cons
     return result;
 }
 
+typedef struct {
+    const char *path;
+    uint32_t address;
+    uint32_t size;
+    bool writable;
+} VirtualFile_t;
+
+static const char s_dirManifest[] = "/dtc/log.bin\n/cal/params.bin\n/boot/slotA.bin\n/boot/slotB.bin\n";
+
+static const VirtualFile_t s_vfs[] = {
+    { "/dtc/log.bin",       0x0807A000U, 12288U,        true  },
+    { "/cal/params.bin",    0x0807A000U, FLASH_PARAM_SIZE, true  },
+    { "/boot/slotA.bin",    0x08010000U, 210U * 1024U,  true  },
+    { "/boot/slotB.bin",    0x08044800U, 210U * 1024U,  true  },
+};
+
+static const VirtualFile_t* find_virtual_file(const char *name, uint16_t nameLen)
+{
+    for (size_t i = 0; i < sizeof(s_vfs)/sizeof(s_vfs[0]); i++)
+    {
+        if ((strlen(s_vfs[i].path) == nameLen) &&
+            (strncmp(s_vfs[i].path, name, nameLen) == 0))
+        {
+            return &s_vfs[i];
+        }
+    }
+    return NULL;
+}
+
 uds_responseCode_t charon_UploadDownloadFunctionalUnit_RequestFileTransfer (const uint8_t * receiveBuffer, uint32_t receiveBufferSize)
 {
-    (void)receiveBuffer;
-    (void)receiveBufferSize;
-    charon_sendNegativeResponse(uds_responseCode_ServiceNotSupported, uds_sid_RequestFileTransfer);
-    return uds_responseCode_ServiceNotSupported;
+    CHARON_INFO("Request File Transfer Service SID:0x38 Triggered");
+
+    if ((receiveBuffer == NULL) || (receiveBufferSize < 4u))
+    {
+        charon_sendNegativeResponse(uds_responseCode_IncorrectMessageLengthOrInvalidFormat, uds_sid_RequestFileTransfer);
+        return uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+    }
+
+    uint8_t mode = receiveBuffer[1];
+    uint16_t pathLen = ((uint16_t)receiveBuffer[2] << 8) | receiveBuffer[3];
+
+    if (receiveBufferSize < (4u + pathLen))
+    {
+        charon_sendNegativeResponse(uds_responseCode_IncorrectMessageLengthOrInvalidFormat, uds_sid_RequestFileTransfer);
+        return uds_responseCode_IncorrectMessageLengthOrInvalidFormat;
+    }
+
+    const char *filePath = (const char *)&receiveBuffer[4];
+    uds_responseCode_t result = uds_responseCode_PositiveResponse;
+    uint8_t txBuffer[16];
+    uint32_t txLength = 0u;
+
+    switch (mode)
+    {
+    case 0x01: /* AddFile */
+    case 0x03: /* ReplaceFile */
+    {
+        const VirtualFile_t *vf = find_virtual_file(filePath, pathLen);
+        if ((vf == NULL) || (!vf->writable))
+        {
+            result = uds_responseCode_RequestOutOfRange;
+            break;
+        }
+        s_currentMemoryAddress = vf->address;
+        s_remainingMemoryLength = vf->size;
+        s_nextSequenceCounter = 1u;
+        s_transferDirection = transfer_download;
+
+        txBuffer[0] = (uint8_t)uds_sid_RequestFileTransfer | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = mode;
+        txBuffer[2] = 0x20u; /* lengthFormatIdentifier: 2-byte maxNumberOfBlockLength */
+        txBuffer[3] = 0x00u;
+        txBuffer[4] = 0x80u; /* maxNumberOfBlockLength = 128 bytes */
+        txBuffer[5] = 0x00u; /* dataFormatIdentifier = uncompressed / unencrypted */
+        txLength = 6u;
+        break;
+    }
+    case 0x02: /* DeleteFile */
+    {
+        const VirtualFile_t *vf = find_virtual_file(filePath, pathLen);
+        if (vf == NULL)
+        {
+            result = uds_responseCode_RequestOutOfRange;
+            break;
+        }
+        if (strcmp(vf->path, "/dtc/log.bin") == 0)
+        {
+            charon_deleteDTC(0u, 0u, 0u, 0u, 0u, false, false, false, true);
+        }
+        txBuffer[0] = (uint8_t)uds_sid_RequestFileTransfer | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = mode;
+        txLength = 2u;
+        break;
+    }
+    case 0x04: /* ReadFile */
+    {
+        const VirtualFile_t *vf = find_virtual_file(filePath, pathLen);
+        if (vf == NULL)
+        {
+            result = uds_responseCode_RequestOutOfRange;
+            break;
+        }
+        s_currentMemoryAddress = vf->address;
+        s_remainingMemoryLength = vf->size;
+        s_nextSequenceCounter = 1u;
+        s_transferDirection = transfer_upload;
+
+        txBuffer[0] = (uint8_t)uds_sid_RequestFileTransfer | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = mode;
+        txBuffer[2] = 0x20u; /* lengthFormatIdentifier */
+        txBuffer[3] = 0x00u;
+        txBuffer[4] = 0x80u; /* maxNumberOfBlockLength = 128 bytes */
+        txBuffer[5] = 0x00u; /* dataFormatIdentifier */
+        txBuffer[6] = 0x04u; /* fileSizeParameterLength = 4 bytes */
+        txBuffer[7] = (uint8_t)((vf->size >> 24) & 0xFFu);
+        txBuffer[8] = (uint8_t)((vf->size >> 16) & 0xFFu);
+        txBuffer[9] = (uint8_t)((vf->size >> 8) & 0xFFu);
+        txBuffer[10] = (uint8_t)(vf->size & 0xFFu);
+        txLength = 11u;
+        break;
+    }
+    case 0x05: /* ReadDir */
+    {
+        uint32_t manifestLen = (uint32_t)strlen(s_dirManifest);
+        s_currentMemoryAddress = (uint32_t)(uintptr_t)s_dirManifest;
+        s_remainingMemoryLength = manifestLen;
+        s_nextSequenceCounter = 1u;
+        s_transferDirection = transfer_upload;
+
+        txBuffer[0] = (uint8_t)uds_sid_RequestFileTransfer | (uint8_t)uds_sid_PositiveResponseMask;
+        txBuffer[1] = mode;
+        txBuffer[2] = 0x20u;
+        txBuffer[3] = 0x00u;
+        txBuffer[4] = 0x80u;
+        txBuffer[5] = 0x00u;
+        txBuffer[6] = 0x02u; /* fileSizeParameterLength = 2 bytes */
+        txBuffer[7] = (uint8_t)((manifestLen >> 8) & 0xFFu);
+        txBuffer[8] = (uint8_t)(manifestLen & 0xFFu);
+        txLength = 9u;
+        break;
+    }
+    default:
+        result = uds_responseCode_SubfunctionNotSupported;
+        break;
+    }
+
+    if (result != uds_responseCode_PositiveResponse)
+    {
+        charon_sendNegativeResponse(result, uds_sid_RequestFileTransfer);
+    }
+    else
+    {
+        charon_sscTxMessage(txBuffer, txLength);
+    }
+    return result;
 }
 
 #ifdef TEST

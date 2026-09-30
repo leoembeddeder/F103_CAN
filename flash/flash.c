@@ -12,9 +12,14 @@ uint32_t GetPage(uint32_t Addr)
 
 /* ── Sector / Page Size ─────────────────────────────────────────────────── */
 
+#define FLASH_PARAM_SECTOR_SIZE   (12U * 1024U)     /* 12 KBytes per parameter store sector (2 sectors = 24 KB) */
+
 uint32_t syn_port_flash_sector_size(uint32_t addr)
 {
-    (void)addr;
+    if ((addr >= FLASH_PARAM_START) && (addr < (FLASH_PARAM_START + FLASH_PARAM_SIZE)))
+    {
+        return FLASH_PARAM_SECTOR_SIZE;
+    }
     return STM32F103_PAGE_SIZE; /* 2048 bytes */
 }
 
@@ -68,7 +73,12 @@ SYN_Status syn_port_flash_erase(uint32_t addr)
 	erase_init.Banks       = 1;
     erase_init.TypeErase   = FLASH_TYPEERASE_PAGES;
     erase_init.PageAddress = addr;
-    erase_init.NbPages     = 1U;
+    uint32_t sector_sz = syn_port_flash_sector_size(addr);
+    erase_init.NbPages     = sector_sz / STM32F103_PAGE_SIZE;
+    if (erase_init.NbPages == 0U)
+    {
+        erase_init.NbPages = 1U;
+    }
 
     uint32_t page_error = 0U;
     HAL_StatusTypeDef status = HAL_FLASHEx_Erase(&erase_init, &page_error);
