@@ -690,7 +690,7 @@ uds_responseCode_t charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm (DT
         // DTC is already present.
         charon_StoredDataTransmissionFunctionalUnit_writeUpdateDTCToNvm(DTCinput, DTCAddress);
     }
-    else if (DTC_header->currentDTCCounter != AMOUNT_OF_DTC)
+    else if (DTC_header->currentDTCCounter < AMOUNT_OF_DTC)
     {
         // DTC is new.
         DTCAddress = charon_StoredDataTransmissionFunctionalUnit_writeNewDTCToNvm(DTCinput);

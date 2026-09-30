@@ -171,9 +171,50 @@ HAL_StatusTypeDef CAN_TX(uint32_t ID, uint8_t* data, uint8_t len)
 	return HAL_BUSY;
 }
 
+bool can_set_baudrate(uint32_t baudrate)
+{
+	uint32_t prescaler = 9U;
+	uint32_t bs1 = CAN_BS1_5TQ;
+	uint32_t bs2 = CAN_BS2_2TQ;
 
+	switch (baudrate)
+	{
+	case 125000U:
+		prescaler = 36U;
+		bs1 = CAN_BS1_5TQ;
+		bs2 = CAN_BS2_2TQ;
+		break;
+	case 250000U:
+		prescaler = 18U;
+		bs1 = CAN_BS1_5TQ;
+		bs2 = CAN_BS2_2TQ;
+		break;
+	case 500000U:
+		prescaler = 9U;
+		bs1 = CAN_BS1_5TQ;
+		bs2 = CAN_BS2_2TQ;
+		break;
+	case 1000000U:
+		prescaler = 6U;
+		bs1 = CAN_BS1_3TQ;
+		bs2 = CAN_BS2_2TQ;
+		break;
+	default:
+		return false;
+	}
 
-
+	HAL_CAN_Stop(&hcan);
+	hcan.Init.Prescaler = prescaler;
+	hcan.Init.TimeSeg1 = bs1;
+	hcan.Init.TimeSeg2 = bs2;
+	if (HAL_CAN_Init(&hcan) != HAL_OK)
+	{
+		return false;
+	}
+	HAL_CAN_Start(&hcan);
+	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
+	return true;
+}
 
 /* USER CODE END 1 */
 

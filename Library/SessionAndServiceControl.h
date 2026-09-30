@@ -90,4 +90,13 @@ void charon_sscSetEncryptionLevel (uint32_t encryptionLevel);
 /** @brief Get active encryption level mask. */
 uint32_t charon_sscGetEncryptionLevel (void);
 
+/** @brief Access Timing Parameter (0x83) support functions */
+uint32_t charon_sscGetP2Server(void);
+uint32_t charon_sscGetP2StarServer(void);
+void charon_sscSetTimingParameters(uint32_t p2Server, uint32_t p2StarServer);
+
+/** @brief TX loopback capture for SecuredDataTransmission (0x84) */
+void charon_sscStartTxCapture(void);
+uint32_t charon_sscStopTxCapture(uint8_t *dest, uint32_t maxLen);
+
 #endif 

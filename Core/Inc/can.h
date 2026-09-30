@@ -45,6 +45,8 @@ void CAN_Handler_Init(void);
 
 HAL_StatusTypeDef CAN_TX(uint32_t ID, uint8_t* data, uint8_t len);
 
+bool can_set_baudrate(uint32_t baudrate);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
