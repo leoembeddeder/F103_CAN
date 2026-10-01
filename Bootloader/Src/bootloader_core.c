@@ -7,8 +7,14 @@
 #include "bootloader_jump.h"
 #include "ota_metadata_mgr.h"
 #include "ota_boot_request.h"
+#include <stddef.h>
+#include <stdint.h>
 
 boot_action_t bootloader_evaluate(uint32_t *target_app_addr) {
+    metadata_t meta;
+    uint8_t active;
+    uint8_t other;
+
     if (target_app_addr == NULL) {
         return BOOT_ACTION_PANIC;
     }
@@ -20,7 +26,6 @@ boot_action_t bootloader_evaluate(uint32_t *target_app_addr) {
     }
 
     /* 2. Read Metadata from Ping-Pong Flash Pages */
-    metadata_t meta;
     if (ota_metadata_read(&meta) != META_OK) {
         /* Blank flash: initialize defaults */
         if (ota_metadata_init_default(&meta) != META_OK) {
@@ -28,8 +33,8 @@ boot_action_t bootloader_evaluate(uint32_t *target_app_addr) {
         }
     }
 
-    uint8_t active = meta.active_slot;
-    uint8_t other  = OTHER_SLOT(active);
+    active = meta.active_slot;
+    other  = OTHER_SLOT(active);
 
     switch (meta.slot[active].state) {
         case STATE_VALID: {

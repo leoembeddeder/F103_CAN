@@ -8,6 +8,7 @@
 #include "negativeResponse.h"
 #include "ServiceLookupTable.h"
 #include "StoredDataTransmissionFunctionalUnit.h"
+#include "DTC_LookupTable.h"
 #include "aes.h"
 #include "aes_cmac.h"
 #include "ota_boot_request.h"
@@ -802,7 +803,7 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
     /* Dispatch inner service */
     uint8_t innerSid = innerMsg[0];
     charon_serviceObject_t *pInnerService = charon_ServiceLookupTable_getServiceObject(innerSid);
-    if ((pInnerService == NULL) || (pInnerService->pServiceFunction == NULL))
+    if ((pInnerService == NULL) || (pInnerService->serviceRunable == NULL))
     {
         CHARON_ERROR("SecuredDataTransmission: inner SID 0x%02X not supported", innerSid);
         charon_sendNegativeResponse(uds_responseCode_ServiceNotSupported, uds_sid_SecuredDataTransmission);
@@ -811,7 +812,7 @@ uds_responseCode_t charon_DiagnosticAndCommunicationManagementFunctionalUnit_Sec
 
     /* Capture inner service response */
     charon_sscStartTxCapture();
-    uds_responseCode_t innerRet = pInnerService->pServiceFunction(innerMsg, innerLen);
+    uds_responseCode_t innerRet = pInnerService->serviceRunable(innerMsg, innerLen);
     uint8_t capturedResp[256];
     uint32_t capturedLen = charon_sscStopTxCapture(capturedResp, sizeof(capturedResp));
 
