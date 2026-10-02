@@ -1488,7 +1488,7 @@ static uds_responseCode_t SupportedDTC (void)
 
 static uds_responseCode_t FirstTestFailedDTC (void)
 {
-    DTC_t *matchedDTC;
+    DTC_t *matchedDTC = NULL;
     static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
     uint32_t length = 3u;
     uint8_t lengthOfDTC = 3u;
@@ -1499,29 +1499,42 @@ static uds_responseCode_t FirstTestFailedDTC (void)
     s_buffer[1] = reportFirstTestFailedDTC;
     s_buffer[2] = charon_getDTCStatusAvailabilityMask();
 
+    uint32_t dtc_start = (uint32_t)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    uint32_t dtc_end = (uint32_t)charon_NvmDriver_getNvmAddress_for_DTC(AMOUNT_OF_DTC - 1, false) + sizeof(DTC_t);
 
-    // Check if there is a saved DTC since header wipe.
-    if ((DTC_header->FirstFailedDTC != 0) && (DTC_header->FirstFailedDTC != 0x01))
-    {       
-        // Get address to the first failed DTC from header.
+    if ((DTC_header->FirstFailedDTC >= dtc_start) && (DTC_header->FirstFailedDTC < dtc_end))
+    {
         matchedDTC = (DTC_t*)DTC_header->FirstFailedDTC;
+    }
+    else
+    {
+        /* Fallback: scan for first DTC with testFailed */
+        DTC_t *allDTCs = (DTC_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+        for (uint16_t i = 0; i < AMOUNT_OF_DTC; i++)
+        {
+            if ((allDTCs[i].statusOfDTC & TEST_FAILED_CHECK) != 0u)
+            {
+                matchedDTC = &allDTCs[i];
+                break;
+            }
+        }
+    }
 
-        // Building response buffer.
-        memcpy(&s_buffer[length], &matchedDTC->DTCHighByte , lengthOfDTC);
+    if (matchedDTC != NULL)
+    {
+        memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
         length += lengthOfDTC;
-        memcpy(&s_buffer[length], &matchedDTC->statusOfDTC, 1u);
-        length ++;
+        s_buffer[length++] = matchedDTC->statusOfDTC;
     }
 
     charon_sscTxMessage(s_buffer,length);
-    //charon info einfügen für debugging!
     return uds_responseCode_PositiveResponse;
 }
 
 
 static uds_responseCode_t FirstConfirmedDTC (void)
 {
-    DTC_t *matchedDTC;
+    DTC_t *matchedDTC = NULL;
     static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
     uint32_t length = 3u;
     uint8_t lengthOfDTC = 3u;
@@ -1532,29 +1545,42 @@ static uds_responseCode_t FirstConfirmedDTC (void)
     s_buffer[1] = reportFirstConfirmedDTC;
     s_buffer[2] = charon_getDTCStatusAvailabilityMask();
 
+    uint32_t dtc_start = (uint32_t)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    uint32_t dtc_end = (uint32_t)charon_NvmDriver_getNvmAddress_for_DTC(AMOUNT_OF_DTC - 1, false) + sizeof(DTC_t);
 
-    // Check if there is a saved DTC since header wipe.
-    if ((DTC_header->FirstConfirmedDTC != 0) && (DTC_header->FirstConfirmedDTC != 0x01))
+    if ((DTC_header->FirstConfirmedDTC >= dtc_start) && (DTC_header->FirstConfirmedDTC < dtc_end))
     {
-        // Get address to the first confirmed DTC from header.
         matchedDTC = (DTC_t*)DTC_header->FirstConfirmedDTC;
+    }
+    else
+    {
+        /* Fallback: scan for first DTC with confirmedDTC */
+        DTC_t *allDTCs = (DTC_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+        for (uint16_t i = 0; i < AMOUNT_OF_DTC; i++)
+        {
+            if ((allDTCs[i].statusOfDTC & CONFIRMED_DTC_CHECK) != 0u)
+            {
+                matchedDTC = &allDTCs[i];
+                break;
+            }
+        }
+    }
 
-        // Building response buffer.
-        memcpy(&s_buffer[length], &matchedDTC->DTCHighByte , lengthOfDTC);
+    if (matchedDTC != NULL)
+    {
+        memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
         length += lengthOfDTC;
-        memcpy(&s_buffer[length], &matchedDTC->statusOfDTC, 1u);
-        length ++;
+        s_buffer[length++] = matchedDTC->statusOfDTC;
     }
 
     charon_sscTxMessage(s_buffer,length);
-    //charon info einfügen für debugging!
     return uds_responseCode_PositiveResponse;
 }
 
 
 static uds_responseCode_t MostRecentTestFailedDTC (void)
 {
-    DTC_t *matchedDTC;
+    DTC_t *matchedDTC = NULL;
     static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
     uint32_t length = 3u;
     uint8_t lengthOfDTC = 3u;
@@ -1565,28 +1591,42 @@ static uds_responseCode_t MostRecentTestFailedDTC (void)
     s_buffer[1] = reportMostRecentTestFailedDTC;
     s_buffer[2] = charon_getDTCStatusAvailabilityMask();
 
-    // Check if there is a saved DTC since header wipe.
-    if (DTC_header->MostRecentTestFailed != 0)
-    {
-        // Get address to the most recent DTC from header.
-        matchedDTC = (DTC_t*)DTC_header->MostRecentTestFailed;
+    uint32_t dtc_start = (uint32_t)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    uint32_t dtc_end = (uint32_t)charon_NvmDriver_getNvmAddress_for_DTC(AMOUNT_OF_DTC - 1, false) + sizeof(DTC_t);
 
-        // Building response buffer.
-        memcpy(&s_buffer[length], &matchedDTC->DTCHighByte , lengthOfDTC);
+    if ((DTC_header->MostRecentTestFailed >= dtc_start) && (DTC_header->MostRecentTestFailed < dtc_end))
+    {
+        matchedDTC = (DTC_t*)DTC_header->MostRecentTestFailed;
+    }
+    else
+    {
+        /* Fallback: scan backwards for most recent DTC with testFailed */
+        DTC_t *allDTCs = (DTC_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+        for (int32_t i = (int32_t)AMOUNT_OF_DTC - 1; i >= 0; i--)
+        {
+            if ((allDTCs[i].statusOfDTC & TEST_FAILED_CHECK) != 0u)
+            {
+                matchedDTC = &allDTCs[i];
+                break;
+            }
+        }
+    }
+
+    if (matchedDTC != NULL)
+    {
+        memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
         length += lengthOfDTC;
-        memcpy(&s_buffer[length], &matchedDTC->statusOfDTC, 1u);
-        length ++;
+        s_buffer[length++] = matchedDTC->statusOfDTC;
     }
 
     charon_sscTxMessage(s_buffer,length);
-    //charon info einfügen für debugging!
     return uds_responseCode_PositiveResponse;
 }
 
 
 static uds_responseCode_t MostRecentConfirmedDTC (void)
 {
-    DTC_t *matchedDTC;
+    DTC_t *matchedDTC = NULL;
     static uint8_t s_buffer[MAX_TX_BUFFER_SIZE];
     uint32_t length = 3u;
     uint8_t lengthOfDTC = 3u;
@@ -1597,21 +1637,35 @@ static uds_responseCode_t MostRecentConfirmedDTC (void)
     s_buffer[1] = reportMostRecentConfirmedDTC;
     s_buffer[2] = charon_getDTCStatusAvailabilityMask();
 
-    // Check if there is a saved DTC since header wipe.
-    if (DTC_header->MostRecentConfirmedDTC != 0)
-    {
-        // Get address to the most recent DTC from header.
-        matchedDTC = (DTC_t*)DTC_header->MostRecentConfirmedDTC;
+    uint32_t dtc_start = (uint32_t)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    uint32_t dtc_end = (uint32_t)charon_NvmDriver_getNvmAddress_for_DTC(AMOUNT_OF_DTC - 1, false) + sizeof(DTC_t);
 
-        // Building response buffer.
-        memcpy(&s_buffer[length], &matchedDTC->DTCHighByte , lengthOfDTC);
+    if ((DTC_header->MostRecentConfirmedDTC >= dtc_start) && (DTC_header->MostRecentConfirmedDTC < dtc_end))
+    {
+        matchedDTC = (DTC_t*)DTC_header->MostRecentConfirmedDTC;
+    }
+    else
+    {
+        /* Fallback: scan backwards for most recent DTC with confirmedDTC */
+        DTC_t *allDTCs = (DTC_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+        for (int32_t i = (int32_t)AMOUNT_OF_DTC - 1; i >= 0; i--)
+        {
+            if ((allDTCs[i].statusOfDTC & CONFIRMED_DTC_CHECK) != 0u)
+            {
+                matchedDTC = &allDTCs[i];
+                break;
+            }
+        }
+    }
+
+    if (matchedDTC != NULL)
+    {
+        memcpy(&s_buffer[length], &matchedDTC->DTCHighByte, lengthOfDTC);
         length += lengthOfDTC;
-        memcpy(&s_buffer[length], &matchedDTC->statusOfDTC, 1u);
-        length ++;
+        s_buffer[length++] = matchedDTC->statusOfDTC;
     }
 
     charon_sscTxMessage(s_buffer,length);
-    //charon info einfügen für debugging!
     return uds_responseCode_PositiveResponse;
 }
 
@@ -1825,7 +1879,8 @@ static uds_responseCode_t WWHOBDDTCByMaskRecord (const uint8_t * receiveBuffer, 
         if ((index & number) > 0x00)
         {
             bool groupMatch = (functionalGroupIdentifier == 0xFFu) || 
-                              (DTC[i].FunctionalGroupIdentifier == functionalGroupIdentifier);
+                              (DTC[i].FunctionalGroupIdentifier == functionalGroupIdentifier) ||
+                              (functionalGroupIdentifier == 0x33u && (DTC[i].FunctionalGroupIdentifier == 0xFEu || DTC[i].FunctionalGroupIdentifier == 0x33u));
             bool statusMatch = ((DTC[i].DTCStatusMask & statusMask) != 0u);
             bool severityMatch = ((DTC[i].DTCSeverityMask & severityMask) != 0u);
 
@@ -2116,7 +2171,18 @@ static void charon_StoredDataTransmissionFunctionalUnit_writeSnapshotToNvm (DTC_
                     // Filling all the new information into the DTC.
                     *(uint32_t*)&DTCCurrent->DTCSnapshotAddress[arrayIndex] = charon_NvmDriver_getNvmAddress_for_Snapshot(number);
                     DTCCurrent->DTCSnapshotLength[arrayIndex] = DTCUpdate.DTCSnapshotLength[0];       
-                    DTCCurrent->DTCSnapshotRecordNumber[arrayIndex] = number;
+                    if (DTCUpdate.DTCSnapshotRecordNumber[arrayIndex] != 0u)
+                    {
+                        DTCCurrent->DTCSnapshotRecordNumber[arrayIndex] = DTCUpdate.DTCSnapshotRecordNumber[arrayIndex];
+                    }
+                    else if (DTCUpdate.DTCSnapshotRecordNumber[0] != 0u)
+                    {
+                        DTCCurrent->DTCSnapshotRecordNumber[arrayIndex] = DTCUpdate.DTCSnapshotRecordNumber[0];
+                    }
+                    else
+                    {
+                        DTCCurrent->DTCSnapshotRecordNumber[arrayIndex] = (uint8_t)(arrayIndex + 1u);
+                    }
                     DTCCurrent->NumberOfSavedSnapshots++;
 
                     // Filling all the new information into the snapshot.
@@ -2200,7 +2266,18 @@ static void charon_StoredDataTransmissionFunctionalUnit_writeStoredDataToNvm (DT
                     // Filling all the new information into the DTC.
                     *(uint32_t*)&DTCCurrent->DTCStoredDataAddress[arrayIndex] = charon_NvmDriver_getNvmAddress_for_StoredData(number);
                     DTCCurrent->DTCStoredDataLength[arrayIndex] = DTCUpdate.DTCStoredDataLength[0];       
-                    DTCCurrent->DTCStoredDataRecordNumber[arrayIndex] = number;
+                    if (DTCUpdate.DTCStoredDataRecordNumber[arrayIndex] != 0u)
+                    {
+                        DTCCurrent->DTCStoredDataRecordNumber[arrayIndex] = DTCUpdate.DTCStoredDataRecordNumber[arrayIndex];
+                    }
+                    else if (DTCUpdate.DTCStoredDataRecordNumber[0] != 0u)
+                    {
+                        DTCCurrent->DTCStoredDataRecordNumber[arrayIndex] = DTCUpdate.DTCStoredDataRecordNumber[0];
+                    }
+                    else
+                    {
+                        DTCCurrent->DTCStoredDataRecordNumber[arrayIndex] = (uint8_t)(arrayIndex + 1u);
+                    }
                     DTCCurrent->NumberOfSavedDataRecords++;
 
                     // Filling all the new information into the storedData.
@@ -2285,7 +2362,18 @@ static void charon_StoredDataTransmissionFunctionalUnit_writeExtendedDataToNvm (
                     // Filling all the new information into the DTC.
                     *(uint32_t*)&DTCCurrent->DTCExtendedDataAddress[arrayIndex] = charon_NvmDriver_getNvmAddress_for_ExtendedData(number);
                     DTCCurrent->DTCExtendedDataLength[arrayIndex] = DTCUpdate.DTCExtendedDataLength[0];       
-                    DTCCurrent->DTCExtDataRecordNumber[arrayIndex] = number;
+                    if (DTCUpdate.DTCExtDataRecordNumber[arrayIndex] != 0u)
+                    {
+                        DTCCurrent->DTCExtDataRecordNumber[arrayIndex] = DTCUpdate.DTCExtDataRecordNumber[arrayIndex];
+                    }
+                    else if (DTCUpdate.DTCExtDataRecordNumber[0] != 0u)
+                    {
+                        DTCCurrent->DTCExtDataRecordNumber[arrayIndex] = DTCUpdate.DTCExtDataRecordNumber[0];
+                    }
+                    else
+                    {
+                        DTCCurrent->DTCExtDataRecordNumber[arrayIndex] = (uint8_t)(arrayIndex + 1u);
+                    }
                     DTCCurrent->NumberOfSavedExtendedData++;
 
                     // Filling all the new information into the extDataRecord.

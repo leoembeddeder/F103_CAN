@@ -58,8 +58,7 @@ static void charon_NvmDriver_reanchorPointers(void)
         {
             if (dtc->DTCSnapshotLength[s] > 0)
             {
-                uint8_t snapRecNum = dtc->DTCSnapshotRecordNumber[s];
-                dtc->DTCSnapshotAddress[s] = (DTC_SnapshotData_t *)charon_NvmDriver_getNvmAddress_for_Snapshot(snapRecNum);
+                dtc->DTCSnapshotAddress[s] = (DTC_SnapshotData_t *)charon_NvmDriver_getNvmAddress_for_Snapshot(i);
             }
             else
             {
@@ -70,8 +69,7 @@ static void charon_NvmDriver_reanchorPointers(void)
         {
             if (dtc->DTCStoredDataLength[d] > 0)
             {
-                uint8_t recNum = dtc->DTCStoredDataRecordNumber[d];
-                dtc->DTCStoredDataAddress[d] = (DTC_StoredData_t *)charon_NvmDriver_getNvmAddress_for_StoredData(recNum);
+                dtc->DTCStoredDataAddress[d] = (DTC_StoredData_t *)charon_NvmDriver_getNvmAddress_for_StoredData(d);
             }
             else
             {
@@ -82,14 +80,33 @@ static void charon_NvmDriver_reanchorPointers(void)
         {
             if (dtc->DTCExtendedDataLength[e] > 0)
             {
-                uint8_t recNum = dtc->DTCExtDataRecordNumber[e];
-                dtc->DTCExtendedDataAddress[e] = (DTC_ExtendedData_t *)charon_NvmDriver_getNvmAddress_for_ExtendedData(recNum);
+                dtc->DTCExtendedDataAddress[e] = (DTC_ExtendedData_t *)charon_NvmDriver_getNvmAddress_for_ExtendedData(i);
             }
             else
             {
                 dtc->DTCExtendedDataAddress[e] = NULL;
             }
         }
+    }
+
+    /* Re-anchor first / most-recent failed and confirmed DTC pointers */
+    uint32_t dtc_start = (uint32_t)charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    uint32_t dtc_end = (uint32_t)charon_NvmDriver_getNvmAddress_for_DTC(AMOUNT_OF_DTC - 1, false) + sizeof(DTC_t);
+    if (hdr->FirstFailedDTC < dtc_start || hdr->FirstFailedDTC >= dtc_end)
+    {
+        hdr->FirstFailedDTC = charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    }
+    if (hdr->FirstConfirmedDTC < dtc_start || hdr->FirstConfirmedDTC >= dtc_end)
+    {
+        hdr->FirstConfirmedDTC = charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    }
+    if (hdr->MostRecentTestFailed < dtc_start || hdr->MostRecentTestFailed >= dtc_end)
+    {
+        hdr->MostRecentTestFailed = charon_NvmDriver_getNvmAddress_for_DTC(2, false);
+    }
+    if (hdr->MostRecentConfirmedDTC < dtc_start || hdr->MostRecentConfirmedDTC >= dtc_end)
+    {
+        hdr->MostRecentConfirmedDTC = charon_NvmDriver_getNvmAddress_for_DTC(2, false);
     }
 }
 
@@ -185,32 +202,66 @@ static void charon_NvmDriver_seedDefaultDTCs(void)
         dtc.DTCHighByte = s_oemDtcList[i].high;
         dtc.DTCMiddleByte = s_oemDtcList[i].mid;
         dtc.DTCLowByte = s_oemDtcList[i].low;
-        /* ISO 14229-1 cleared default state: testNotCompletedSinceLastClear | testNotCompletedThisOperationCycle */
-        dtc.DTCStatusMask = (UDS_DTC_STATUS_TEST_NOT_COMPLETED_SLC | UDS_DTC_STATUS_TEST_NOT_COMPLETED_TOC);
+
+        if (i == 0 || i == 2)
+        {
+            /* Seed active demonstration faults for DTC 0 (U300614) and DTC 2 (C100616):
+             * Bits: testFailed(0) | testFailedTOC(1) | pendingDTC(2) | confirmedDTC(3) | testFailedSLC(5) -> 0x2F */
+            dtc.DTCStatusMask = (UDS_DTC_STATUS_TEST_FAILED |
+                                 UDS_DTC_STATUS_TEST_FAILED_TOC |
+                                 UDS_DTC_STATUS_PENDING |
+                                 UDS_DTC_STATUS_CONFIRMED |
+                                 UDS_DTC_STATUS_TEST_FAILED_SLC);
+        }
+        else
+        {
+            /* ISO 14229-1 cleared default state: testNotCompletedSinceLastClear | testNotCompletedThisOperationCycle */
+            dtc.DTCStatusMask = (UDS_DTC_STATUS_TEST_NOT_COMPLETED_SLC | UDS_DTC_STATUS_TEST_NOT_COMPLETED_TOC);
+        }
         dtc.statusOfDTC = dtc.DTCStatusMask;
         dtc.DTCSeverityMask = (s_oemDtcList[i].prio == 2) ? 0x60 : 0x40;
         dtc.DTCSeverityMaskRecordHigh = dtc.DTCSeverityMask;
         dtc.DTCSeverityMaskRecordLow = dtc.DTCStatusMask;
-        dtc.FunctionalGroupIdentifier = (dtc.DTCHighByte == 0xF0) ? 0xFE : 0xD0;
+        dtc.FunctionalGroupIdentifier = (dtc.DTCHighByte == 0xF0) ? 0x33 : 0xD0;
         dtc.DTCSettingType = 0x01; /* ControlDTCSetting ON */
 
+        /* Seed default Snapshot record: RecordNumber = 0x01, 1 Identifier (DID 0x0101 = Supply Voltage), Data = 0x12 0x34 */
         DTC_SnapshotData_t snap;
         memset(&snap, 0, sizeof(snap));
+        snap.DTCSnapshotDataRecordNumberOfIdentifiers = 1u;
+        snap.DTCSnapshotDataPayload[0] = 0x01;
+        snap.DTCSnapshotDataPayload[1] = 0x01;
+        snap.DTCSnapshotDataPayload[2] = 0x12;
+        snap.DTCSnapshotDataPayload[3] = (uint8_t)(0x30 + (i & 0x0F));
+        dtc.DTCSnapshotRecordNumber[0] = 0x01;
+        dtc.DTCSnapshotLength[0] = 4u;
 
         DTC_StoredData_t stored;
         memset(&stored, 0, sizeof(stored));
 
+        /* Seed default Extended Data record: RecordNumber = 0x01, 1 Identifier, Fault Occurrence Counter = 0x03 */
         DTC_ExtendedData_t ext;
         memset(&ext, 0, sizeof(ext));
+        ext.DTCExtendedDataRecordNumberOfIdentifiers = 1u;
+        ext.DTCExtendedDataPayload[0] = (i == 0) ? 0x03 : ((i == 2) ? 0x05 : 0x01);
+        dtc.DTCExtDataRecordNumber[0] = 0x01;
+        dtc.DTCExtendedDataLength[0] = 1u;
 
         charon_StoredDataTransmissionFunctionalUnit_writeDTCToNvm(dtc, snap, stored, ext);
     }
+
+    /* Seed First / Most-Recent Failed and Confirmed DTC pointers in header */
+    DTC_header_t *hdr = (DTC_header_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
+    hdr->FirstFailedDTC = charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    hdr->FirstConfirmedDTC = charon_NvmDriver_getNvmAddress_for_DTC(0, false);
+    hdr->MostRecentTestFailed = charon_NvmDriver_getNvmAddress_for_DTC(2, false);
+    hdr->MostRecentConfirmedDTC = charon_NvmDriver_getNvmAddress_for_DTC(2, false);
 }
 
 void charon_NvmDriver_init(void)
 {
-    /* Initialize parameter store with 2 flash sectors (4KB total wear-leveling pool) */
-    SYN_Status status = syn_param_init(&s_nvmStore, FLASH_PARAM_START, 2, sizeof(NvmEmulator_MemorySpace));
+    /* Initialize parameter store with wear-leveling flash pool defined in flash.h / ota_metadata.h */
+    SYN_Status status = syn_param_init(&s_nvmStore, FLASH_PARAM_START, FLASH_PARAM_SECTORS, sizeof(NvmEmulator_MemorySpace));
 
     if (status == SYN_OK)
     {
@@ -218,7 +269,7 @@ void charon_NvmDriver_init(void)
         if (syn_param_load(&s_nvmStore, NvmEmulator_MemorySpace) == SYN_OK)
         {
             DTC_header_t *hdr = (DTC_header_t *)charon_NvmDriver_getNvmAddress_for_DTC(0, true);
-            if (hdr->iniDone == NVM_SCHEMA_MAGIC && hdr->totalDTCCounter == AMOUNT_OF_DTC)
+            if (hdr->iniDone == NVM_SCHEMA_MAGIC && hdr->totalDTCCounter == AMOUNT_OF_DTC && hdr->totalSnapshotRecordCounter == AMOUNT_OF_SNAPSHOT)
             {
                 charon_NvmDriver_reanchorPointers();
                 s_nvmInitialized = true;

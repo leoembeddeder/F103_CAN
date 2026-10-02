@@ -3,6 +3,7 @@
 
 
 #include "main.h"
+#include "ota_metadata.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -13,8 +14,8 @@
 #define STM32F103_PAGE_SIZE       0x00000800U       /* FLASH Page Size, 2 KBytes */
 
 /* Safe DTC / NVM parameter storage region at top of flash (24 KB, Pages 244-255) */
-#define FLASH_PARAM_START         0x0807A000U
-#define FLASH_PARAM_SIZE          (24U * 1024U)
+#define FLASH_PARAM_START         DTC_STORAGE_ADDR
+#define FLASH_PARAM_SIZE          DTC_STORAGE_SIZE
 
 
 

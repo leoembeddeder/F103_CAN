@@ -29,11 +29,11 @@
 #define UDS_SECURED_DATA_AES_KEY                        { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, \
                                                           0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c }
 /** @brief For snapshot Nvm size, NVm config may be changed depending on targets memory. AMOUNT_OF_SNAPSHOT and AMOUNT... are only uint8_t so only 255 can be saved max. */
-#define AMOUNT_OF_SNAPSHOT                              ((uint8_t) 8u)
+#define AMOUNT_OF_SNAPSHOT                              ((uint8_t) 69u)
 /** @brief For storedData Nvm size, NVm config may be changed depending on targets memory. AMOUNT_OF_SNAPSHOT and AMOUNT... are only uint8_t so only 255 can be saved max. */
 #define AMOUNT_OF_STOREDDATA                            ((uint8_t) 8u)
 /** @brief For extData Nvm size, NVm config may be changed depending on targets memory. AMOUNT_OF_SNAPSHOT and AMOUNT... are only uint8_t so only 255 can be saved max. */
-#define AMOUNT_OF_EXTENDEDDATA                          ((uint8_t) 8u)
+#define AMOUNT_OF_EXTENDEDDATA                          ((uint8_t) 69u)
 
 
 /** @brief Used to define how many addresses the USER wants to save per DTC and datatype. */
